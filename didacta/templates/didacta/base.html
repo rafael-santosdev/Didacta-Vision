@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Início{% endblock  %}</title>
+    <link rel="stylesheet" href="{% static 'css/hero.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     {% block content %}
+    <div class="actions" role="group" aria-label="Ações principais">
+  <a href="#" class="btn btn-primary"><span aria-hidden="true">✦</span> Explorar Filmes</a>
+  <a href="#" class="btn btn-ghost">Sobre o Projeto</a>
+</div>
     {% endblock content %}
 </body>
 </html>
