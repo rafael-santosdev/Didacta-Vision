@@ -3,73 +3,64 @@
 {% block title %}Notificações - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>
-        <i class="bi bi-bell"></i> Notificações
-    </h2>
-    <a href="{% url 'didacta:notification_mark_all_read' %}" class="btn btn-outline-primary">
-        <i class="bi bi-check-all"></i> Marcar Todas como Lidas
-    </a>
-</div>
+<section class="dv-section">
+    <div class="dv-section__header">
+        <div>
+            <span class="dv-badge">Painel</span>
+            <h1 class="dv-section__title">Notificações</h1>
+            <p class="text-muted" style="margin-top:6px;">Atualizações sobre reservas, suporte e contas aparecem aqui.</p>
+        </div>
+        {% if page_obj %}
+        <a href="{% url 'didacta:notification_mark_all_read' %}" class="dv-btn ghost">
+            <i class="bi bi-check-all"></i> Marcar todas como lidas
+        </a>
+        {% endif %}
+    </div>
 
-{% if page_obj %}
-<div class="list-group">
-    {% for notificacao in page_obj %}
-    <div class="list-group-item {% if not notificacao.lida %}border-start border-primary border-3{% endif %}">
-        <div class="d-flex justify-content-between align-items-start">
-            <div class="flex-grow-1">
-                <h5 class="mb-1">
-                    {% if not notificacao.lida %}
-                    <span class="badge bg-primary me-2">Nova</span>
-                    <span class="badge bg-dark rounded-pill ms-2" title="Nova notificação">
-                        <i class="bi bi-three-dots"></i>
-                    </span>
-                    {% endif %}
-                    {{ notificacao.titulo }}
-                </h5>
-                <p class="mb-1">{{ notificacao.mensagem }}</p>
-                <small class="text-muted">
-                    <i class="bi bi-clock"></i> {{ notificacao.created_at|date:"d/m/Y H:i" }}
-                    <span class="badge bg-secondary ms-2">{{ notificacao.get_tipo_display }}</span>
-                </small>
+    {% if page_obj %}
+    <div class="dv-stack">
+        {% for notificacao in page_obj %}
+        <article class="dv-card-wide">
+            <div class="dv-comment__header">
+                <div class="dv-comment__meta">
+                    <strong>{{ notificacao.titulo }}</strong>
+                    <span class="dv-tag">{{ notificacao.get_tipo_display }}</span>
+                    <small class="text-muted">{{ notificacao.created_at|date:'d/m/Y H:i' }}</small>
+                </div>
+                {% if not notificacao.lida %}
+                <a href="{% url 'didacta:notification_mark_read' notificacao.pk %}" class="dv-btn ghost">
+                    <i class="bi bi-check"></i> Marcar como lida
+                </a>
+                {% else %}
+                <span class="dv-status neutral">Lida</span>
+                {% endif %}
             </div>
+            <p>{{ notificacao.mensagem }}</p>
             {% if not notificacao.lida %}
-            <a href="{% url 'didacta:notification_mark_read' notificacao.pk %}" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-check"></i> Marcar como Lida
-            </a>
+            <span class="dv-status warning" style="margin-top:12px;">Nova</span>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="dv-section" aria-label="Paginação">
+        <div class="dv-hero__actions" style="justify-content:center;">
+            {% if page_obj.has_previous %}
+            <a class="dv-btn ghost" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+            {% endif %}
+            <span class="dv-btn ghost">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a class="dv-btn ghost" href="?page={{ page_obj.next_page_number }}">Próxima</a>
             {% endif %}
         </div>
     </div>
-    {% endfor %}
-</div>
-
-<!-- Paginação -->
-{% if page_obj.has_other_pages %}
-<nav aria-label="Paginação" class="mt-4">
-    <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
-        </li>
-        {% endif %}
-        <li class="page-item active">
-            <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-        </li>
-        {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
-
-{% else %}
-<div class="alert alert-info text-center">
-    <i class="bi bi-info-circle"></i> Nenhuma notificação encontrada.
-</div>
-{% endif %}
+    {% endif %}
+    {% else %}
+    <div class="dv-empty">
+        <h3>Nenhuma notificação encontrada</h3>
+        <p class="text-muted">Assim que houver novidades relacionadas à sua conta, elas aparecerão aqui.</p>
+    </div>
+    {% endif %}
+</section>
 {% endblock %}
-
-
-

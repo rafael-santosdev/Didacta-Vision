@@ -15,7 +15,7 @@
             <div class="card-body">
                 <p class="text-muted mb-3">
                     <strong>Usuário:</strong> {{ ticket.usuario.nome_completo|default:"Visitante" }}<br>
-                    <strong>Data:</strong> {{ ticket.created_at|date:"d/m/Y H:i" }}
+                    <strong>Data:</strong> {{ ticket.created_at|date:'d/m/Y H:i' }}
                 </p>
                 <hr>
                 <h5>Mensagem:</h5>

@@ -3,45 +3,44 @@
 {% block title %}Login - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
-            <div class="card-body p-5">
-                <h2 class="text-center mb-4">
-                    <i class="bi bi-box-arrow-in-right"></i> Entrar
-                </h2>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Nome ou Email</label>
-                        <input type="text" class="form-control" id="email" name="email" placeholder="Digite seu nome completo ou email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Senha</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                        <div class="text-end mt-2">
-                            <a href="{% url 'didacta:password_reset_request' %}" class="text-decoration-none">
-                                <small>Esqueci a senha</small>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-box-arrow-in-right"></i> Entrar
-                        </button>
-                    </div>
-                </form>
-                
-                <hr class="my-4">
-                
-                <div class="text-center">
-                    <p class="mb-0">Não tem uma conta? <a href="{% url 'didacta:register' %}">Cadastre-se</a></p>
-                </div>
-            </div>
+<section class="dv-login-layout">
+    <div>
+        <span class="dv-badge">Acesso seguro</span>
+        <h1 class="dv-hero__title">Entre para acompanhar sessões e debates</h1>
+        <p class="dv-hero__lead">
+            Centralize suas reservas, notificações e suporte em um painel inspirado no visual da Netflix,
+            feito para a comunidade Didacta.
+        </p>
+        <div class="dv-hero__actions">
+            <a class="dv-btn ghost" href="{% url 'didacta:register' %}">
+                <i class="bi bi-person-plus"></i> Criar conta
+            </a>
+            <a class="dv-btn ghost" href="{% url 'didacta:password_reset_request' %}">
+                <i class="bi bi-key"></i> Recuperar senha
+            </a>
         </div>
     </div>
-</div>
+
+    <div class="dv-form-card">
+        <h2>Fazer login</h2>
+        <form method="post" class="dv-form">
+            {% csrf_token %}
+            <div class="dv-form-group">
+                <label for="email">Nome completo ou email</label>
+                <input type="text" id="email" name="email" placeholder="ex: Ana Beatriz ou ana@email.com" required>
+            </div>
+            <div class="dv-form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" required>
+                <a class="text-muted" href="{% url 'didacta:password_reset_request' %}">Esqueci a senha</a>
+            </div>
+            <button type="submit" class="dv-btn primary">
+                <i class="bi bi-box-arrow-in-right"></i> Entrar
+            </button>
+        </form>
+        <p class="text-muted" style="margin-top:20px;">Ainda não possui conta? <a href="{% url 'didacta:register' %}">Cadastre-se</a></p>
+    </div>
+</section>
 {% endblock %}
 
 

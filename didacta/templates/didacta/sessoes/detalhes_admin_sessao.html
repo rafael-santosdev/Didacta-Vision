@@ -11,7 +11,7 @@
         <div class="card shadow mt-3">
             <div class="card-body">
                 <h4>{{ sessao.filme.titulo }}</h4>
-                <p class="mb-1"><strong>Data e Hora:</strong> {{ sessao.data_hora|date:"d/m/Y H:i" }}</p>
+                <p class="mb-1"><strong>Data e Hora:</strong> {{ sessao.data_hora|date:'d/m/Y H:i' }}</p>
                 <p class="mb-1"><strong>Local:</strong> {{ sessao.local }}</p>
                 <p class="mb-0"><strong>Vagas Disponíveis:</strong> {{ sessao.vagas_disponiveis }} / {{ sessao.capacidade_total }}</p>
             </div>

@@ -3,45 +3,42 @@
 {% block title %}Cancelar Reserva - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-body p-5 text-center">
-                <h2 class="mb-4">
-                    <i class="bi bi-exclamation-triangle text-warning"></i> Cancelar Reserva
-                </h2>
-                
-                <div class="alert alert-warning mb-4">
-                    <h5>{{ reserva.sessao.filme.titulo }}</h5>
-                    <p class="mb-1"><strong>Data e Hora:</strong> {{ reserva.sessao.data_hora|date:"d/m/Y H:i" }}</p>
-                    <p class="mb-0"><strong>Local:</strong> {{ reserva.sessao.local }}</p>
-                </div>
-                
-                <p class="lead">Tem certeza que deseja cancelar esta reserva?</p>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        {{ form.justificativa.label_tag }}
-                        {{ form.justificativa }}
-                        {% if form.justificativa.help_text %}
-                        <small class="form-text text-muted">{{ form.justificativa.help_text }}</small>
-                        {% endif %}
-                        {% if form.justificativa.errors %}
-                        <div class="text-danger small">{{ form.justificativa.errors }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-                        <a href="{% url 'didacta:reservation_list' %}" class="btn btn-secondary">Não, manter reserva</a>
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-x-circle"></i> Sim, cancelar
-                        </button>
-                    </div>
-                </form>
-            </div>
+<section class="dv-section">
+    <div class="dv-dialog">
+        <div class="dv-dialog__icon">
+            <i class="bi bi-exclamation-triangle"></i>
         </div>
+        <h2>Cancelar reserva?</h2>
+        <p class="text-muted">Você está prestes a liberar sua vaga nesta sessão. Conte-nos o motivo para que possamos otimizar as próximas exibições.</p>
+
+        <div class="dv-card-wide" style="margin-top:20px;">
+            <strong>{{ reserva.sessao.filme.titulo }}</strong>
+            <p>Data e hora: {{ reserva.sessao.data_hora|date:'d/m/Y H:i' }}</p>
+            <p>Local: {{ reserva.sessao.local }}</p>
+        </div>
+
+        <form method="post" class="dv-form" style="margin-top:20px;">
+            {% csrf_token %}
+            <div class="dv-form-group">
+                {{ form.justificativa.label_tag }}
+                {{ form.justificativa }}
+                {% if form.justificativa.help_text %}
+                <small class="text-muted">{{ form.justificativa.help_text }}</small>
+                {% endif %}
+                {% for error in form.justificativa.errors %}
+                <span class="dv-status danger">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="dv-dialog__actions">
+                <a class="dv-btn ghost" href="{% url 'didacta:reservation_list' %}">Manter reserva</a>
+                <button type="submit" class="dv-btn primary">
+                    <i class="bi bi-x-circle"></i> Confirmar cancelamento
+                </button>
+            </div>
+        </form>
     </div>
-</div>
+</section>
 {% endblock %}
 
 

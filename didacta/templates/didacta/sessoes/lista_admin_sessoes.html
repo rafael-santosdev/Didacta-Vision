@@ -30,7 +30,7 @@
             {% for sessao in page_obj %}
             <tr>
                 <td><strong>{{ sessao.filme.titulo }}</strong></td>
-                <td>{{ sessao.data_hora|date:"d/m/Y H:i" }}</td>
+                <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
                 <td>{{ sessao.local }}</td>
                 <td>{{ sessao.capacidade_total }}</td>
                 <td>

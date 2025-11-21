@@ -27,7 +27,7 @@
                         <tbody>
                             <tr>
                                 <td><strong>{{ sessao.filme.titulo }}</strong></td>
-                                <td>{{ sessao.data_hora|date:"d/m/Y H:i" }}</td>
+                                <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
                                 <td>{{ sessao.local }}</td>
                                 <td>{{ sessao.capacidade_total }}</td>
                                 <td>
@@ -124,7 +124,7 @@
                                 {% if reserva_usuario.created_at %}
                                 <p class="mb-0">
                                     <small class="text-muted">
-                                        <i class="bi bi-clock"></i> Reserva realizada em: {{ reserva_usuario.created_at|date:"d/m/Y H:i" }}
+                                        <i class="bi bi-clock"></i> Reserva realizada em: {{ reserva_usuario.created_at|date:'d/m/Y H:i' }}
                                     </small>
                                 </p>
                                 {% endif %}

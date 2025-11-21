@@ -3,49 +3,47 @@
 {% block title %}Suporte - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-body p-5">
-                <h2 class="mb-4">
-                    <i class="bi bi-headset"></i> Solicitar Suporte
-                </h2>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.assunto.id_for_label }}" class="form-label">Assunto *</label>
-                        {{ form.assunto }}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.mensagem.id_for_label }}" class="form-label">Mensagem *</label>
-                        {{ form.mensagem }}
-                    </div>
-                    
-                    {% if form.errors %}
-                    <div class="alert alert-danger">
-                        {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                        <p>{{ error }}</p>
-                        {% endfor %}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                        <a href="{% url 'didacta:index' %}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send"></i> Enviar
-                        </button>
-                    </div>
-                </form>
-            </div>
+<section class="dv-section">
+    <div class="dv-section__header">
+        <div>
+            <span class="dv-badge">Suporte</span>
+            <h1 class="dv-section__title">Solicitar atendimento</h1>
+            <p class="text-muted" style="margin-top:6px;">Descreva o problema para que possamos ajudar o quanto antes.</p>
         </div>
+        <a href="{% url 'didacta:help_ticket_list' %}" class="dv-btn ghost">
+            <i class="bi bi-arrow-left"></i> Meus tickets
+        </a>
     </div>
-</div>
+
+    <div class="dv-form-card">
+        <form method="post" class="dv-form">
+            {% csrf_token %}
+            <div class="dv-form-group">
+                <label for="{{ form.assunto.id_for_label }}">Assunto *</label>
+                {{ form.assunto }}
+            </div>
+            <div class="dv-form-group">
+                <label for="{{ form.mensagem.id_for_label }}">Mensagem *</label>
+                {{ form.mensagem }}
+            </div>
+
+            {% if form.errors %}
+            <div class="dv-status danger">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="dv-hero__actions" style="justify-content:flex-end;">
+                <a href="{% url 'didacta:index' %}" class="dv-btn ghost">Cancelar</a>
+                <button type="submit" class="dv-btn primary">
+                    <i class="bi bi-send"></i> Enviar
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
 {% endblock %}
-
-
-

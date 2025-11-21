@@ -3,46 +3,59 @@
 {% block title %}Reservar Vaga - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-body p-5">
-                <h2 class="mb-4">
-                    <i class="bi bi-calendar-plus"></i> Reservar Vaga
-                </h2>
-                
-                <div class="alert alert-info mb-4">
-                    <h5>{{ sessao.filme.titulo }}</h5>
-                    <p class="mb-1"><strong>Data e Hora:</strong> {{ sessao.data_hora|date:"d/m/Y H:i" }}</p>
-                    <p class="mb-1"><strong>Local:</strong> {{ sessao.local }}</p>
-                    <p class="mb-0"><strong>Vagas Disponíveis:</strong> {{ sessao.vagas_disponiveis }} / {{ sessao.capacidade_total }}</p>
-                </div>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    
-                    {% if form.errors %}
-                    <div class="alert alert-danger">
-                        {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                        <p>{{ error }}</p>
-                        {% endfor %}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                        <a href="{% url 'didacta:film_detail' sessao.filme.pk %}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Confirmar Reserva
-                        </button>
-                    </div>
-                </form>
-            </div>
+<section class="dv-section">
+    <div class="dv-section__header">
+        <div>
+            <span class="dv-badge">Reserva</span>
+            <h2 class="dv-section__title">Confirmar presença</h2>
+            <p class="text-muted" style="margin-top:6px;">Revise as informações da sessão e finalize a sua participação.</p>
         </div>
     </div>
-</div>
+
+        <div class="dv-card-wide" style="margin-bottom:32px;">
+            <p class="text-muted">Sessão selecionada</p>
+            <h3>{{ sessao.filme.titulo }}</h3>
+            <div class="dv-meta" style="margin-top:12px;">
+                <span>{{ sessao.data_hora|date:'d/m/Y H:i' }}</span>
+                <span>{{ sessao.local }}</span>
+                <span>{{ sessao.vagas_disponiveis }} / {{ sessao.capacidade_total }} vagas</span>
+            </div>
+        </div>
+
+    <div class="dv-form-card">
+        <h2>Finalizar reserva</h2>
+        <form method="post" class="dv-form">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="dv-form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                <small class="text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                <span class="dv-status danger">{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            {% if form.non_field_errors %}
+            <div class="dv-status danger">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="dv-hero__actions" style="justify-content:flex-end;">
+                <a class="dv-btn ghost" href="{% url 'didacta:film_detail' sessao.filme.pk %}">Voltar</a>
+                <button type="submit" class="dv-btn primary">
+                    <i class="bi bi-check-circle"></i> Confirmar reserva
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
 {% endblock %}
 
 

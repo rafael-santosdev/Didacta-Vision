@@ -3,162 +3,124 @@
 {% block title %}Meu Perfil - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-4">
-        <div class="card shadow">
-            <div class="card-body text-center">
-                {% if user.foto_perfil %}
-                <img src="{{ user.foto_perfil.url }}" class="rounded-circle mb-3" width="150" height="150" alt="Foto de Perfil">
-                {% else %}
-                <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px;">
-                    <i class="bi bi-person-circle text-white" style="font-size: 5rem;"></i>
-                </div>
-                {% endif %}
-                <h4>{{ user.nome_completo }}</h4>
-                <p class="text-muted">{{ user.email }}</p>
-                <span class="badge bg-primary">{{ user.get_tipo_usuario_display }}</span>
-            </div>
+<section class="dv-section">
+    <div class="dv-section__header">
+        <div>
+            <span class="dv-badge">Perfil</span>
+            <h1 class="dv-section__title">Configurações da conta</h1>
+            <p class="text-muted" style="margin-top:6px;">Atualize seus dados, proteja sua senha e acompanhe o histórico de reservas.</p>
         </div>
-        
-        <div class="card shadow mt-3">
-            <div class="card-body">
-                <h5>Ações</h5>
-                <a href="{% url 'didacta:delete_account' %}" class="btn btn-outline-danger w-100" onclick="return confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')">
+    </div>
+
+    <div class="dv-detail-grid">
+        <article class="dv-panel" style="text-align:center;">
+            {% if user.foto_perfil %}
+            <img src="{{ user.foto_perfil.url }}" alt="Foto de Perfil" style="width:140px;height:140px;object-fit:cover;border-radius:999px;margin-bottom:14px;">
+            {% else %}
+            <div style="width:140px;height:140px;border-radius:999px;background:rgba(255,255,255,0.06);display:grid;place-items:center;margin:0 auto 14px;">
+                <i class="bi bi-person" style="font-size:2.6rem;color:rgba(255,255,255,0.4);"></i>
+            </div>
+            {% endif %}
+            <h3>{{ user.nome_completo }}</h3>
+            <p class="text-muted">{{ user.email }}</p>
+            <span class="dv-tag">{{ user.get_tipo_usuario_display }}</span>
+            <div class="dv-hero__actions" style="margin-top:18px;justify-content:center;">
+                <a href="{% url 'didacta:delete_account' %}" class="dv-btn ghost" onclick="return confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')">
                     <i class="bi bi-trash"></i> Excluir Conta
                 </a>
             </div>
-        </div>
+        </article>
+
+        <article class="dv-panel">
+            <h3>Editar informações</h3>
+            <p class="text-muted" style="margin-bottom:18px;">Atualize seus dados pessoais e foto de perfil.</p>
+            <form method="post" enctype="multipart/form-data" class="dv-form">
+                {% csrf_token %}
+                <input type="hidden" name="update_profile" value="1">
+                <div class="dv-form-group">
+                    <label for="{{ form.nome_completo.id_for_label }}">Nome completo</label>
+                    {{ form.nome_completo }}
+                </div>
+                <div class="dv-form-group">
+                    <label for="{{ form.telefone.id_for_label }}">Telefone</label>
+                    {{ form.telefone }}
+                </div>
+                <div class="dv-form-group">
+                    <label for="{{ form.data_nascimento.id_for_label }}">Data de nascimento</label>
+                    {{ form.data_nascimento }}
+                </div>
+                <div class="dv-form-group">
+                    <label for="{{ form.foto_perfil.id_for_label }}">Foto de perfil</label>
+                    {{ form.foto_perfil }}
+                </div>
+                <button type="submit" class="dv-btn primary">
+                    <i class="bi bi-check-circle"></i> Salvar alterações
+                </button>
+            </form>
+        </article>
     </div>
-    
-    <div class="col-md-8">
-        <!-- Abas -->
-        <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button">
-                    <i class="bi bi-pencil"></i> Editar Perfil
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button">
-                    <i class="bi bi-key"></i> Alterar Senha
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button">
-                    <i class="bi bi-clock-history"></i> Histórico
-                </button>
-            </li>
-        </ul>
-        
-        <div class="tab-content" id="profileTabsContent">
-            <!-- Editar Perfil -->
-            <div class="tab-pane fade show active" id="edit" role="tabpanel">
-                <div class="card shadow">
-                    <div class="card-body">
-                        <h5 class="mb-4">Editar Informações</h5>
-                        <form method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <input type="hidden" name="update_profile" value="1">
-                            
-                            <div class="mb-3">
-                                <label for="{{ form.nome_completo.id_for_label }}" class="form-label">Nome Completo</label>
-                                {{ form.nome_completo }}
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="{{ form.telefone.id_for_label }}" class="form-label">Telefone</label>
-                                {{ form.telefone }}
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="{{ form.data_nascimento.id_for_label }}" class="form-label">Data de Nascimento</label>
-                                {{ form.data_nascimento }}
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="{{ form.foto_perfil.id_for_label }}" class="form-label">Foto de Perfil</label>
-                                {{ form.foto_perfil }}
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle"></i> Salvar Alterações
-                            </button>
-                        </form>
-                    </div>
+
+    <div class="dv-detail-grid" style="margin-top:32px;">
+        <article class="dv-panel">
+            <h3>Alterar senha</h3>
+            <p class="text-muted" style="margin-bottom:18px;">Defina uma nova senha para manter sua conta protegida.</p>
+            <form method="post" class="dv-form">
+                {% csrf_token %}
+                <input type="hidden" name="change_password" value="1">
+                <div class="dv-form-group">
+                    <label for="{{ form_password.senha_atual.id_for_label }}">Senha atual</label>
+                    {{ form_password.senha_atual }}
                 </div>
-            </div>
-            
-            <!-- Alterar Senha -->
-            <div class="tab-pane fade" id="password" role="tabpanel">
-                <div class="card shadow">
-                    <div class="card-body">
-                        <h5 class="mb-4">Alterar Senha</h5>
-                        <form method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="change_password" value="1">
-                            
-                            <div class="mb-3">
-                                <label for="{{ form_password.senha_atual.id_for_label }}" class="form-label">Senha Atual</label>
-                                {{ form_password.senha_atual }}
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="{{ form_password.nova_senha.id_for_label }}" class="form-label">Nova Senha</label>
-                                {{ form_password.nova_senha }}
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="{{ form_password.confirmar_senha.id_for_label }}" class="form-label">Confirmar Nova Senha</label>
-                                {{ form_password.confirmar_senha }}
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle"></i> Alterar Senha
-                            </button>
-                        </form>
-                    </div>
+                <div class="dv-form-group">
+                    <label for="{{ form_password.nova_senha.id_for_label }}">Nova senha</label>
+                    {{ form_password.nova_senha }}
                 </div>
-            </div>
-            
-            <!-- Histórico -->
-            <div class="tab-pane fade" id="history" role="tabpanel">
-                <div class="card shadow">
-                    <div class="card-body">
-                        <h5 class="mb-4">Histórico de Reservas</h5>
-                        {% if reservas %}
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Filme</th>
-                                        <th>Data/Hora</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for reserva in reservas %}
-                                    <tr>
-                                        <td>{{ reserva.sessao.filme.titulo }}</td>
-                                        <td>{{ reserva.sessao.data_hora|date:"d/m/Y H:i" }}</td>
-                                        <td>
-                                            <span class="badge bg-{% if reserva.status == 'presente' %}success{% elif reserva.status == 'reservado' %}primary{% elif reserva.status == 'falta_justificada' %}warning{% else %}danger{% endif %}">
-                                                {{ reserva.get_status_display }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        {% else %}
-                        <p class="text-muted">Nenhuma reserva encontrada.</p>
-                        {% endif %}
-                    </div>
+                <div class="dv-form-group">
+                    <label for="{{ form_password.confirmar_senha.id_for_label }}">Confirmar nova senha</label>
+                    {{ form_password.confirmar_senha }}
                 </div>
+                <button type="submit" class="dv-btn primary">
+                    <i class="bi bi-check-circle"></i> Alterar senha
+                </button>
+            </form>
+        </article>
+
+        <article class="dv-panel">
+            <h3>Histórico de reservas</h3>
+            <p class="text-muted" style="margin-bottom:18px;">Últimas participações em sessões.</p>
+            {% if reservas %}
+            <div class="table-responsive">
+                <table class="dv-table">
+                    <thead>
+                        <tr>
+                            <th>Filme</th>
+                            <th>Data/Hora</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas %}
+                        <tr>
+                            <td>{{ reserva.sessao.filme.titulo }}</td>
+                            <td>{{ reserva.sessao.data_hora|date:'d/m/Y H:i' }}</td>
+                            <td>
+                                <span class="dv-status {% if reserva.status == 'presente' %}success{% elif reserva.status == 'reservado' %}neutral{% elif reserva.status == 'falta_justificada' %}warning{% else %}danger{% endif %}">
+                                    {{ reserva.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        </div>
+            {% else %}
+            <div class="dv-empty">
+                <p>Nenhuma reserva encontrada.</p>
+            </div>
+            {% endif %}
+        </article>
     </div>
-</div>
+</section>
 {% endblock %}
 
 
