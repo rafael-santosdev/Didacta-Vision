@@ -3,208 +3,144 @@
 {% block title %}Detalhes da Sessão - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card shadow">
-            <div class="card-body">
-                <h2 class="mb-4">
-                    <i class="bi bi-calendar-event"></i> Detalhes da Sessão
-                </h2>
-                
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Filme</th>
-                                <th>Data e Hora</th>
-                                <th>Local</th>
-                                <th>Capacidade</th>
-                                <th>Vagas</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>{{ sessao.filme.titulo }}</strong></td>
-                                <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
-                                <td>{{ sessao.local }}</td>
-                                <td>{{ sessao.capacidade_total }}</td>
-                                <td>
-                                    <span class="badge bg-{% if sessao.vagas_disponiveis > 0 %}success{% else %}danger{% endif %}">
-                                        {{ sessao.vagas_disponiveis }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-{% if sessao.ativo %}success{% else %}secondary{% endif %}">
-                                        {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if user.is_authenticated %}
-                                        {% if reserva_usuario %}
-                                            <a href="{% url 'didacta:reservation_cancel' reserva_usuario.pk %}" 
-                                               class="btn btn-sm btn-danger" 
-                                               onclick="return confirm('Tem certeza que deseja cancelar sua reserva?')">
-                                                <i class="bi bi-x-circle"></i> Cancelar Reserva
-                                            </a>
-                                        {% elif sessao.tem_vagas and sessao.ativo %}
-                                            <a href="{% url 'didacta:reservation_create' sessao.pk %}" 
-                                               class="btn btn-sm btn-primary">
-                                                <i class="bi bi-calendar-plus"></i> Reservar
-                                            </a>
-                                        {% else %}
-                                            <span class="text-muted">Indisponível</span>
-                                        {% endif %}
-                                    {% else %}
-                                        <a href="{% url 'didacta:login' %}" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-box-arrow-in-right"></i> Login
-                                        </a>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+<section class="dv-section">
+    <article class="dv-card-wide">
+        <div class="dv-toolbar">
+            <div>
+                <h1 class="dv-section__title" style="margin-bottom:6px;">Sessão de {{ sessao.filme.titulo }}</h1>
+                <p class="text-muted">Confira as informações e confirme sua presença.</p>
             </div>
+            <span class="dv-status {% if sessao.ativo %}success{% else %}danger{% endif %}">
+                {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
+            </span>
         </div>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card shadow">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        {% if sessao.filme.sinopse %}
-                        <h5 class="mb-3">Sinopse do Filme</h5>
-                        <p class="text-muted">{{ sessao.filme.sinopse }}</p>
-                        {% endif %}
-                    </div>
-                    {% if sessao.filme.cartaz %}
-                    <div class="col-md-4 text-center">
-                        <img src="{{ sessao.filme.cartaz.url }}" alt="{{ sessao.filme.titulo }}" 
-                             class="img-fluid rounded shadow-sm" style="max-height: 400px;">
-                    </div>
-                    {% elif sessao.filme.cartaz_url %}
-                    <div class="col-md-4 text-center">
-                        <img src="{{ sessao.filme.cartaz_url }}" alt="{{ sessao.filme.titulo }}" 
-                             class="img-fluid rounded shadow-sm" style="max-height: 400px;">
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="dv-meta" style="margin-top:16px;">
+            <span><strong>Data:</strong> {{ sessao.data_hora|date:'d/m/Y H:i' }}</span>
+            <span><strong>Local:</strong> {{ sessao.local }}</span>
+            <span><strong>Capacidade:</strong> {{ sessao.capacidade_total }}</span>
+            <span><strong>Vagas:</strong> {{ sessao.vagas_disponiveis }}</span>
         </div>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card shadow">
-            <div class="card-body">
-                <h5 class="card-title mb-4">
-                    <i class="bi bi-ticket-perforated"></i> Minha Reserva
-                </h5>
-                
-                {% if user.is_authenticated %}
-                    {% if reserva_usuario %}
-                    <div class="alert alert-success">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h6 class="alert-heading mb-2">
-                                    <i class="bi bi-check-circle"></i> Você possui uma reserva para esta sessão
-                                </h6>
-                                <p class="mb-1">
-                                    <strong>Status da Reserva:</strong> 
-                                    <span class="badge bg-{% if reserva_usuario.status == 'presente' %}success{% elif reserva_usuario.status == 'reservado' %}primary{% elif reserva_usuario.status == 'falta_justificada' %}warning{% else %}danger{% endif %}">
-                                        {{ reserva_usuario.get_status_display }}
-                                    </span>
-                                </p>
-                                {% if reserva_usuario.created_at %}
-                                <p class="mb-0">
-                                    <small class="text-muted">
-                                        <i class="bi bi-clock"></i> Reserva realizada em: {{ reserva_usuario.created_at|date:'d/m/Y H:i' }}
-                                    </small>
-                                </p>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <a href="{% url 'didacta:reservation_cancel' reserva_usuario.pk %}" 
-                                   class="btn btn-danger btn-lg"
-                                   onclick="return confirm('Tem certeza que deseja cancelar sua reserva?')">
-                                    <i class="bi bi-x-circle"></i> Cancelar Reserva
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% elif sessao.tem_vagas and sessao.ativo %}
-                    <div class="alert alert-info">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h6 class="alert-heading mb-2">
-                                    <i class="bi bi-info-circle"></i> Você ainda não possui uma reserva para esta sessão
-                                </h6>
-                                <p class="mb-0">
-                                    Há <strong>{{ sessao.vagas_disponiveis }}</strong> vagas disponíveis de {{ sessao.capacidade_total }}.
-                                </p>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <a href="{% url 'didacta:reservation_create' sessao.pk %}" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-calendar-plus"></i> Fazer Reserva
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% elif not sessao.ativo %}
-                    <div class="alert alert-warning">
-                        <p class="mb-0">
-                            <i class="bi bi-exclamation-triangle"></i> 
-                            Esta sessão está inativa e não está disponível para reservas.
-                        </p>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-danger">
-                        <p class="mb-0">
-                            <i class="bi bi-exclamation-triangle"></i> 
-                            Esta sessão está lotada. Não há vagas disponíveis no momento.
-                        </p>
-                    </div>
-                    {% endif %}
-                {% else %}
-                <div class="alert alert-info">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h6 class="alert-heading mb-2">
-                                <i class="bi bi-box-arrow-in-right"></i> Faça login para fazer uma reserva
-                            </h6>
-                            <p class="mb-0">Você precisa estar logado para reservar uma vaga nesta sessão.</p>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <a href="{% url 'didacta:login' %}" class="btn btn-primary btn-lg">
-                                <i class="bi bi-box-arrow-in-right"></i> Fazer Login
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex gap-2">
-            <a href="{% url 'didacta:film_detail' sessao.filme.pk %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Voltar para o Filme
-            </a>
+        <div class="dv-form-actions" style="margin-top:18px; justify-content:flex-start;">
             {% if user.is_authenticated %}
-            <a href="{% url 'didacta:reservation_list' %}" class="btn btn-outline-primary">
-                <i class="bi bi-list"></i> Minhas Reservas
+                {% if reserva_usuario %}
+                <a href="{% url 'didacta:reservation_cancel' reserva_usuario.pk %}" class="dv-btn ghost">
+                    <i class="bi bi-x-circle"></i> Cancelar reserva
+                </a>
+                {% elif sessao.tem_vagas and sessao.ativo %}
+                <a href="{% url 'didacta:reservation_create' sessao.pk %}" class="dv-btn primary">
+                    <i class="bi bi-calendar-plus"></i> Reservar vaga
+                </a>
+                {% else %}
+                <span class="dv-status danger">Indisponível</span>
+                {% endif %}
+            {% else %}
+            <a href="{% url 'didacta:login' %}" class="dv-btn primary">
+                <i class="bi bi-box-arrow-in-right"></i> Fazer login
             </a>
             {% endif %}
         </div>
+    </article>
+
+    <div class="dv-detail-grid" style="margin-top:32px;">
+        <article class="dv-panel">
+            <h3>Sobre o filme</h3>
+            {% if sessao.filme.sinopse %}
+            <p class="text-muted" style="margin-top:12px;">{{ sessao.filme.sinopse }}</p>
+            {% else %}
+            <p class="text-muted" style="margin-top:12px;">Sinopse não informada.</p>
+            {% endif %}
+        </article>
+        {% if sessao.filme.cartaz %}
+        <article class="dv-panel">
+            <div class="dv-poster-frame">
+                <img src="{{ sessao.filme.cartaz.url }}" alt="{{ sessao.filme.titulo }}">
+            </div>
+        </article>
+        {% elif sessao.filme.cartaz_url %}
+        <article class="dv-panel">
+            <div class="dv-poster-frame">
+                <img src="{{ sessao.filme.cartaz_url }}" alt="{{ sessao.filme.titulo }}">
+            </div>
+        </article>
+        {% endif %}
     </div>
-</div>
+
+    <article class="dv-card-wide" style="margin-top:32px;">
+        <h3><i class="bi bi-ticket-perforated"></i> Minha reserva</h3>
+        <div style="margin-top:18px;">
+            {% if user.is_authenticated %}
+                {% if reserva_usuario %}
+                <div class="dv-panel" style="background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.25);">
+                    <div class="dv-toolbar">
+                        <div>
+                            <strong>Reserva confirmada</strong>
+                            <p class="text-muted" style="margin-top:6px;">
+                                Status:
+                                <span class="dv-status
+                                    {% if reserva_usuario.status == 'presente' %}success
+                                    {% elif reserva_usuario.status == 'reservado' %}neutral
+                                    {% elif reserva_usuario.status == 'falta_justificada' %}warning
+                                    {% else %}danger{% endif %}">
+                                    {{ reserva_usuario.get_status_display }}
+                                </span>
+                            </p>
+                            {% if reserva_usuario.created_at %}
+                            <small class="text-muted">Reserva realizada em {{ reserva_usuario.created_at|date:'d/m/Y H:i' }}</small>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'didacta:reservation_cancel' reserva_usuario.pk %}" class="dv-btn ghost">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </div>
+                {% elif sessao.tem_vagas and sessao.ativo %}
+                <div class="dv-panel" style="background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.25);">
+                    <div class="dv-toolbar">
+                        <div>
+                            <strong>Vagas disponíveis</strong>
+                            <p class="text-muted" style="margin-top:6px;">Restam {{ sessao.vagas_disponiveis }} de {{ sessao.capacidade_total }} lugares.</p>
+                        </div>
+                        <a href="{% url 'didacta:reservation_create' sessao.pk %}" class="dv-btn primary">
+                            <i class="bi bi-calendar-plus"></i> Reservar agora
+                        </a>
+                    </div>
+                </div>
+                {% elif not sessao.ativo %}
+                <div class="dv-panel" style="background:rgba(251,191,36,0.08); border-color:rgba(251,191,36,0.25);">
+                    <strong>Sessão inativa</strong>
+                    <p class="text-muted" style="margin-top:6px;">Esta sessão não está aceitando reservas.</p>
+                </div>
+                {% else %}
+                <div class="dv-panel" style="background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.25);">
+                    <strong>Sessão lotada</strong>
+                    <p class="text-muted" style="margin-top:6px;">Todas as vagas foram preenchidas.</p>
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="dv-panel">
+                <div class="dv-toolbar">
+                    <div>
+                        <strong>Faça login para reservar</strong>
+                        <p class="text-muted" style="margin-top:6px;">É necessário estar autenticado para confirmar presença.</p>
+                    </div>
+                    <a href="{% url 'didacta:login' %}" class="dv-btn primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </article>
+
+    <div class="dv-form-actions" style="margin-top:32px; justify-content:flex-start;">
+        <a href="{% url 'didacta:film_detail' sessao.filme.pk %}" class="dv-btn ghost">
+            <i class="bi bi-arrow-left"></i> Voltar ao filme
+        </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'didacta:reservation_list' %}" class="dv-btn ghost">
+            <i class="bi bi-list"></i> Minhas reservas
+        </a>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

@@ -3,33 +3,29 @@
 {% block title %}Deletar Sessão - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow border-danger">
-            <div class="card-body p-5 text-center">
-                <h2 class="mb-4 text-danger">
-                    <i class="bi bi-exclamation-triangle"></i> Deletar Sessão
-                </h2>
-                
-                <div class="alert alert-danger mb-4">
-                    <h5>{{ object.filme.titulo }}</h5>
-                    <p class="mb-1"><strong>Data e Hora:</strong> {{ object.data_hora|date:'d/m/Y H:i' }}</p>
-                    <p class="mb-0">Tem certeza que deseja deletar esta sessão? Todos os participantes serão notificados.</p>
-                </div>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-                        <a href="{% url 'didacta:session_list_admin' %}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-trash"></i> Sim, deletar
-                        </button>
-                    </div>
-                </form>
-            </div>
+<section class="dv-section">
+    <div class="dv-dialog">
+        <div class="dv-dialog__icon" style="background:rgba(239,68,68,0.2);color:#f87171;">
+            <i class="bi bi-exclamation-triangle"></i>
         </div>
+        <h2>Remover sessão?</h2>
+        <p class="text-muted">Participantes serão notificados e as reservas existentes serão impactadas.</p>
+
+        <div class="dv-card-wide" style="margin-top:18px;">
+            <strong>{{ object.filme.titulo }}</strong>
+            <p class="text-muted">Data e hora: {{ object.data_hora|date:'d/m/Y H:i' }}</p>
+            <p class="text-muted">Local: {{ object.local }}</p>
+        </div>
+
+        <form method="post" class="dv-dialog__actions">
+            {% csrf_token %}
+            <a href="{% url 'didacta:session_list_admin' %}" class="dv-btn ghost">Cancelar</a>
+            <button type="submit" class="dv-btn primary">
+                <i class="bi bi-trash"></i> Sim, deletar
+            </button>
+        </form>
     </div>
-</div>
+</section>
 {% endblock %}
 
 

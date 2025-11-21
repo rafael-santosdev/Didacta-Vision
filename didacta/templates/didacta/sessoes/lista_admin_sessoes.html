@@ -3,90 +3,87 @@
 {% block title %}Administração - Sessões{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>
-        <i class="bi bi-calendar-event"></i> Gerenciar Sessões
-    </h2>
-    <a href="{% url 'didacta:session_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Nova Sessão
-    </a>
-</div>
+<section class="dv-section">
+    <div class="dv-toolbar">
+        <div>
+            <span class="dv-badge">Administração</span>
+            <h1 class="dv-section__title">Gerenciar sessões</h1>
+            <p class="text-muted" style="margin-top:6px;">Controle reservas, locais e status das próximas exibições.</p>
+        </div>
+        <a href="{% url 'didacta:session_create' %}" class="dv-btn primary">
+            <i class="bi bi-plus-circle"></i> Nova sessão
+        </a>
+    </div>
 
-{% if page_obj %}
-<div class="table-responsive">
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Filme</th>
-                <th>Data e Hora</th>
-                <th>Local</th>
-                <th>Capacidade</th>
-                <th>Vagas</th>
-                <th>Status</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for sessao in page_obj %}
-            <tr>
-                <td><strong>{{ sessao.filme.titulo }}</strong></td>
-                <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
-                <td>{{ sessao.local }}</td>
-                <td>{{ sessao.capacidade_total }}</td>
-                <td>
-                    <span class="badge bg-{% if sessao.vagas_disponiveis > 0 %}success{% else %}danger{% endif %}">
-                        {{ sessao.vagas_disponiveis }}
-                    </span>
-                </td>
-                <td>
-                    <span class="badge bg-{% if sessao.ativo %}success{% else %}secondary{% endif %}">
-                        {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
-                    </span>
-                </td>
-                <td>
-                    <a href="{% url 'didacta:session_detail_admin' sessao.pk %}" class="btn btn-sm btn-outline-info">
-                        <i class="bi bi-eye"></i>
-                    </a>
-                    <a href="{% url 'didacta:session_update' sessao.pk %}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <a href="{% url 'didacta:session_delete' sessao.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?')">
-                        <i class="bi bi-trash"></i>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+    {% if page_obj %}
+    <div class="dv-table-wrapper">
+        <table class="dv-table">
+            <thead>
+                <tr>
+                    <th>Filme</th>
+                    <th>Data e hora</th>
+                    <th>Local</th>
+                    <th>Capacidade</th>
+                    <th>Vagas</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sessao in page_obj %}
+                <tr>
+                    <td><strong>{{ sessao.filme.titulo }}</strong></td>
+                    <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
+                    <td>{{ sessao.local }}</td>
+                    <td>{{ sessao.capacidade_total }}</td>
+                    <td>
+                        <span class="dv-status {% if sessao.vagas_disponiveis > 0 %}success{% else %}danger{% endif %}">
+                            {{ sessao.vagas_disponiveis }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="dv-status {% if sessao.ativo %}success{% else %}neutral{% endif %}">
+                            {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
+                        </span>
+                    </td>
+                    <td style="text-align:right;">
+                        <div class="dv-form-actions" style="justify-content:flex-end;">
+                            <a href="{% url 'didacta:session_detail_admin' sessao.pk %}" class="dv-btn ghost sm">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a href="{% url 'didacta:session_update' sessao.pk %}" class="dv-btn ghost sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a href="{% url 'didacta:session_delete' sessao.pk %}" class="dv-btn ghost sm" onclick="return confirm('Tem certeza?')">
+                                <i class="bi bi-trash"></i> Excluir
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<!-- Paginação -->
-{% if page_obj.has_other_pages %}
-<nav aria-label="Paginação">
-    <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
-        </li>
-        {% endif %}
-        <li class="page-item active">
-            <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-        </li>
-        {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
-
-{% else %}
-<div class="alert alert-info">
-    <i class="bi bi-info-circle"></i> Nenhuma sessão cadastrada.
-</div>
-{% endif %}
+    {% if page_obj.has_other_pages %}
+    <div class="dv-section" aria-label="Paginação">
+        <div class="dv-hero__actions" style="justify-content:center;">
+            {% if page_obj.has_previous %}
+            <a class="dv-btn ghost" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+            {% endif %}
+            <span class="dv-btn ghost">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a class="dv-btn ghost" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="dv-empty">
+        <h3>Nenhuma sessão cadastrada</h3>
+        <p class="text-muted">Adicione uma nova exibição para liberar reservas.</p>
+        <a href="{% url 'didacta:session_create' %}" class="dv-btn primary">Criar sessão</a>
+    </div>
+    {% endif %}
+</section>
 {% endblock %}
-
-
-

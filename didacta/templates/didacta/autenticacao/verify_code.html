@@ -3,48 +3,40 @@
 {% block title %}Verificar Código - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
-            <div class="card-body p-5">
-                <h2 class="text-center mb-4">
-                    <i class="bi bi-shield-check"></i> Verificação de Email
-                </h2>
-                
-                <div class="alert alert-info mb-4">
-                    <i class="bi bi-info-circle"></i> 
-                    Um código de verificação foi enviado para <strong>{{ user.email }}</strong>.
-                    Por favor, verifique sua caixa de entrada e digite o código abaixo.
-                </div>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="codigo" class="form-label">Código de Verificação</label>
-                        <input type="text" class="form-control text-center" id="codigo" name="codigo" 
-                               maxlength="6" pattern="[0-9]{6}" required 
-                               placeholder="000000" style="font-size: 1.5rem; letter-spacing: 0.5rem;">
-                        <small class="form-text text-muted">Digite o código de 6 dígitos enviado para seu email</small>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-check-circle"></i> Verificar e Entrar
-                        </button>
-                    </div>
-                </form>
-                
-                <hr class="my-4">
-                
-                <div class="text-center">
-                    <p class="mb-2">Não recebeu o código?</p>
-                    <a href="{% url 'didacta:login' %}" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-arrow-left"></i> Voltar ao Login
-                    </a>
-                </div>
+<section class="dv-section">
+    <div class="dv-form-card">
+        <h2><i class="bi bi-shield-check"></i> Verificação de Email</h2>
+        
+        <div class="dv-panel" style="background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.25); margin-bottom:24px;">
+            <i class="bi bi-info-circle"></i> 
+            Um código de verificação foi enviado para <strong>{{ user.email }}</strong>.
+            Por favor, verifique sua caixa de entrada e digite o código abaixo.
+        </div>
+        
+        <form method="post" class="dv-form">
+            {% csrf_token %}
+            <div class="dv-form-group">
+                <label for="codigo">Código de Verificação</label>
+                <input type="text" id="codigo" name="codigo" 
+                       maxlength="6" pattern="[0-9]{6}" required 
+                       placeholder="000000" style="font-size: 1.5rem; letter-spacing: 0.5rem; text-align:center;">
+                <small class="text-muted">Digite o código de 6 dígitos enviado para seu email</small>
             </div>
+            <div class="dv-form-actions">
+                <button type="submit" class="dv-btn primary">
+                    <i class="bi bi-check-circle"></i> Verificar e Entrar
+                </button>
+            </div>
+        </form>
+        
+        <div style="margin-top:24px; text-align:center;">
+            <p class="text-muted" style="margin-bottom:12px;">Não recebeu o código?</p>
+            <a href="{% url 'didacta:login' %}" class="dv-btn ghost">
+                <i class="bi bi-arrow-left"></i> Voltar ao Login
+            </a>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}
 
 {% block extra_js %}

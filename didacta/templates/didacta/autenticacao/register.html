@@ -3,108 +3,98 @@
 {% block title %}Cadastro - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow">
-            <div class="card-body p-5">
-                <h2 class="text-center mb-4">
-                    <i class="bi bi-person-plus"></i> Criar Conta
-                </h2>
-                
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.nome_completo.id_for_label }}" class="form-label">Nome de Usuário *</label>
-                        {{ form.nome_completo }}
-                        {% if form.nome_completo.errors %}
-                        <div class="text-danger small">{{ form.nome_completo.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">Email *</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                        <div class="text-danger small">{{ form.email.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.telefone.id_for_label }}" class="form-label">Telefone</label>
-                            {{ form.telefone }}
-                            {% if form.telefone.errors %}
-                            <div class="text-danger small">{{ form.telefone.errors }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.data_nascimento.id_for_label }}" class="form-label">Data de Nascimento</label>
-                            {{ form.data_nascimento }}
-                            {% if form.data_nascimento.errors %}
-                            <div class="text-danger small">{{ form.data_nascimento.errors }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.tipo_usuario.id_for_label }}" class="form-label">Tipo de Usuário</label>
-                        {{ form.tipo_usuario }}
-                        {% if form.tipo_usuario.errors %}
-                        <div class="text-danger small">{{ form.tipo_usuario.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.password1.id_for_label }}" class="form-label">Senha *</label>
-                            <div class="input-group">
-                                {{ form.password1 }}
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword1">
-                                    <i class="bi bi-eye" id="eyeIcon1"></i>
-                                </button>
-                            </div>
-                            <div id="passwordRequirements" class="mt-2 p-3 bg-light rounded" style="display: none;">
-                                <small class="text-muted">
-                                    <strong>Condições para a senha:</strong><br>
-                                    • Mínimo de 8 caracteres<br>
-                                    • Pelo menos uma letra
-                                </small>
-                            </div>
-                            {% if form.password1.errors %}
-                            <div class="text-danger small">{{ form.password1.errors }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirmar Senha *</label>
-                            <div class="input-group">
-                                {{ form.password2 }}
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword2">
-                                    <i class="bi bi-eye" id="eyeIcon2"></i>
-                                </button>
-                            </div>
-                            {% if form.password2.errors %}
-                            <div class="text-danger small">{{ form.password2.errors }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-person-plus"></i> Cadastrar
-                        </button>
-                    </div>
-                </form>
-                
-                <hr class="my-4">
-                
-                <div class="text-center">
-                    <p class="mb-0">Já tem uma conta? <a href="{% url 'didacta:login' %}">Faça login</a></p>
+<section class="dv-section">
+    <div class="dv-form-card">
+        <h2><i class="bi bi-person-plus"></i> Criar Conta</h2>
+        
+        <form method="post" enctype="multipart/form-data" class="dv-form">
+            {% csrf_token %}
+            
+            <div class="dv-form-group">
+                <label for="{{ form.nome_completo.id_for_label }}">Nome de Usuário *</label>
+                {{ form.nome_completo }}
+                {% if form.nome_completo.errors %}
+                <span class="dv-status danger">{{ form.nome_completo.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="dv-form-group">
+                <label for="{{ form.email.id_for_label }}">Email *</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <span class="dv-status danger">{{ form.email.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="dv-form-row">
+                <div class="dv-form-group">
+                    <label for="{{ form.telefone.id_for_label }}">Telefone</label>
+                    {{ form.telefone }}
+                    {% if form.telefone.errors %}
+                    <span class="dv-status danger">{{ form.telefone.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                <div class="dv-form-group">
+                    <label for="{{ form.data_nascimento.id_for_label }}">Data de Nascimento</label>
+                    {{ form.data_nascimento }}
+                    {% if form.data_nascimento.errors %}
+                    <span class="dv-status danger">{{ form.data_nascimento.errors.0 }}</span>
+                    {% endif %}
                 </div>
             </div>
+            
+            <div class="dv-form-group">
+                <label for="{{ form.tipo_usuario.id_for_label }}">Tipo de Usuário</label>
+                {{ form.tipo_usuario }}
+                {% if form.tipo_usuario.errors %}
+                <span class="dv-status danger">{{ form.tipo_usuario.errors.0 }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="dv-form-row">
+                <div class="dv-form-group">
+                    <label for="{{ form.password1.id_for_label }}">Senha *</label>
+                    <div class="dv-input-group">
+                        {{ form.password1 }}
+                        <button class="dv-btn-icon" type="button" id="togglePassword1" aria-label="Mostrar senha">
+                            <i class="bi bi-eye" id="eyeIcon1"></i>
+                        </button>
+                    </div>
+                    <div id="passwordRequirements" class="dv-form-hint" style="display: none;">
+                        <strong>Condições para a senha:</strong><br>
+                        • Mínimo de 8 caracteres<br>
+                        • Pelo menos uma letra
+                    </div>
+                    {% if form.password1.errors %}
+                    <span class="dv-status danger">{{ form.password1.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                <div class="dv-form-group">
+                    <label for="{{ form.password2.id_for_label }}">Confirmar Senha *</label>
+                    <div class="dv-input-group">
+                        {{ form.password2 }}
+                        <button class="dv-btn-icon" type="button" id="togglePassword2" aria-label="Mostrar senha">
+                            <i class="bi bi-eye" id="eyeIcon2"></i>
+                        </button>
+                    </div>
+                    {% if form.password2.errors %}
+                    <span class="dv-status danger">{{ form.password2.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="dv-form-actions">
+                <button type="submit" class="dv-btn primary">
+                    <i class="bi bi-person-plus"></i> Cadastrar
+                </button>
+            </div>
+        </form>
+        
+        <div style="margin-top:24px; text-align:center;">
+            <p class="text-muted">Já tem uma conta? <a href="{% url 'didacta:login' %}">Faça login</a></p>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}
 
 {% block extra_js %}

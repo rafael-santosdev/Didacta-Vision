@@ -3,34 +3,28 @@
 {% block title %}Excluir Conta - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow border-danger">
-            <div class="card-body p-5 text-center">
-                <h2 class="mb-4 text-danger">
-                    <i class="bi bi-exclamation-triangle"></i> Excluir Conta
-                </h2>
-                
-                <div class="alert alert-danger mb-4">
-                    <h5>Atenção!</h5>
-                    <p class="mb-0">Esta ação irá desativar sua conta permanentemente. Você não poderá mais acessar o sistema com esta conta.</p>
-                </div>
-                
-                <p class="lead">Tem certeza que deseja excluir sua conta?</p>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-                        <a href="{% url 'didacta:profile' %}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-trash"></i> Sim, excluir conta
-                        </button>
-                    </div>
-                </form>
-            </div>
+<section class="dv-section">
+    <div class="dv-dialog">
+        <div class="dv-dialog__icon" style="background:rgba(239,68,68,0.2);color:#f87171;">
+            <i class="bi bi-person-dash"></i>
         </div>
+        <h2>Deseja excluir sua conta?</h2>
+        <p class="text-muted">Sua conta será desativada e você perderá o acesso às reservas, histórico e ao fórum.</p>
+
+        <div class="dv-card-wide" style="margin-top:18px;">
+            <h4>Atenção</h4>
+            <p class="text-muted">Esta ação não pode ser desfeita. Caso queira utilizar o Didacta Vision novamente, será necessário criar um novo cadastro.</p>
+        </div>
+
+        <form method="post" class="dv-dialog__actions">
+            {% csrf_token %}
+            <a href="{% url 'didacta:profile' %}" class="dv-btn ghost">Manter conta</a>
+            <button type="submit" class="dv-btn primary">
+                <i class="bi bi-trash"></i> Sim, excluir
+            </button>
+        </form>
     </div>
-</div>
+</section>
 {% endblock %}
 
 

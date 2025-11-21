@@ -1,49 +1,47 @@
 {% extends "didacta/base.html" %}
 {% load static %}
-{% block title %}Início{% endblock title %}
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
-{% endblock %}
+
+{% block title %}Bem-vindo - Didacta Vision{% endblock title %}
+
 {% block content %}
-<main class="page">
-  <section class="hero" aria-label="Seção inicial Didacta Vision">
-    <div class="hero-grid">
-      <div>
-        <!-- dentro de .hero-grid -->
-
-          <!-- ícone de filme -->
-            <rect x="3" y="4" width="18" height="16" rx="3" ry="3" stroke="currentColor" stroke-width="1.6"/>
-            <circle cx="8" cy="8" r="1.4" fill="currentColor"/>
-            <circle cx="8" cy="12" r="1.4" fill="currentColor"/>
-            <circle cx="8" cy="16" r="1.4" fill="currentColor"/>
-            <rect x="11.5" y="7.2"  width="7.5" height="1.6" rx="0.8" fill="currentColor" opacity=".9"/>
-            <rect x="11.5" y="11.2" width="7.5" height="1.6" rx="0.8" fill="currentColor" opacity=".9"/>
-            <rect x="11.5" y="15.2" width="7.5" height="1.6" rx="0.8" fill="currentColor" opacity=".9"/>
-
-        <h1 class="title">
-          <span class="t-strong">Didacta</span>
-          <span class="t-contrast">Vision</span>
-        </h1> 
-
-        <p class="subtitle">Lançando luz sobre a ciência por trás dos filmes</p>
-        <p class="lead">
-          Um projeto que aproxima a comunidade escolar do universo científico através do cinema,
-          criando um ambiente descontraído e favorável à reflexão e aprendizagem.
-        </p>
-
-        <div class="actions" role="group" aria-label="Ações principais">
-          {# troque as URLs abaixo pelos seus nomes de rota, se tiver #}
-        
-      <!-- Bloco decorativo (troque a imagem em static/img/rolos-cinema.jpg) -->
-      <div class="poster" aria-hidden="true"></div>
-      <div class="actions" role="group" aria-label="Ações principais">
-        <a href="#" class="btn btn-primary"><span aria-hidden="true">✦</span> Explorar Filmes</a>
-        <a href="#" class="btn btn-ghost">Sobre o Projeto</a>
-</div>
+<section class="dv-section">
+    <div class="dv-hero">
+        <div class="dv-hero__media">
+            <img class="dv-hero__image" src="{% static 'css/img/fundo.jpg' %}" alt="Cenas de cinema">
+            <div class="dv-hero__overlay"></div>
+        </div>
+        <div class="dv-hero__content">
+            <span class="dv-badge">Aprendizado + Cinema</span>
+            <h1 class="dv-hero__title">Experiências imersivas para estudar ciência</h1>
+            <p class="dv-hero__lead">
+                Reserve sessões, registre presença, participe do fórum e acompanhe notificações em uma única plataforma pensada para escolas.
+            </p>
+            <div class="dv-hero__actions">
+                <a href="{% url 'didacta:index' %}" class="dv-btn primary">
+                    <i class="bi bi-film"></i> Explorar filmes
+                </a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'didacta:reservation_list' %}" class="dv-btn ghost">
+                    <i class="bi bi-calendar-check"></i> Minhas reservas
+                </a>
+                {% else %}
+                <a href="{% url 'didacta:login' %}" class="dv-btn ghost">
+                    <i class="bi bi-box-arrow-in-right"></i> Entrar
+                </a>
+                {% endif %}
+            </div>
+        </div>
     </div>
-  </section>
-</main>
-<footer>
-  © Copyright 2025 Didacta Vision
-</footer>
+
+    <div class="dv-grid" style="margin-top:42px;">
+        <article class="dv-card-wide">
+            <h3>Planejado para qualquer tela</h3>
+            <p class="text-muted">A navegação se adapta automaticamente a celulares, tablets e desktops, garantindo acesso rápido às informações mais importantes.</p>
+        </article>
+        <article class="dv-card-wide">
+            <h3>Comunidade conectada</h3>
+            <p class="text-muted">Professores e estudantes interagem no fórum, recebem notificações e se organizam com reservas em tempo real.</p>
+        </article>
+    </div>
+</section>
 {% endblock content %}

@@ -3,29 +3,36 @@
 {% block title %}Detalhes da Sessão - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2>
-            <i class="bi bi-calendar-event"></i> Detalhes da Sessão
-        </h2>
-        <div class="card shadow mt-3">
-            <div class="card-body">
-                <h4>{{ sessao.filme.titulo }}</h4>
-                <p class="mb-1"><strong>Data e Hora:</strong> {{ sessao.data_hora|date:'d/m/Y H:i' }}</p>
-                <p class="mb-1"><strong>Local:</strong> {{ sessao.local }}</p>
-                <p class="mb-0"><strong>Vagas Disponíveis:</strong> {{ sessao.vagas_disponiveis }} / {{ sessao.capacidade_total }}</p>
-            </div>
+<section class="dv-section">
+    <div class="dv-toolbar">
+        <div>
+            <span class="dv-badge">Administração</span>
+            <h1 class="dv-section__title">Sessão de {{ sessao.filme.titulo }}</h1>
+            <p class="text-muted" style="margin-top:6px;">Visualize participantes e atualize presenças em tempo real.</p>
         </div>
+        <a href="{% url 'didacta:session_list_admin' %}" class="dv-btn ghost">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-12">
-        <h3 class="mb-3">Participantes</h3>
-        
+    <article class="dv-card-wide">
+        <div class="dv-meta" style="margin-bottom:12px;">
+            <span><i class="bi bi-calendar3"></i> {{ sessao.data_hora|date:'d/m/Y H:i' }}</span>
+            <span><i class="bi bi-geo-alt"></i> {{ sessao.local }}</span>
+            <span>{{ sessao.vagas_disponiveis }} / {{ sessao.capacidade_total }} vagas</span>
+        </div>
+        <p class="text-muted mb-0">Status: <strong>{% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}</strong></p>
+    </article>
+
+    <div class="dv-section" style="margin-top:32px;">
+        <div class="dv-toolbar">
+            <h2 class="dv-section__title" style="margin:0;">Participantes</h2>
+            <span class="text-muted">{{ reservas|length }} registros</span>
+        </div>
+
         {% if reservas %}
-        <div class="table-responsive">
-            <table class="table table-hover">
+        <div class="dv-table-wrapper">
+            <table class="dv-table">
                 <thead>
                     <tr>
                         <th>Usuário</th>
@@ -40,21 +47,27 @@
                         <td>{% if reserva.usuario %}{{ reserva.usuario.nome_completo }}{% else %}Usuário removido{% endif %}</td>
                         <td>{% if reserva.usuario %}{{ reserva.usuario.email }}{% else %}-{% endif %}</td>
                         <td>
-                            <span class="badge bg-{% if reserva.status == 'presente' %}success{% elif reserva.status == 'reservado' %}primary{% elif reserva.status == 'falta_justificada' %}warning{% else %}danger{% endif %}">
+                            <span class="dv-status
+                                {% if reserva.status == 'presente' %}success
+                                {% elif reserva.status == 'reservado' %}neutral
+                                {% elif reserva.status == 'falta_justificada' %}warning
+                                {% else %}danger{% endif %}">
                                 {{ reserva.get_status_display }}
                             </span>
                         </td>
                         <td>
                             {% if reserva.status != 'cancelado' %}
-                            <form method="post" action="{% url 'didacta:mark_presence' reserva.pk %}" class="d-inline">
+                            <form method="post" action="{% url 'didacta:mark_presence' reserva.pk %}" class="dv-inline-form">
                                 {% csrf_token %}
-                                <select name="status" class="form-select form-select-sm d-inline-block" style="width: auto;" onchange="this.form.submit()">
+                                <select name="status" onchange="this.form.submit()">
                                     <option value="reservado" {% if reserva.status == 'reservado' %}selected{% endif %}>Reservado</option>
                                     <option value="presente" {% if reserva.status == 'presente' %}selected{% endif %}>Presente</option>
                                     <option value="falta" {% if reserva.status == 'falta' %}selected{% endif %}>Falta</option>
-                                    <option value="falta_justificada" {% if reserva.status == 'falta_justificada' %}selected{% endif %}>Falta Justificada</option>
+                                    <option value="falta_justificada" {% if reserva.status == 'falta_justificada' %}selected{% endif %}>Falta justificada</option>
                                 </select>
                             </form>
+                            {% else %}
+                            <span class="text-muted">Cancelada</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -63,18 +76,12 @@
             </table>
         </div>
         {% else %}
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Nenhum participante registrado.
+        <div class="dv-empty">
+            <p class="mb-0">Nenhum participante registrado ainda.</p>
         </div>
         {% endif %}
-        
-        <div class="mt-4">
-            <a href="{% url 'didacta:session_list_admin' %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Voltar
-            </a>
-        </div>
     </div>
-</div>
+</section>
 {% endblock %}
 
 

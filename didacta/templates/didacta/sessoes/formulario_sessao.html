@@ -3,68 +3,66 @@
 {% block title %}{% if object %}Editar{% else %}Nova{% endif %} Sessão - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-body p-5">
-                <h2 class="mb-4">
-                    <i class="bi bi-calendar-event"></i> {% if object %}Editar{% else %}Nova{% endif %} Sessão
-                </h2>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.filme.id_for_label }}" class="form-label">Filme *</label>
-                        {{ form.filme }}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.data_hora.id_for_label }}" class="form-label">Data e Hora *</label>
-                        {{ form.data_hora }}
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.local.id_for_label }}" class="form-label">Local *</label>
-                            {{ form.local }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.capacidade_total.id_for_label }}" class="form-label">Capacidade Total *</label>
-                            {{ form.capacidade_total }}
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="form-check">
-                            {{ form.ativo }}
-                            <label class="form-check-label" for="{{ form.ativo.id_for_label }}">
-                                Ativa
-                            </label>
-                        </div>
-                    </div>
-                    
-                    {% if form.errors %}
-                    <div class="alert alert-danger">
-                        {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                        <p>{{ error }}</p>
-                        {% endfor %}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                        <a href="{% url 'didacta:session_list_admin' %}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Salvar
-                        </button>
-                    </div>
-                </form>
-            </div>
+<section class="dv-section">
+    <div class="dv-section__header">
+        <div>
+            <span class="dv-badge">Administração</span>
+            <h1 class="dv-section__title">{% if object %}Editar{% else %}Nova{% endif %} sessão</h1>
+            <p class="text-muted" style="margin-top:6px;">Cadastre horários, locais e capacidade para liberar reservas.</p>
         </div>
+        <a href="{% url 'didacta:session_list_admin' %}" class="dv-btn ghost">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
     </div>
-</div>
+
+    <div class="dv-form-card">
+        <form method="post" class="dv-form">
+            {% csrf_token %}
+            <div class="dv-form-group">
+                <label for="{{ form.filme.id_for_label }}">Filme *</label>
+                {{ form.filme }}
+            </div>
+            <div class="dv-form-group">
+                <label for="{{ form.data_hora.id_for_label }}">Data e hora *</label>
+                {{ form.data_hora }}
+            </div>
+            <div class="dv-form-grid two">
+                <div class="dv-form-group">
+                    <label for="{{ form.local.id_for_label }}">Local *</label>
+                    {{ form.local }}
+                </div>
+                <div class="dv-form-group">
+                    <label for="{{ form.capacidade_total.id_for_label }}">Capacidade total *</label>
+                    {{ form.capacidade_total }}
+                </div>
+                <div class="dv-form-group">
+                    <label class="text-muted" for="{{ form.ativo.id_for_label }}">Disponibilidade</label>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        {{ form.ativo }}
+                        <span>Ativa</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if form.errors %}
+            <div class="dv-status danger" style="flex-direction:column;display:flex;gap:4px;">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="dv-form-actions">
+                <a href="{% url 'didacta:session_list_admin' %}" class="dv-btn ghost">Cancelar</a>
+                <button type="submit" class="dv-btn primary">
+                    <i class="bi bi-check-circle"></i> Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
 {% endblock %}
 
 

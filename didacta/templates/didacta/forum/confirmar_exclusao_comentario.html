@@ -3,33 +3,27 @@
 {% block title %}Deletar Comentário - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow border-danger">
-            <div class="card-body p-5 text-center">
-                <h2 class="mb-4 text-danger">
-                    <i class="bi bi-exclamation-triangle"></i> Deletar Comentário
-                </h2>
-                
-                <div class="alert alert-danger mb-4">
-                    <p class="mb-0">{{ comentario.texto|truncatewords:20 }}</p>
-                </div>
-                
-                <p class="lead">Tem certeza que deseja deletar este comentário?</p>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-                        <a href="{% url 'didacta:film_detail' comentario.filme.pk %}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-trash"></i> Sim, deletar
-                        </button>
-                    </div>
-                </form>
-            </div>
+<section class="dv-section">
+    <div class="dv-dialog">
+        <div class="dv-dialog__icon" style="background:rgba(239,68,68,0.2);color:#f87171;">
+            <i class="bi bi-chat-x"></i>
         </div>
+        <h2>Excluir comentário?</h2>
+        <p class="text-muted">Esta resposta será removida imediatamente para todos os usuários.</p>
+
+        <div class="dv-card-wide" style="margin-top:18px;">
+            <p class="text-muted" style="margin:0;">{{ comentario.texto|truncatewords:20 }}</p>
+        </div>
+
+        <form method="post" class="dv-dialog__actions">
+            {% csrf_token %}
+            <a href="{% url 'didacta:film_detail' comentario.filme.pk %}" class="dv-btn ghost">Cancelar</a>
+            <button type="submit" class="dv-btn primary">
+                <i class="bi bi-trash"></i> Sim, deletar
+            </button>
+        </form>
     </div>
-</div>
+</section>
 {% endblock %}
 
 

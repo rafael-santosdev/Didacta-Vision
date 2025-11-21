@@ -3,72 +3,67 @@
 {% block title %}Ticket #{{ ticket.pk }} - Didacta Vision{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">{{ ticket.assunto }}</h4>
-                <span class="badge bg-{% if ticket.status == 'aberto' %}warning{% elif ticket.status == 'respondido' %}info{% else %}secondary{% endif %}">
-                    {{ ticket.get_status_display }}
-                </span>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-3">
-                    <strong>Usuário:</strong> {{ ticket.usuario.nome_completo|default:"Visitante" }}<br>
-                    <strong>Data:</strong> {{ ticket.created_at|date:'d/m/Y H:i' }}
-                </p>
-                <hr>
-                <h5>Mensagem:</h5>
-                <p>{{ ticket.mensagem|linebreaks }}</p>
-            </div>
+<section class="dv-section">
+    <div class="dv-detail-grid">
+        <div>
+            <article class="dv-card-wide">
+                <div class="dv-toolbar">
+                    <h2>{{ ticket.assunto }}</h2>
+                    <span class="dv-status {% if ticket.status == 'aberto' %}warning{% elif ticket.status == 'respondido' %}success{% else %}neutral{% endif %}">
+                        {{ ticket.get_status_display }}
+                    </span>
+                </div>
+                <div class="dv-meta" style="margin-top:16px;">
+                    <span><strong>Usuário:</strong> {{ ticket.usuario.nome_completo|default:"Visitante" }}</span>
+                    <span><strong>Data:</strong> {{ ticket.created_at|date:'d/m/Y H:i' }}</span>
+                </div>
+                <div style="margin-top:20px;">
+                    <h3 style="margin-bottom:12px;">Mensagem:</h3>
+                    <p>{{ ticket.mensagem|linebreaks }}</p>
+                </div>
+            </article>
+            
+            {% if ticket.resposta %}
+            <article class="dv-card-wide" style="margin-top:24px; background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.25);">
+                <h3 style="margin-bottom:12px;">Resposta</h3>
+                <p>{{ ticket.resposta|linebreaks }}</p>
+            </article>
+            {% endif %}
         </div>
         
-        {% if ticket.resposta %}
-        <div class="card shadow border-info">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Resposta</h5>
-            </div>
-            <div class="card-body">
-                <p>{{ ticket.resposta|linebreaks }}</p>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-    
-    {% if user.is_admin_or_professor %}
-    <div class="col-md-4">
-        <div class="card shadow">
-            <div class="card-body">
-                <h5>Responder Ticket</h5>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="resposta" class="form-label">Resposta</label>
-                        <textarea name="resposta" id="resposta" class="form-control" rows="5">{{ ticket.resposta|default:'' }}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="status" class="form-label">Status</label>
-                        <select name="status" id="status" class="form-select">
-                            <option value="aberto" {% if ticket.status == 'aberto' %}selected{% endif %}>Aberto</option>
-                            <option value="respondido" {% if ticket.status == 'respondido' %}selected{% endif %}>Respondido</option>
-                            <option value="fechado" {% if ticket.status == 'fechado' %}selected{% endif %}>Fechado</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">
+        {% if user.is_admin_or_professor %}
+        <article class="dv-panel">
+            <h3>Responder Ticket</h3>
+            <form method="post" class="dv-form" style="margin-top:18px;">
+                {% csrf_token %}
+                <div class="dv-form-group">
+                    <label for="resposta">Resposta</label>
+                    <textarea name="resposta" id="resposta" rows="5">{{ ticket.resposta|default:'' }}</textarea>
+                </div>
+                <div class="dv-form-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status">
+                        <option value="aberto" {% if ticket.status == 'aberto' %}selected{% endif %}>Aberto</option>
+                        <option value="respondido" {% if ticket.status == 'respondido' %}selected{% endif %}>Respondido</option>
+                        <option value="fechado" {% if ticket.status == 'fechado' %}selected{% endif %}>Fechado</option>
+                    </select>
+                </div>
+                <div class="dv-form-actions">
+                    <button type="submit" class="dv-btn primary">
                         <i class="bi bi-check-circle"></i> Salvar
                     </button>
-                </form>
-            </div>
-        </div>
+                </div>
+            </form>
+        </article>
+        {% endif %}
     </div>
-    {% endif %}
-</div>
 
-<div class="mt-4">
-    <a href="{% url 'didacta:help_ticket_list' %}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Voltar
-    </a>
-</div>
+    <div style="margin-top:32px;">
+        <a href="{% url 'didacta:help_ticket_list' %}" class="dv-btn ghost">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</section>
 {% endblock %}
 
 
