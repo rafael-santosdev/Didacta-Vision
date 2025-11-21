@@ -1,0 +1,49 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}Reservar Vaga - Didacta Vision{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h2 class="mb-4">
+                    <i class="bi bi-calendar-plus"></i> Reservar Vaga
+                </h2>
+                
+                <div class="alert alert-info mb-4">
+                    <h5>{{ sessao.filme.titulo }}</h5>
+                    <p class="mb-1"><strong>Data e Hora:</strong> {{ sessao.data_hora|date:"d/m/Y H:i" }}</p>
+                    <p class="mb-1"><strong>Local:</strong> {{ sessao.local }}</p>
+                    <p class="mb-0"><strong>Vagas Disponíveis:</strong> {{ sessao.vagas_disponiveis }} / {{ sessao.capacidade_total }}</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'didacta:film_detail' sessao.filme.pk %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Confirmar Reserva
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+

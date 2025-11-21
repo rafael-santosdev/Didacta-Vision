@@ -1,0 +1,48 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}Cancelar Reserva - Didacta Vision{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body p-5 text-center">
+                <h2 class="mb-4">
+                    <i class="bi bi-exclamation-triangle text-warning"></i> Cancelar Reserva
+                </h2>
+                
+                <div class="alert alert-warning mb-4">
+                    <h5>{{ reserva.sessao.filme.titulo }}</h5>
+                    <p class="mb-1"><strong>Data e Hora:</strong> {{ reserva.sessao.data_hora|date:"d/m/Y H:i" }}</p>
+                    <p class="mb-0"><strong>Local:</strong> {{ reserva.sessao.local }}</p>
+                </div>
+                
+                <p class="lead">Tem certeza que deseja cancelar esta reserva?</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.justificativa.label_tag }}
+                        {{ form.justificativa }}
+                        {% if form.justificativa.help_text %}
+                        <small class="form-text text-muted">{{ form.justificativa.help_text }}</small>
+                        {% endif %}
+                        {% if form.justificativa.errors %}
+                        <div class="text-danger small">{{ form.justificativa.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="{% url 'didacta:reservation_list' %}" class="btn btn-secondary">Não, manter reserva</a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle"></i> Sim, cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+

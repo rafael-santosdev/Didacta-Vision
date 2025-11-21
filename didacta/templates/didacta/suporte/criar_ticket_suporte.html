@@ -1,0 +1,51 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}Suporte - Didacta Vision{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h2 class="mb-4">
+                    <i class="bi bi-headset"></i> Solicitar Suporte
+                </h2>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.assunto.id_for_label }}" class="form-label">Assunto *</label>
+                        {{ form.assunto }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.mensagem.id_for_label }}" class="form-label">Mensagem *</label>
+                        {{ form.mensagem }}
+                    </div>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'didacta:index' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Enviar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+

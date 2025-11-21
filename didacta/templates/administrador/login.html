@@ -1,0 +1,30 @@
+{% extends "admin/login.html" %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    label[for="id_username"]::after {
+        content: "Nome:";
+    }
+    label[for="id_username"] {
+        font-size: 0;
+    }
+    label[for="id_username"]::before {
+        content: "Nome:";
+        font-size: 13px;
+    }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailLabel = document.querySelector('label[for="id_username"]');
+    if (emailLabel) {
+        emailLabel.textContent = 'Nome:';
+    }
+    
+    const usernameInput = document.getElementById('id_username');
+    if (usernameInput) {
+        usernameInput.placeholder = 'Digite seu nome completo ou email';
+    }
+});
+</script>
+{% endblock %}

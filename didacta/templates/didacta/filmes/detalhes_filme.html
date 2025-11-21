@@ -1,0 +1,227 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}{{ filme.titulo }} - Didacta Vision{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        {% if filme.cartaz %}
+        <img src="{{ filme.cartaz.url }}" class="img-fluid rounded shadow film-poster" alt="{{ filme.titulo }}">
+        {% elif filme.cartaz_url %}
+        <img src="{{ filme.cartaz_url }}" class="img-fluid rounded shadow film-poster" alt="{{ filme.titulo }}">
+        {% else %}
+        <div class="bg-secondary rounded shadow d-flex align-items-center justify-content-center" style="height: 400px;">
+            <i class="bi bi-image text-white" style="font-size: 5rem;"></i>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-8">
+        <h1 class="display-5 mb-3">{{ filme.titulo }}</h1>
+        
+        <div class="mb-3">
+            <span class="badge bg-primary badge-custom">{{ filme.get_classificacao_display }}</span>
+            {% if filme.genero %}
+            <span class="badge bg-secondary badge-custom">{{ filme.genero }}</span>
+            {% endif %}
+            <span class="badge bg-info badge-custom">{{ filme.duracao }} minutos</span>
+        </div>
+        
+        <h4 class="mt-4">Sinopse</h4>
+        <p class="text-muted">{{ filme.sinopse }}</p>
+        
+        {% if filme.trailer_url %}
+        <div class="mt-4">
+            <a href="{{ filme.trailer_url }}" target="_blank" class="btn btn-danger">
+                <i class="bi bi-play-circle"></i> Assistir Trailer
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<hr class="my-5">
+
+<!-- Sessão de Exibição -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="bi bi-calendar-event"></i> Sessão de Exibição
+                    </h2>
+                    {% if user.is_admin_or_professor %}
+                    <a href="{% url 'didacta:session_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Nova Sessão
+                    </a>
+                    {% endif %}
+                </div>
+                
+                {% if sessoes_futuras %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Filme</th>
+                                <th>Data e Hora</th>
+                                <th>Local</th>
+                                <th>Capacidade</th>
+                                <th>Vagas</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sessao in sessoes_futuras %}
+                            <tr>
+                                <td><strong>{{ sessao.filme.titulo }}</strong></td>
+                                <td>{{ sessao.data_hora|date:"d/m/Y H:i" }}</td>
+                                <td>{{ sessao.local }}</td>
+                                <td>{{ sessao.capacidade_total }}</td>
+                                <td>
+                                    <span class="badge bg-{% if sessao.vagas_disponiveis > 0 %}success{% else %}danger{% endif %}">
+                                        {{ sessao.vagas_disponiveis }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if sessao.ativo %}success{% else %}secondary{% endif %}">
+                                        {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user.is_admin_or_professor %}
+                                    <a href="{% url 'didacta:session_update' sessao.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'didacta:session_delete' sessao.pk %}" class="btn btn-sm btn-outline-danger ms-1" title="Deletar" onclick="return confirm('Tem certeza?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% else %}
+                                        {% if user.is_authenticated %}
+                                            {% for sessao_id, reserva in reservas_por_sessao.items %}
+                                                {% if sessao_id == sessao.id %}
+                                                    <a href="{% url 'didacta:reservation_cancel' reserva.pk %}" 
+                                                       class="btn btn-sm btn-danger" 
+                                                       onclick="return confirm('Tem certeza que deseja cancelar sua reserva?')"
+                                                       title="Cancelar Reserva">
+                                                        <i class="bi bi-x-circle"></i> Cancelar
+                                                    </a>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% if sessao.id not in reservas_por_sessao %}
+                                                {% if sessao.tem_vagas and sessao.ativo %}
+                                                    <a href="{% url 'didacta:reservation_create' sessao.pk %}" 
+                                                       class="btn btn-sm btn-primary"
+                                                       title="Reservar">
+                                                        <i class="bi bi-calendar-plus"></i> Reservar
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted">Indisponível</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% else %}
+                                            <a href="{% url 'didacta:login' %}" class="btn btn-sm btn-primary" title="Fazer Login">
+                                                <i class="bi bi-box-arrow-in-right"></i> Login
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Nenhuma sessão agendada no momento.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<!-- Fórum de Discussão -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h3 class="mb-4">
+            <i class="bi bi-chat-dots"></i> Fórum de Discussão
+        </h3>
+        
+        {% if user.is_authenticated and pode_comentar %}
+        <div class="mb-4">
+            <a href="{% url 'didacta:forum_comment_create' filme.pk %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Novo Comentário
+            </a>
+        </div>
+        {% elif user.is_authenticated %}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> Você precisa ter presença confirmada ou falta justificada em uma sessão deste filme para comentar.
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> <a href="{% url 'didacta:login' %}">Faça login</a> para participar do fórum.
+        </div>
+        {% endif %}
+        
+        {% if comentarios %}
+        <div class="list-group">
+            {% for comentario in comentarios %}
+            <div class="list-group-item mb-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                            <i class="bi bi-person-circle"></i> {{ comentario.usuario.nome_completo }}
+                            <span class="badge bg-{% if comentario.usuario.tipo_usuario == 'professor' %}primary{% elif comentario.usuario.tipo_usuario == 'aluno' %}success{% elif comentario.usuario.tipo_usuario == 'servidor' %}info{% elif comentario.usuario.tipo_usuario == 'admin' %}danger{% else %}secondary{% endif %} ms-2">
+                                {{ comentario.usuario.get_tipo_usuario_display }}
+                            </span>
+                            <small class="text-muted">- {{ comentario.created_at|date:"d/m/Y H:i" }}</small>
+                        </h6>
+                        <p class="mb-2">{{ comentario.texto }}</p>
+                        {% if user.is_authenticated and pode_comentar %}
+                        <a href="{% url 'didacta:forum_comment_create' filme.pk %}?parent={{ comentario.pk }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-reply"></i> Responder
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% if user.is_admin_or_professor or comentario.usuario == user %}
+                    <a href="{% url 'didacta:forum_comment_delete' comentario.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja deletar este comentário?')">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Respostas -->
+                {% if comentario.replies.all %}
+                <div class="ms-4 mt-3">
+                    {% for resposta in comentario.replies.all %}
+                    <div class="list-group-item bg-light mb-2">
+                        <h6 class="mb-1">
+                            <i class="bi bi-person-circle"></i> {{ resposta.usuario.nome_completo }}
+                            <span class="badge bg-{% if resposta.usuario.tipo_usuario == 'professor' %}primary{% elif resposta.usuario.tipo_usuario == 'aluno' %}success{% elif resposta.usuario.tipo_usuario == 'servidor' %}info{% elif resposta.usuario.tipo_usuario == 'admin' %}danger{% else %}secondary{% endif %} ms-2">
+                                {{ resposta.usuario.get_tipo_usuario_display }}
+                            </span>
+                            <small class="text-muted">- {{ resposta.created_at|date:"d/m/Y H:i" }}</small>
+                        </h6>
+                        <p class="mb-0">{{ resposta.texto }}</p>
+                        {% if user.is_admin_or_professor or resposta.usuario == user %}
+                        <a href="{% url 'didacta:forum_comment_delete' resposta.pk %}" class="btn btn-sm btn-outline-danger mt-2" onclick="return confirm('Tem certeza?')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+

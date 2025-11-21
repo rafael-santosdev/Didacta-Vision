@@ -1,0 +1,75 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}Ticket #{{ ticket.pk }} - Didacta Vision{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ ticket.assunto }}</h4>
+                <span class="badge bg-{% if ticket.status == 'aberto' %}warning{% elif ticket.status == 'respondido' %}info{% else %}secondary{% endif %}">
+                    {{ ticket.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    <strong>Usuário:</strong> {{ ticket.usuario.nome_completo|default:"Visitante" }}<br>
+                    <strong>Data:</strong> {{ ticket.created_at|date:"d/m/Y H:i" }}
+                </p>
+                <hr>
+                <h5>Mensagem:</h5>
+                <p>{{ ticket.mensagem|linebreaks }}</p>
+            </div>
+        </div>
+        
+        {% if ticket.resposta %}
+        <div class="card shadow border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Resposta</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ ticket.resposta|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if user.is_admin_or_professor %}
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5>Responder Ticket</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="resposta" class="form-label">Resposta</label>
+                        <textarea name="resposta" id="resposta" class="form-control" rows="5">{{ ticket.resposta|default:'' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="aberto" {% if ticket.status == 'aberto' %}selected{% endif %}>Aberto</option>
+                            <option value="respondido" {% if ticket.status == 'respondido' %}selected{% endif %}>Respondido</option>
+                            <option value="fechado" {% if ticket.status == 'fechado' %}selected{% endif %}>Fechado</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check-circle"></i> Salvar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'didacta:help_ticket_list' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+{% endblock %}
+
+
+

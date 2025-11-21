@@ -1,0 +1,37 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}Excluir Conta - Didacta Vision{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow border-danger">
+            <div class="card-body p-5 text-center">
+                <h2 class="mb-4 text-danger">
+                    <i class="bi bi-exclamation-triangle"></i> Excluir Conta
+                </h2>
+                
+                <div class="alert alert-danger mb-4">
+                    <h5>Atenção!</h5>
+                    <p class="mb-0">Esta ação irá desativar sua conta permanentemente. Você não poderá mais acessar o sistema com esta conta.</p>
+                </div>
+                
+                <p class="lead">Tem certeza que deseja excluir sua conta?</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="{% url 'didacta:profile' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Sim, excluir conta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+

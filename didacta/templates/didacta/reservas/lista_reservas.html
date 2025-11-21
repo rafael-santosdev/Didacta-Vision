@@ -1,0 +1,96 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}Minhas Reservas - Didacta Vision{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">
+    <i class="bi bi-calendar-check"></i> Minhas Reservas
+</h2>
+
+<!-- Reservas Futuras -->
+{% if reservas_futuras %}
+<h4 class="mt-4 mb-3">Próximas Reservas</h4>
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Filme</th>
+                <th>Data e Hora</th>
+                <th>Local</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reserva in reservas_futuras %}
+            <tr>
+                <td>
+                    <strong>{{ reserva.sessao.filme.titulo }}</strong>
+                </td>
+                <td>{{ reserva.sessao.data_hora|date:"d/m/Y H:i" }}</td>
+                <td>{{ reserva.sessao.local }}</td>
+                <td>
+                    <span class="badge bg-{% if reserva.status == 'reservado' %}primary{% elif reserva.status == 'presente' %}success{% else %}secondary{% endif %}">
+                        {{ reserva.get_status_display }}
+                    </span>
+                    <span class="badge bg-dark rounded-pill ms-2" title="Nova ação">
+                        <i class="bi bi-three-dots"></i>
+                    </span>
+                </td>
+                <td>
+                    {% if reserva.status == 'reservado' %}
+                    <a href="{% url 'didacta:reservation_cancel' reserva.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Reservas Passadas -->
+{% if reservas_passadas %}
+<h4 class="mt-5 mb-3">Histórico</h4>
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Filme</th>
+                <th>Data e Hora</th>
+                <th>Local</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reserva in reservas_passadas %}
+            <tr>
+                <td>
+                    <strong>{{ reserva.sessao.filme.titulo }}</strong>
+                </td>
+                <td>{{ reserva.sessao.data_hora|date:"d/m/Y H:i" }}</td>
+                <td>{{ reserva.sessao.local }}</td>
+                <td>
+                    <span class="badge bg-{% if reserva.status == 'presente' %}success{% elif reserva.status == 'falta_justificada' %}warning{% else %}danger{% endif %}">
+                        {{ reserva.get_status_display }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if not reservas_futuras and not reservas_passadas %}
+<div class="alert alert-info text-center">
+    <i class="bi bi-info-circle"></i> Você ainda não possui reservas.
+    <a href="{% url 'didacta:index' %}" class="btn btn-primary mt-3">Ver Filmes Disponíveis</a>
+</div>
+{% endif %}
+{% endblock %}
+
+
+

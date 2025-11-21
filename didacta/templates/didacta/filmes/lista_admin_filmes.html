@@ -1,0 +1,86 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}Administração - Filmes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-film"></i> Gerenciar Filmes
+    </h2>
+    <a href="{% url 'didacta:film_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Novo Filme
+    </a>
+</div>
+
+{% if page_obj %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Classificação</th>
+                <th>Duração</th>
+                <th>Gênero</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for filme in page_obj %}
+            <tr>
+                <td><strong>{{ filme.titulo }}</strong></td>
+                <td>{{ filme.get_classificacao_display }}</td>
+                <td>{{ filme.duracao }} min</td>
+                <td>{{ filme.genero|default:"-" }}</td>
+                <td>
+                    <span class="badge bg-{% if filme.ativo %}success{% else %}secondary{% endif %}">
+                        {% if filme.ativo %}Ativo{% else %}Inativo{% endif %}
+                    </span>
+                </td>
+                <td>
+                    <a href="{% url 'didacta:film_detail' filme.pk %}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{% url 'didacta:film_update' filme.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'didacta:film_delete' filme.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?')">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Paginação -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Paginação">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        </li>
+        {% endif %}
+        <li class="page-item active">
+            <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        </li>
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> Nenhum filme cadastrado.
+</div>
+{% endif %}
+{% endblock %}
+
+
+

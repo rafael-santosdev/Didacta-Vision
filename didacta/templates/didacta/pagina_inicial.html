@@ -1,0 +1,86 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}Início - Didacta Vision{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4 mb-4">
+            <i class="bi bi-film"></i> Filmes em Cartaz
+        </h1>
+    </div>
+</div>
+
+<!-- Lista de Filmes -->
+{% if page_obj %}
+<div class="row">
+    {% for filme in page_obj %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            {% if filme.cartaz %}
+            <img src="{{ filme.cartaz.url }}" class="card-img-top" alt="{{ filme.titulo }}" style="height: 300px; object-fit: cover;">
+            {% elif filme.cartaz_url %}
+            <img src="{{ filme.cartaz_url }}" class="card-img-top" alt="{{ filme.titulo }}" style="height: 300px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                <i class="bi bi-image text-white" style="font-size: 4rem;"></i>
+            </div>
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ filme.titulo }}</h5>
+                <p class="card-text text-muted">{{ filme.sinopse|truncatewords:20 }}</p>
+                <div class="mb-2">
+                    <span class="badge bg-primary">{{ filme.get_classificacao_display }}</span>
+                    {% if filme.genero %}
+                    <span class="badge bg-secondary">{{ filme.genero }}</span>
+                    {% endif %}
+                    <span class="badge bg-info">{{ filme.duracao }} min</span>
+                </div>
+                <div class="mt-auto">
+                    <a href="{% url 'didacta:film_detail' filme.pk %}" class="btn btn-primary w-100">
+                        <i class="bi bi-info-circle"></i> Ver Detalhes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Paginação -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Paginação">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">Primeira</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item active">
+            <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        </li>
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info text-center">
+    <i class="bi bi-info-circle"></i> Nenhum filme encontrado.
+</div>
+{% endif %}
+{% endblock %}
+
+

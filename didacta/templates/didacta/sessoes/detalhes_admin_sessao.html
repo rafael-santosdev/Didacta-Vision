@@ -1,0 +1,80 @@
+{% extends 'didacta/base.html' %}
+
+{% block title %}Detalhes da Sessão - Didacta Vision{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>
+            <i class="bi bi-calendar-event"></i> Detalhes da Sessão
+        </h2>
+        <div class="card shadow mt-3">
+            <div class="card-body">
+                <h4>{{ sessao.filme.titulo }}</h4>
+                <p class="mb-1"><strong>Data e Hora:</strong> {{ sessao.data_hora|date:"d/m/Y H:i" }}</p>
+                <p class="mb-1"><strong>Local:</strong> {{ sessao.local }}</p>
+                <p class="mb-0"><strong>Vagas Disponíveis:</strong> {{ sessao.vagas_disponiveis }} / {{ sessao.capacidade_total }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-3">Participantes</h3>
+        
+        {% if reservas %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reserva in reservas %}
+                    <tr>
+                        <td>{% if reserva.usuario %}{{ reserva.usuario.nome_completo }}{% else %}Usuário removido{% endif %}</td>
+                        <td>{% if reserva.usuario %}{{ reserva.usuario.email }}{% else %}-{% endif %}</td>
+                        <td>
+                            <span class="badge bg-{% if reserva.status == 'presente' %}success{% elif reserva.status == 'reservado' %}primary{% elif reserva.status == 'falta_justificada' %}warning{% else %}danger{% endif %}">
+                                {{ reserva.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if reserva.status != 'cancelado' %}
+                            <form method="post" action="{% url 'didacta:mark_presence' reserva.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <select name="status" class="form-select form-select-sm d-inline-block" style="width: auto;" onchange="this.form.submit()">
+                                    <option value="reservado" {% if reserva.status == 'reservado' %}selected{% endif %}>Reservado</option>
+                                    <option value="presente" {% if reserva.status == 'presente' %}selected{% endif %}>Presente</option>
+                                    <option value="falta" {% if reserva.status == 'falta' %}selected{% endif %}>Falta</option>
+                                    <option value="falta_justificada" {% if reserva.status == 'falta_justificada' %}selected{% endif %}>Falta Justificada</option>
+                                </select>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Nenhum participante registrado.
+        </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{% url 'didacta:session_list_admin' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
