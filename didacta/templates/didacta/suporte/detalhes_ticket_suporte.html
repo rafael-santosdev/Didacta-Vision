@@ -1,6 +1,6 @@
 {% extends 'didacta/base.html' %}
 
-{% block title %}Ticket #{{ ticket.pk }} - Didacta Vision{% endblock %}
+{% block title %}Solicitação #{{ ticket.pk }} - Didacta Vision{% endblock %}
 
 {% block content %}
 <section class="dv-section">
@@ -33,7 +33,7 @@
         
         {% if user.is_admin_or_professor %}
         <article class="dv-panel">
-            <h3>Responder Ticket</h3>
+            <h3>Responder Solicitação</h3>
             <form method="post" class="dv-form" style="margin-top:18px;">
                 {% csrf_token %}
                 <div class="dv-form-group">

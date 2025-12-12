@@ -34,28 +34,82 @@
     </div>
 </section>
 
-<section class="dv-detail-grid">
-    <div class="dv-panel">
-        <div class="dv-poster-frame">
-            <img src="{% if filme.cartaz %}{{ filme.cartaz.url }}{% elif filme.cartaz_url %}{{ filme.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ filme.titulo }}">
+<section class="dv-panel dv-detail-meta">
+    <div class="dv-detail-meta__header">
+        <div>
+            <span class="dv-badge">Ficha do filme</span>
+            <h2 class="dv-section__title">Informações principais</h2>
+            <p class="text-muted dv-section__subtitle">Resumo rápido com os dados essenciais para decidir sua sessão.</p>
+        </div>
+        <div class="dv-detail-meta__actions">
+            {% if filme.trailer_url %}
+            <a class="dv-btn ghost" href="{{ filme.trailer_url }}" target="_blank" rel="noreferrer">
+                <i class="bi bi-play-circle"></i> Trailer
+            </a>
+            {% endif %}
+            {% if sessoes_futuras %}
+            <a class="dv-btn primary" href="#sessoes">
+                <i class="bi bi-calendar-event"></i> Ver sessões
+            </a>
+            {% elif user.is_admin_or_professor %}
+            <a class="dv-btn primary" href="{% url 'didacta:session_create' %}">
+                <i class="bi bi-plus-circle"></i> Cadastrar sessão
+            </a>
+            {% endif %}
         </div>
     </div>
-    <div class="dv-panel">
-        <h2>Sobre o filme</h2>
-        <p class="text-muted" style="margin-bottom:18px;">{{ filme.sinopse }}</p>
-        <div class="dv-meta" style="flex-wrap: wrap; gap:10px; margin-bottom:18px;">
-            <span class="dv-tag">Classificação: {{ filme.get_classificacao_display }}</span>
-            {% if filme.genero %}<span class="dv-tag">{{ filme.genero }}</span>{% endif %}
-            <span class="dv-tag">{{ filme.duracao }} minutos</span>
+
+    <div class="dv-detail-meta__grid">
+        <div class="dv-stat">
+            <span class="dv-stat__label">Classificação</span>
+            <strong class="dv-stat__value">{{ filme.get_classificacao_display }}</strong>
         </div>
-        {% if sessoes_futuras %}
-        <div class="dv-card-wide" style="background: rgba(255,255,255,0.02);">
-            <p class="text-muted" style="margin-bottom:6px;">Próxima sessão</p>
-            <strong>{{ sessoes_futuras.0.data_hora|date:'d \\d\\e F, H:i' }}</strong>
-            <p>{{ sessoes_futuras.0.local }}</p>
+        <div class="dv-stat">
+            <span class="dv-stat__label">Duração</span>
+            <strong class="dv-stat__value">{{ filme.duracao }} min</strong>
+        </div>
+        {% if filme.genero %}
+        <div class="dv-stat">
+            <span class="dv-stat__label">Gênero</span>
+            <strong class="dv-stat__value">{{ filme.genero }}</strong>
         </div>
         {% endif %}
+        <div class="dv-stat">
+            <span class="dv-stat__label">Status</span>
+            <strong class="dv-stat__value">{% if filme.ativo %}Em cartaz{% else %}Indisponível{% endif %}</strong>
+        </div>
     </div>
+
+    {% if sessoes_futuras %}
+    <div class="dv-next-session">
+        <div>
+            <p class="text-muted" style="margin-bottom:6px;">Próxima sessão</p>
+            <h3 class="dv-next-session__title">{{ sessoes_futuras.0.data_hora|date:'d \\d\\e F, H:i' }}</h3>
+            <p class="text-muted" style="margin-top:4px;">{{ sessoes_futuras.0.local }}</p>
+        </div>
+        <div class="dv-detail-meta__actions">
+            {% if user.is_authenticated %}
+                {% with reserva=reservas_por_sessao|dict_get:sessoes_futuras.0.id %}
+                    {% if reserva %}
+                    <a class="dv-btn ghost" href="{% url 'didacta:reservation_cancel' reserva.pk %}">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                    {% elif sessoes_futuras.0.tem_vagas and sessoes_futuras.0.ativo %}
+                    <a class="dv-btn primary" href="{% url 'didacta:reservation_create' sessoes_futuras.0.pk %}">
+                        <i class="bi bi-calendar-plus"></i> Reservar
+                    </a>
+                    {% else %}
+                    <span class="dv-status danger">Sem vagas</span>
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+            <a class="dv-btn ghost" href="{% url 'didacta:login' %}">
+                <i class="bi bi-box-arrow-in-right"></i> Entrar para reservar
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </section>
 
 <section id="sessoes" class="dv-section">
@@ -75,22 +129,24 @@
     <div class="dv-session-list">
         {% for sessao in sessoes_futuras %}
         <div class="dv-session-card">
-            <div>
-                <strong>{{ sessao.data_hora|date:'d/m/Y H:i' }}</strong>
-                <p class="text-muted" style="font-size:0.95rem; margin-top:6px;">{{ sessao.local }}</p>
-                <div class="dv-meta" style="margin-top:8px;">
-                    <span>{{ sessao.capacidade_total }} lugares</span>
+            <div class="dv-session-card__info">
+                <div class="dv-session-card__title">
+                    <strong>{{ sessao.data_hora|date:'d/m/Y H:i' }}</strong>
+                    <span class="dv-tag">{% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}</span>
+                </div>
+                <div class="dv-session-card__meta">
+                    <span><i class="bi bi-geo-alt"></i> {{ sessao.local }}</span>
+                    <span><i class="bi bi-people"></i> {{ sessao.capacidade_total }} lugares</span>
                     <span>
                         {% if sessao.vagas_disponiveis > 0 %}
-                            {{ sessao.vagas_disponiveis }} vagas livres
+                            <i class="bi bi-check-circle"></i> {{ sessao.vagas_disponiveis }} vagas
                         {% else %}
-                            Sem vagas
+                            <i class="bi bi-x-circle"></i> Sem vagas
                         {% endif %}
                     </span>
-                    <span>{% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}</span>
                 </div>
             </div>
-            <div class="dv-hero__actions" style="gap:8px;">
+            <div class="dv-hero__actions dv-session-card__actions">
                 {% if user.is_admin_or_professor %}
                 <a class="dv-btn ghost" href="{% url 'didacta:session_update' sessao.pk %}" title="Editar sessão">
                     <i class="bi bi-pencil"></i>

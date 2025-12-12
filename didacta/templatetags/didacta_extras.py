@@ -17,5 +17,18 @@ def dict_get(value, key):
         return None
 
 
+@register.simple_tag
+def unread_notifications_count(user):
+    """
+    Retorna a contagem de notificações não lidas do usuário.
+    """
+    if not user or not user.is_authenticated:
+        return 0
+    try:
+        return user.notification_set.filter(lida=False).count()
+    except:
+        return 0
+
+
 
 

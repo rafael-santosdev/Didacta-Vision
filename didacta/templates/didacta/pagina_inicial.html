@@ -45,9 +45,10 @@
                     <div>
                         <span class="dv-badge">Seleção Didacta</span>
                         <h2 class="dv-section__title">Filmes em cartaz</h2>
+                        <p class="dv-section__subtitle">Escolha um título, veja sessões e reserve em poucos cliques.</p>
                     </div>
                     {% if page_obj.paginator.num_pages > 1 %}
-                    <a href="?page={{ page_obj.paginator.num_pages }}" class="dv-nav__item">Ver todos</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="dv-btn ghost sm">Ver todos</a>
                     {% endif %}
                 </div>
                 <div class="dv-carousel">
@@ -85,17 +86,18 @@
                     <div>
                         <span class="dv-badge">Experiência Didacta</span>
                         <h2 class="dv-section__title">O que você pode fazer</h2>
+                        <p class="dv-section__subtitle">Reservar sessões, acompanhar presença e participar das discussões.</p>
                     </div>
                 </div>
                 <div class="dv-grid">
-                    <article class="dv-card-wide">
+                    <article class="dv-card-wide dv-card-wide--soft">
                         <h3>Reservar e confirmar presença</h3>
                         <p class="text-muted">Escolha um filme, garanta sua vaga e acompanhe o status em tempo real.</p>
                         <div class="dv-hero__actions" style="margin-top:12px;">
                             <a class="dv-btn primary" href="{% url 'didacta:reservation_list' %}">Minhas reservas</a>
                         </div>
                     </article>
-                    <article class="dv-card-wide">
+                    <article class="dv-card-wide dv-card-wide--soft">
                         <h3>Participar dos debates</h3>
                         <p class="text-muted">Após assistir, entre no fórum do filme para discutir ciência e cinema.</p>
                         <div class="dv-meta">
@@ -103,7 +105,7 @@
                             <span>Professores e estudantes</span>
                         </div>
                     </article>
-                    <article class="dv-card-wide">
+                    <article class="dv-card-wide dv-card-wide--soft">
                         <h3>Receber notificações</h3>
                         <p class="text-muted">Avisos de novas sessões, confirmações e suporte diretamente no painel.</p>
                         <a class="dv-btn ghost" href="{% url 'didacta:notification_list' %}">Ver notificações</a>

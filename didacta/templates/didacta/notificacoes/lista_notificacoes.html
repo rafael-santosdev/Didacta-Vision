@@ -8,10 +8,10 @@
         <div>
             <span class="dv-badge">Painel</span>
             <h1 class="dv-section__title">Notificações</h1>
-            <p class="text-muted" style="margin-top:6px;">Atualizações sobre reservas, suporte e contas aparecem aqui.</p>
+            <p class="dv-section__subtitle">Atualizações sobre reservas, suporte e contas aparecem aqui.</p>
         </div>
         {% if page_obj %}
-        <a href="{% url 'didacta:notification_mark_all_read' %}" class="dv-btn ghost">
+        <a href="{% url 'didacta:notification_mark_all_read' %}" class="dv-btn ghost sm">
             <i class="bi bi-check-all"></i> Marcar todas como lidas
         </a>
         {% endif %}
@@ -20,24 +20,24 @@
     {% if page_obj %}
     <div class="dv-stack">
         {% for notificacao in page_obj %}
-        <article class="dv-card-wide">
-            <div class="dv-comment__header">
-                <div class="dv-comment__meta">
+        <article class="dv-notification {% if not notificacao.lida %}is-unread{% endif %}">
+            <div class="dv-notification__header">
+                <div class="dv-notification__title">
                     <strong>{{ notificacao.titulo }}</strong>
-                    <span class="dv-tag">{{ notificacao.get_tipo_display }}</span>
+                    <span class="dv-chip"><i class="bi bi-bell"></i> {{ notificacao.get_tipo_display }}</span>
                     <small class="text-muted">{{ notificacao.created_at|date:'d/m/Y H:i' }}</small>
                 </div>
                 {% if not notificacao.lida %}
-                <a href="{% url 'didacta:notification_mark_read' notificacao.pk %}" class="dv-btn ghost">
+                <a href="{% url 'didacta:notification_mark_read' notificacao.pk %}" class="dv-btn ghost sm">
                     <i class="bi bi-check"></i> Marcar como lida
                 </a>
                 {% else %}
                 <span class="dv-status neutral">Lida</span>
                 {% endif %}
             </div>
-            <p>{{ notificacao.mensagem }}</p>
+            <p class="text-muted" style="line-height:1.6;">{{ notificacao.mensagem }}</p>
             {% if not notificacao.lida %}
-            <span class="dv-status warning" style="margin-top:12px;">Nova</span>
+            <span class="dv-status info" style="margin-top:12px;">Nova</span>
             {% endif %}
         </article>
         {% endfor %}
