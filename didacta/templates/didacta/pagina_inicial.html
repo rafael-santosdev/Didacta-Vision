@@ -26,11 +26,11 @@
                         <a class="dv-btn primary" href="{% url 'didacta:film_detail' destaque.pk %}">
                             <i class="bi bi-play-fill"></i> Ver detalhes
                         </a>
-                        {% if user.is_authenticated %}
+                        {% if user.is_authenticated and not user.is_admin_or_professor %}
                         <a class="dv-btn ghost" href="{% url 'didacta:reservation_list' %}">
                             <i class="bi bi-calendar-check"></i> Minhas reservas
                         </a>
-                        {% else %}
+                        {% elif not user.is_authenticated %}
                         <a class="dv-btn ghost" href="{% url 'didacta:login' %}">
                             <i class="bi bi-box-arrow-in-right"></i> Entrar
                         </a>
@@ -93,22 +93,22 @@
                     <article class="dv-card-wide dv-card-wide--soft">
                         <h3>Reservar e confirmar presença</h3>
                         <p class="text-muted">Escolha um filme, garanta sua vaga e acompanhe o status em tempo real.</p>
-                        <div class="dv-hero__actions" style="margin-top:12px;">
+                        {% if not user.is_admin_or_professor %}
+                        <div class="dv-hero__actions" style="margin-top:20px;">
                             <a class="dv-btn primary" href="{% url 'didacta:reservation_list' %}">Minhas reservas</a>
                         </div>
+                        {% endif %}
                     </article>
                     <article class="dv-card-wide dv-card-wide--soft">
                         <h3>Participar dos debates</h3>
                         <p class="text-muted">Após assistir, entre no fórum do filme para discutir ciência e cinema.</p>
-                        <div class="dv-meta">
-                            <span>Comentários moderados</span>
-                            <span>Professores e estudantes</span>
-                        </div>
                     </article>
                     <article class="dv-card-wide dv-card-wide--soft">
                         <h3>Receber notificações</h3>
                         <p class="text-muted">Avisos de novas sessões, confirmações e suporte diretamente no painel.</p>
-                        <a class="dv-btn ghost" href="{% url 'didacta:notification_list' %}">Ver notificações</a>
+                        <div class="dv-hero__actions" style="margin-top:20px;">
+                            <a class="dv-btn ghost" href="{% url 'didacta:notification_list' %}">Ver notificações</a>
+                        </div>
                     </article>
                 </div>
             </section>
@@ -120,29 +120,35 @@
                         <h2 class="dv-section__title">Explorar por temas</h2>
                     </div>
                 </div>
-                <div class="dv-grid">
-                    {% for filme in filmes|slice:":6" %}
-                    <article class="dv-card">
-                        <div class="dv-card__poster">
-                            {% if filme.cartaz %}
-                                <img src="{{ filme.cartaz.url }}" alt="{{ filme.titulo }}">
-                            {% elif filme.cartaz_url %}
-                                <img src="{{ filme.cartaz_url }}" alt="{{ filme.titulo }}">
-                            {% else %}
-                                <img src="{% static 'css/img/Oppenheimer_poster.jpg' %}" alt="Cartaz genérico">
-                            {% endif %}
-                        </div>
-                        <div class="dv-card__body">
-                            <strong>{{ filme.titulo }}</strong>
-                            <p>{{ filme.sinopse|truncatewords:18 }}</p>
-                            <div class="dv-meta">
-                                <span>{{ filme.duracao }} min</span>
-                                {% if filme.genero %}<span>{{ filme.genero }}</span>{% endif %}
-                            </div>
-                            <a class="dv-btn ghost" href="{% url 'didacta:film_detail' filme.pk %}">Saiba mais</a>
-                        </div>
-                    </article>
-                    {% endfor %}
+                <div class="dv-carousel">
+                    <div class="dv-carousel__track">
+                        {% for filme in filmes|slice:":6" %}
+                        <article class="dv-card">
+                            <a href="{% url 'didacta:film_detail' filme.pk %}">
+                                <div class="dv-card__poster">
+                                    {% if filme.cartaz %}
+                                        <img src="{{ filme.cartaz.url }}" alt="{{ filme.titulo }}">
+                                    {% elif filme.cartaz_url %}
+                                        <img src="{{ filme.cartaz_url }}" alt="{{ filme.titulo }}">
+                                    {% else %}
+                                        <img src="{% static 'css/img/Oppenheimer_poster.jpg' %}" alt="Cartaz genérico">
+                                    {% endif %}
+                                    {% if filme.tema %}
+                                    <span class="dv-card__tag" style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,0.7); padding:6px 12px; border-radius:6px; font-size:0.85rem;">{{ filme.tema }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="dv-card__body">
+                                    <strong>{{ filme.titulo }}</strong>
+                                    <p>{{ filme.sinopse|truncatewords:18 }}</p>
+                                    <div class="dv-meta">
+                                        <span>{{ filme.duracao }} min</span>
+                                        {% if filme.genero %}<span>{{ filme.genero }}</span>{% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                        </article>
+                        {% endfor %}
+                    </div>
                 </div>
             </section>
 

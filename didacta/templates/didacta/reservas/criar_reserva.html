@@ -26,17 +26,26 @@
         <h2>Finalizar reserva</h2>
         <form method="post" class="dv-form">
             {% csrf_token %}
-            {% for field in form %}
             <div class="dv-form-group">
-                {{ field.label_tag }}
-                {{ field }}
-                {% if field.help_text %}
-                <small class="text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                <span class="dv-status danger">{{ error }}</span>
-                {% endfor %}
+                <label>Sessão:</label>
+                <div style="padding:12px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
+                    <strong>{{ sessao.filme.titulo }}</strong> - {{ sessao.data_hora|date:'d/m/Y H:i' }} - {{ sessao.local }}
+                </div>
+                {{ form.sessao }}
             </div>
+            {% for field in form %}
+                {% if field.name != 'sessao' %}
+                <div class="dv-form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                    <small class="text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                    <span class="dv-status danger">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
             {% endfor %}
 
             {% if form.non_field_errors %}

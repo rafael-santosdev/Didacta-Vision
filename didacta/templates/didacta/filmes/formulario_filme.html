@@ -43,8 +43,13 @@
                     {{ form.duracao }}
                 </div>
                 <div class="dv-form-group">
-                    <label for="{{ form.genero.id_for_label }}">Gênero</label>
+                    <label for="{{ form.genero.id_for_label }}">Gênero *</label>
                     {{ form.genero }}
+                </div>
+                <div class="dv-form-group">
+                    <label for="{{ form.tema.id_for_label }}">Tema do filme *</label>
+                    {{ form.tema }}
+                    <small class="text-muted" style="display:block; margin-top:6px;">Aparecerá em "Explorar por temas"</small>
                 </div>
                 <div class="dv-form-group">
                     <label class="text-muted" for="{{ form.ativo.id_for_label }}">Disponibilidade</label>
@@ -57,7 +62,13 @@
 
             <div class="dv-form-grid two">
                 <div class="dv-form-group">
-                    <label for="{{ form.cartaz.id_for_label }}">Cartaz (imagem)</label>
+                    <label for="{{ form.cartaz.id_for_label }}">Cartaz (imagem) {% if not object %}*{% endif %}</label>
+                    {% if object and object.cartaz %}
+                    <div style="margin-bottom:12px;">
+                        <img src="{{ object.cartaz.url }}" alt="{{ object.titulo }}" style="max-width:200px;max-height:300px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);">
+                        <p class="text-muted" style="margin-top:8px;font-size:0.85rem;">Imagem atual. Deixe em branco para manter ou selecione uma nova para substituir.</p>
+                    </div>
+                    {% endif %}
                     {{ form.cartaz }}
                 </div>
                 <div class="dv-form-group">
@@ -67,7 +78,7 @@
             </div>
 
             <div class="dv-form-group">
-                <label for="{{ form.trailer_url.id_for_label }}">URL do trailer (YouTube)</label>
+                <label for="{{ form.trailer_url.id_for_label }}">URL do trailer (YouTube) *</label>
                 {{ form.trailer_url }}
             </div>
 

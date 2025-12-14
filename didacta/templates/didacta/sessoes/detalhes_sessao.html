@@ -21,7 +21,7 @@
             <span><strong>Vagas:</strong> {{ sessao.vagas_disponiveis }}</span>
         </div>
         <div class="dv-form-actions" style="margin-top:18px; justify-content:flex-start;">
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated and not user.is_admin_or_professor %}
                 {% if reserva_usuario %}
                 <a href="{% url 'didacta:reservation_cancel' reserva_usuario.pk %}" class="dv-btn ghost">
                     <i class="bi bi-x-circle"></i> Cancelar reserva
@@ -33,7 +33,7 @@
                 {% else %}
                 <span class="dv-status danger">Indisponível</span>
                 {% endif %}
-            {% else %}
+            {% elif not user.is_authenticated %}
             <a href="{% url 'didacta:login' %}" class="dv-btn primary">
                 <i class="bi bi-box-arrow-in-right"></i> Fazer login
             </a>
@@ -68,7 +68,7 @@
     <article class="dv-card-wide" style="margin-top:32px;">
         <h3><i class="bi bi-ticket-perforated"></i> Minha reserva</h3>
         <div style="margin-top:18px;">
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated and not user.is_admin_or_professor %}
                 {% if reserva_usuario %}
                 <div class="dv-panel" style="background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.25);">
                     <div class="dv-toolbar">
@@ -116,7 +116,7 @@
                     <p class="text-muted" style="margin-top:6px;">Todas as vagas foram preenchidas.</p>
                 </div>
                 {% endif %}
-            {% else %}
+            {% elif not user.is_authenticated %}
             <div class="dv-panel">
                 <div class="dv-toolbar">
                     <div>
@@ -136,7 +136,7 @@
         <a href="{% url 'didacta:film_detail' sessao.filme.pk %}" class="dv-btn ghost">
             <i class="bi bi-arrow-left"></i> Voltar ao filme
         </a>
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and not user.is_admin_or_professor %}
         <a href="{% url 'didacta:reservation_list' %}" class="dv-btn ghost">
             <i class="bi bi-list"></i> Minhas reservas
         </a>

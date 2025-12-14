@@ -5,7 +5,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -40,20 +41,25 @@ def register_view(request):
                 codigo=codigo
             )
 
+            email_enviado = False
             try:
-                send_mail(
-                    subject='Código de Verificação - Didacta Vision',
-                    message=f'Olá {user.nome_completo},\n\nBem-vindo ao Didacta Vision!\n\nSeu código de verificação é: {codigo}\n\nEste código é válido por 10 minutos.\n\nUse este código para verificar sua conta e fazer login.',
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
-                messages.success(request, f'Conta criada com sucesso! Código de verificação enviado para {user.email}')
-                request.session['verification_user_id'] = user.id
-                return redirect('didacta:verify_code')
+                if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
+                    send_mail(
+                        subject='Código de Verificação - Didacta Vision',
+                        message=f'Olá {user.nome_completo},\n\nBem-vindo ao Didacta Vision!\n\nSeu código de verificação é: {codigo}\n\nEste código é válido por 10 minutos.\n\nUse este código para verificar sua conta e fazer login.',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        fail_silently=False,
+                    )
+                    email_enviado = True
+                    messages.success(request, f'Conta criada com sucesso! Código de verificação enviado para {user.email}')
+                else:
+                    messages.success(request, f'Conta criada com sucesso! Seu código de verificação é: {codigo}')
             except Exception as e:
-                messages.error(request, f'Conta criada, mas erro ao enviar código de verificação: {str(e)}. Entre em contato com o suporte.')
-                return redirect('didacta:login')
+                messages.warning(request, f'Conta criada! Seu código de verificação é: {codigo}. Configure o email no servidor para receber por email.')
+            
+            request.session['verification_user_id'] = user.id
+            return redirect('didacta:verify_code')
     else:
         form = CustomUserCreationForm()
 
@@ -120,15 +126,10 @@ def verify_code_view(request):
             codigo_obj.usado = True
             codigo_obj.save()
 
-            login(request, user, backend='didacta.autenticacao_backend.NomeOrEmailBackend')
-
             del request.session['verification_user_id']
 
-            messages.success(request, f'Bem-vindo, {user.nome_completo}!')
-            next_url = request.GET.get('next')
-            if next_url and next_url.startswith('/'):
-                return redirect(next_url)
-            return redirect('didacta:index')
+            messages.success(request, 'Código verificado com sucesso! Faça login com suas credenciais.')
+            return redirect('didacta:login')
         else:
             messages.error(request, 'Código inválido ou expirado. Por favor, tente novamente.')
 
@@ -142,7 +143,8 @@ def logout_view(request):
 
 def password_reset_request(request):
     if request.user.is_authenticated:
-        return redirect('didacta:index')
+        logout(request)
+        messages.info(request, 'Você foi deslogado para iniciar a recuperação de senha.')
 
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
@@ -166,18 +168,22 @@ def password_reset_request(request):
             )
 
             try:
-                send_mail(
-                    subject='Recuperação de Senha - Didacta Vision',
-                    message=f'Olá {user.nome_completo},\n\nVocê solicitou a recuperação de senha.\n\nSeu código de verificação é: {codigo}\n\nEste código é válido por 10 minutos.\n\nSe você não solicitou esta recuperação, ignore este email.',
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
-                messages.success(request, f'Código de verificação enviado para {user.email}')
-                request.session['password_reset_user_id'] = user.id
-                return redirect('didacta:password_reset_verify')
+                if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
+                    send_mail(
+                        subject='Recuperação de Senha - Didacta Vision',
+                        message=f'Olá {user.nome_completo},\n\nVocê solicitou a recuperação de senha.\n\nSeu código de verificação é: {codigo}\n\nEste código é válido por 10 minutos.\n\nSe você não solicitou esta recuperação, ignore este email.',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        fail_silently=False,
+                    )
+                    messages.success(request, f'Código de verificação enviado para {user.email}')
+                else:
+                    messages.success(request, f'Seu código de verificação é: {codigo}')
             except Exception as e:
-                messages.error(request, f'Erro ao enviar código de verificação: {str(e)}')
+                messages.warning(request, f'Seu código de verificação é: {codigo}. Configure o email no servidor para receber por email.')
+            
+            request.session['password_reset_user_id'] = user.id
+            return redirect('didacta:password_reset_verify')
         except User.DoesNotExist:
             messages.error(request, 'Email não encontrado em nosso sistema.')
 
@@ -185,7 +191,8 @@ def password_reset_request(request):
 
 def password_reset_verify(request):
     if request.user.is_authenticated:
-        return redirect('didacta:index')
+        logout(request)
+        messages.info(request, 'Você foi deslogado para continuar a recuperação de senha.')
 
     user_id = request.session.get('password_reset_user_id')
 
@@ -217,6 +224,10 @@ def password_reset_verify(request):
             codigo_obj.usado = True
             codigo_obj.save()
 
+            # Garantir que o usuário não está logado
+            if request.user.is_authenticated:
+                logout(request)
+            
             request.session['password_reset_verified'] = True
             return redirect('didacta:password_reset_confirm')
         else:
@@ -226,7 +237,8 @@ def password_reset_verify(request):
 
 def password_reset_confirm(request):
     if request.user.is_authenticated:
-        return redirect('didacta:index')
+        logout(request)
+        messages.info(request, 'Você foi deslogado para continuar a recuperação de senha.')
 
     user_id = request.session.get('password_reset_user_id')
     verified = request.session.get('password_reset_verified', False)
@@ -368,6 +380,20 @@ class FilmCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return self.request.user.is_admin_or_professor()
 
     def form_valid(self, form):
+        filme = form.save()
+        usuarios = User.objects.filter(is_active=True)
+        notificacoes = []
+        for usuario in usuarios:
+            notificacoes.append(
+                Notification(
+                    usuario=usuario,
+                    titulo='Novo Filme Cadastrado',
+                    mensagem=f'O filme "{filme.titulo}" foi adicionado ao catálogo. Confira as sessões disponíveis!',
+                    tipo='filme_criado'
+                )
+            )
+        if notificacoes:
+            Notification.objects.bulk_create(notificacoes)
         messages.success(self.request, 'Filme criado com sucesso!')
         return super().form_valid(form)
 
@@ -381,6 +407,20 @@ class FilmUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user.is_admin_or_professor()
 
     def form_valid(self, form):
+        filme = form.save()
+        usuarios = User.objects.filter(is_active=True)
+        notificacoes = []
+        for usuario in usuarios:
+            notificacoes.append(
+                Notification(
+                    usuario=usuario,
+                    titulo='Filme Atualizado',
+                    mensagem=f'O filme "{filme.titulo}" teve suas informações atualizadas. Confira as novidades!',
+                    tipo='filme_atualizado'
+                )
+            )
+        if notificacoes:
+            Notification.objects.bulk_create(notificacoes)
         messages.success(self.request, 'Filme atualizado com sucesso!')
         return super().form_valid(form)
 
@@ -397,8 +437,28 @@ class FilmDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         if not filme.pode_ser_deletado():
             messages.error(request, 'Não é possível deletar este filme. Ele possui sessões futuras ou comentários ativos.')
             return redirect('didacta:film_list_admin')
+        
+        titulo_filme = filme.titulo
+        filme_id = filme.pk
+        
+        usuarios = User.objects.filter(is_active=True)
+        notificacoes = []
+        for usuario in usuarios:
+            notificacoes.append(
+                Notification(
+                    usuario=usuario,
+                    titulo='Filme Removido',
+                    mensagem=f'O filme "{titulo_filme}" foi removido do catálogo.',
+                    tipo='filme_removido'
+                )
+            )
+        
+        for notif in notificacoes:
+            notif.save()
+        
+        response = super().delete(request, *args, **kwargs)
         messages.success(request, 'Filme deletado com sucesso!')
-        return super().delete(request, *args, **kwargs)
+        return response
 
 @login_required
 def film_list_admin(request):
@@ -423,6 +483,20 @@ class SessionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return self.request.user.is_admin_or_professor()
 
     def form_valid(self, form):
+        sessao = form.save()
+        usuarios = User.objects.filter(is_active=True)
+        notificacoes = []
+        for usuario in usuarios:
+            notificacoes.append(
+                Notification(
+                    usuario=usuario,
+                    titulo='Nova Sessão Disponível',
+                    mensagem=f'Nova sessão criada do filme "{sessao.filme.titulo}"! Disponível em {sessao.data_hora.strftime("%d/%m/%Y às %H:%M")}',
+                    tipo='sessao_criada'
+                )
+            )
+        if notificacoes:
+            Notification.objects.bulk_create(notificacoes)
         messages.success(self.request, 'Sessão criada com sucesso!')
         return super().form_valid(form)
 
@@ -436,20 +510,39 @@ class SessionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user.is_admin_or_professor()
 
     def form_valid(self, form):
-        sessao = form.instance
+        sessao = form.save()
+        usuarios = User.objects.filter(is_active=True)
+        notificacoes = []
+        for usuario in usuarios:
+            notificacoes.append(
+                Notification(
+                    usuario=usuario,
+                    titulo='Sessão Atualizada',
+                    mensagem=f'A sessão do filme "{sessao.filme.titulo}" foi atualizada. Confira as novas informações!',
+                    tipo='sessao_atualizada'
+                )
+            )
+        if notificacoes:
+            Notification.objects.bulk_create(notificacoes)
+        
         if sessao.pk:
             reservas = Reservation.objects.filter(
                 sessao=sessao,
                 status__in=['reservado', 'presente']
             ).select_related('usuario', 'sessao', 'sessao__filme')
+            notificacoes_reservas = []
             for reserva in reservas:
                 if reserva.usuario:
-                    Notification.objects.create(
-                        usuario=reserva.usuario,
-                        titulo='Sessão Alterada',
-                        mensagem=f'A sessão do filme {sessao.filme.titulo} foi alterada.',
-                        tipo='sessao_alterada'
+                    notificacoes_reservas.append(
+                        Notification(
+                            usuario=reserva.usuario,
+                            titulo='Sessão Alterada - Sua Reserva',
+                            mensagem=f'A sessão do filme {sessao.filme.titulo} em que você tem reserva foi alterada. Verifique os novos detalhes!',
+                            tipo='sessao_alterada'
+                        )
                     )
+            if notificacoes_reservas:
+                Notification.objects.bulk_create(notificacoes_reservas)
 
         messages.success(self.request, 'Sessão atualizada com sucesso!')
         return super().form_valid(form)
@@ -464,21 +557,47 @@ class SessionDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         sessao = self.get_object()
-        reservas = Reservation.objects.filter(
-            sessao=sessao,
-            status__in=['reservado', 'presente']
-        ).select_related('usuario', 'sessao', 'sessao__filme')
-        for reserva in reservas:
-            if reserva.usuario:
-                Notification.objects.create(
-                    usuario=reserva.usuario,
+        
+        titulo_filme = sessao.filme.titulo
+        data_hora = sessao.data_hora.strftime("%d/%m/%Y às %H:%M")
+        sessao_id = sessao.pk
+        
+        usuarios = User.objects.filter(is_active=True)
+        notificacoes = []
+        for usuario in usuarios:
+            notificacoes.append(
+                Notification(
+                    usuario=usuario,
                     titulo='Sessão Cancelada',
-                    mensagem=f'A sessão do filme {sessao.filme.titulo} foi cancelada.',
+                    mensagem=f'A sessão do filme "{titulo_filme}" agendada para {data_hora} foi cancelada.',
                     tipo='sessao_cancelada'
                 )
+            )
+        
+        reservas = Reservation.objects.filter(
+            sessao_id=sessao_id,
+            status__in=['reservado', 'presente']
+        ).select_related('usuario', 'sessao', 'sessao__filme')
+        notificacoes_reservas = []
+        for reserva in reservas:
+            if reserva.usuario:
+                notificacoes_reservas.append(
+                    Notification(
+                        usuario=reserva.usuario,
+                        titulo='Sessão Cancelada - Sua Reserva',
+                        mensagem=f'A sessão do filme {titulo_filme} em que você tinha reserva foi cancelada. Sua reserva foi automaticamente cancelada.',
+                        tipo='sessao_cancelada'
+                    )
+                )
+        
+        for notif in notificacoes:
+            notif.save()
+        for notif in notificacoes_reservas:
+            notif.save()
 
+        response = super().delete(request, *args, **kwargs)
         messages.success(request, 'Sessão deletada com sucesso!')
-        return super().delete(request, *args, **kwargs)
+        return response
 
 @login_required
 def session_list_admin(request):
@@ -531,6 +650,7 @@ def reservation_create(request, session_id):
 
     if request.method == 'POST':
         form = ReservationForm(request.POST, user=request.user)
+        form.fields['sessao'].initial = sessao
         if form.is_valid():
             try:
                 reserva = Reservation.objects.create(
@@ -558,6 +678,7 @@ def reservation_create(request, session_id):
                     messages.error(request, 'Não foi possível criar a reserva. Verifique se há vagas e se você já não possui uma reserva.')
     else:
         form = ReservationForm(user=request.user, initial={'sessao': sessao})
+        form.fields['sessao'].initial = sessao
 
     context = {
         'form': form,
@@ -619,7 +740,7 @@ def mark_presence(request, reservation_id):
 
     if request.method == 'POST':
         status = request.POST.get('status')
-        if status in ['presente', 'falta', 'falta_justificada']:
+        if status in ['reservado', 'presente', 'falta', 'falta_justificada']:
             reserva.status = status
             reserva.save()
 
@@ -691,6 +812,10 @@ def forum_comment_delete(request, pk):
     return render(request, 'didacta/forum/confirmar_exclusao_comentario.html', {'comentario': comentario})
 
 def help_ticket_create(request):
+    if request.user.is_authenticated and request.user.is_admin_or_professor():
+        messages.error(request, 'Administradores não podem criar solicitações de suporte.')
+        return redirect('didacta:help_ticket_list')
+    
     if request.method == 'POST':
         form = HelpTicketForm(request.POST)
         if form.is_valid():
@@ -729,11 +854,27 @@ def help_ticket_detail(request, pk):
     if request.method == 'POST' and request.user.is_admin_or_professor():
         resposta = request.POST.get('resposta')
         status = request.POST.get('status')
+        status_anterior = ticket.status
+        tinha_resposta_antes = bool(ticket.resposta)
+        
         if resposta:
             ticket.resposta = resposta
         if status:
             ticket.status = status
+        
+        if resposta and not tinha_resposta_antes and ticket.status == 'aberto':
+            ticket.status = 'respondido'
+        
         ticket.save()
+        
+        if ticket.usuario and resposta and (not tinha_resposta_antes or status_anterior == 'aberto'):
+            Notification.objects.create(
+                usuario=ticket.usuario,
+                titulo='Ticket de Suporte Respondido',
+                mensagem=f'Seu ticket "{ticket.assunto}" foi respondido. Verifique a resposta em Suporte.',
+                tipo='suporte_respondido'
+            )
+        
         messages.success(request, 'Ticket atualizado com sucesso!')
         return redirect('didacta:help_ticket_detail', pk=pk)
 
@@ -741,7 +882,20 @@ def help_ticket_detail(request, pk):
 
 @login_required
 def notification_list(request):
-    notificacoes = Notification.objects.filter(usuario=request.user).order_by('-created_at')
+    if request.user.is_admin_or_professor():
+        notificacoes = Notification.objects.filter(usuario=request.user, lida=False).order_by('-created_at')
+    else:
+        tipos_permitidos = [
+            'reserva_criada', 'reserva_cancelada', 'reserva_confirmada',
+            'sessao_alterada', 'sessao_cancelada', 'sessao_reagendada',
+            'sessao_criada', 'sessao_atualizada', 'sessao_cancelada',
+            'suporte_respondido'
+        ]
+        notificacoes = Notification.objects.filter(
+            usuario=request.user,
+            lida=False,
+            tipo__in=tipos_permitidos
+        ).order_by('-created_at')
 
     paginator = Paginator(notificacoes, 20)
     page_number = request.GET.get('page')
@@ -758,6 +912,7 @@ def notification_mark_read(request, pk):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
 
+    messages.success(request, 'Notificação marcada como lida.')
     return redirect('didacta:notification_list')
 
 @login_required

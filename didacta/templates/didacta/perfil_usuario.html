@@ -85,6 +85,7 @@
             </form>
         </article>
 
+        {% if not user.is_admin_or_professor %}
         <article class="dv-panel">
             <h3>Histórico de reservas</h3>
             <p class="text-muted" style="margin-bottom:18px;">Últimas participações em sessões.</p>
@@ -119,6 +120,7 @@
             </div>
             {% endif %}
         </article>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

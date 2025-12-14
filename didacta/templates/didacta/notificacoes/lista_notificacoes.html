@@ -8,7 +8,7 @@
         <div>
             <span class="dv-badge">Painel</span>
             <h1 class="dv-section__title">Notificações</h1>
-            <p class="dv-section__subtitle">Atualizações sobre reservas, suporte e contas aparecem aqui.</p>
+            <p class="dv-section__subtitle">{% if user.is_admin_or_professor %}Atualizações sobre reservas, filmes, sessões e contas aparecem aqui.{% else %}Atualizações sobre suas reservas, as respectivas sessões e suporte aparecem aqui.{% endif %}</p>
         </div>
         {% if page_obj %}
         <a href="{% url 'didacta:notification_mark_all_read' %}" class="dv-btn ghost sm">
@@ -21,10 +21,10 @@
     <div class="dv-stack">
         {% for notificacao in page_obj %}
         <article class="dv-notification {% if not notificacao.lida %}is-unread{% endif %}">
-            <div class="dv-notification__header">
-                <div class="dv-notification__title">
+            <div class="dv-notification__header" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <div class="dv-notification__title" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex:1;">
                     <strong>{{ notificacao.titulo }}</strong>
-                    <span class="dv-chip"><i class="bi bi-bell"></i> {{ notificacao.get_tipo_display }}</span>
+                    <span class="dv-chip"><i class="bi bi-bell"></i> {{ notificacao.get_categoria_display }}</span>
                     <small class="text-muted">{{ notificacao.created_at|date:'d/m/Y H:i' }}</small>
                 </div>
                 {% if not notificacao.lida %}

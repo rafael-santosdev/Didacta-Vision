@@ -26,9 +26,6 @@
             <div class="dv-nav" id="dvNav">
                 <div class="dv-nav__links">
                     <a href="{% url 'didacta:index' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'index' %}is-active{% endif %}">Início</a>
-                    {% if user.is_authenticated and not user.is_admin_or_professor %}
-                    <a href="{% url 'didacta:reservation_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'reservation_list' %}is-active{% endif %}">Reservas</a>
-                    {% endif %}
                     {% if user.is_authenticated %}
                     <a href="{% url 'didacta:notification_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'notification_list' %}is-active{% endif %}">
                         Notificações
@@ -37,10 +34,21 @@
                         <span class="dv-notification-badge">{{ unread_count }}</span>
                         {% endif %}
                     </a>
-                    <a href="{% if user.is_admin_or_professor %}{% url 'didacta:help_ticket_list' %}{% else %}{% url 'didacta:help_ticket_create' %}{% endif %}" class="dv-nav__item">Suporte</a>
+                    <a href="{% url 'didacta:help_ticket_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'help_ticket_list' or request.resolver_match.url_name == 'help_ticket_detail' %}is-active{% endif %}">
+                        Suporte
+                        {% if user.is_admin_or_professor %}
+                        {% unread_tickets_count user as unread_tickets %}
+                        {% if unread_tickets > 0 %}
+                        <span class="dv-notification-badge">{{ unread_tickets }}</span>
+                        {% endif %}
+                        {% endif %}
+                    </a>
+                    {% if not user.is_admin_or_professor %}
+                    <a href="{% url 'didacta:reservation_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'reservation_list' %}is-active{% endif %}">Minhas reservas</a>
+                    {% endif %}
                     {% if user.is_admin_or_professor %}
-                    <a href="{% url 'didacta:film_list_admin' %}" class="dv-nav__item">Filmes</a>
-                    <a href="{% url 'didacta:session_list_admin' %}" class="dv-nav__item">Sessões</a>
+                    <a href="{% url 'didacta:film_list_admin' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'film_list_admin' or request.resolver_match.url_name == 'film_create' or request.resolver_match.url_name == 'film_update' or request.resolver_match.url_name == 'film_delete' or request.resolver_match.url_name == 'film_detail' %}is-active{% endif %}">Filmes</a>
+                    <a href="{% url 'didacta:session_list_admin' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'session_list_admin' or request.resolver_match.url_name == 'session_create' or request.resolver_match.url_name == 'session_update' or request.resolver_match.url_name == 'session_delete' %}is-active{% endif %}">Sessões</a>
                     {% endif %}
                     {% endif %}
                 </div>

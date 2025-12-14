@@ -14,11 +14,8 @@ class UserManager(BaseUserManager):
         if not username:
             username = email if email else extra_fields.get('nome_completo', 'user').lower().replace(' ', '_')
 
-        if not email:
-            raise ValueError('Email é obrigatório.')
-
-        email = self.normalize_email(email)
-        if self.model.objects.filter(email=email).exists():
+        email = self.normalize_email(email) if email else None
+        if email and self.model.objects.filter(email=email).exists():
             raise ValueError('Já existe um usuário com este email.')
 
         user = self.model(username=username, email=email, **extra_fields)
@@ -44,9 +41,6 @@ class UserManager(BaseUserManager):
         if not username:
             username = email if email else 'admin'
 
-        if not email:
-            raise ValueError('Email é obrigatório para superusuário.')
-
         return self.create_user(username=username, email=email, password=password, **extra_fields)
 
 class User(AbstractUser):
@@ -55,7 +49,7 @@ class User(AbstractUser):
         ('comunidade_externa', 'Comunidade Externa'),
     ]
 
-    email = models.EmailField('Email', unique=True, db_index=True)
+    email = models.EmailField('Email', unique=True, db_index=True, blank=True, null=True)
     nome_completo = models.CharField('Nome de Usuário', max_length=255)
     telefone = models.CharField('Telefone', max_length=20, blank=True)
     data_nascimento = models.DateField('Data de Nascimento', null=True, blank=True)
@@ -141,7 +135,8 @@ class Film(models.Model):
         null=True,
         help_text='URL do trailer no YouTube'
     )
-    genero = models.CharField('Gênero', max_length=100, blank=True)
+    genero = models.CharField('Gênero', max_length=100, blank=False)
+    tema = models.CharField('Tema do filme', max_length=100, blank=False, default='Geral', help_text='Tema que aparecerá em "Explorar por temas"')
     ativo = models.BooleanField('Ativo', default=True)
     created_at = models.DateTimeField('Criado em', auto_now_add=True)
     updated_at = models.DateTimeField('Atualizado em', auto_now=True)
@@ -168,10 +163,11 @@ class Film(models.Model):
     def clean(self):
         if self.pk:
             from django.utils import timezone
-            if self.session_set.filter(data_hora__gt=timezone.now(), ativo=True).exists():
-                raise ValidationError('Não é possível desativar filme com sessões futuras.')
-            if self.forumcomment_set.filter(ativo=True).exists():
-                raise ValidationError('Não é possível desativar filme com comentários ativos no fórum.')
+            if not self.ativo:
+                if self.session_set.filter(data_hora__gt=timezone.now(), ativo=True).exists():
+                    raise ValidationError('Não é possível desativar filme com sessões futuras.')
+                if self.forumcomment_set.filter(ativo=True).exists():
+                    raise ValidationError('Não é possível desativar filme com comentários ativos no fórum.')
 
     def pode_ser_deletado(self):
         from django.utils import timezone
@@ -375,6 +371,12 @@ class Notification(models.Model):
         ('sessao_alterada', 'Sessão Alterada'),
         ('sessao_cancelada', 'Sessão Cancelada'),
         ('sessao_reagendada', 'Sessão Reagendada'),
+        ('filme_criado', 'Filme Criado'),
+        ('filme_atualizado', 'Filme Atualizado'),
+        ('filme_removido', 'Filme Removido'),
+        ('sessao_criada', 'Sessão Criada'),
+        ('sessao_atualizada', 'Sessão Atualizada'),
+        ('suporte_respondido', 'Suporte Respondido'),
         ('outro', 'Outro'),
     ]
 
@@ -405,6 +407,22 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.usuario.nome_completo} - {self.titulo}"
+    
+    def get_categoria_display(self):
+        """Retorna 'Filmes', 'Sessões', 'Suporte' ou 'Outro' baseado no tipo da notificação"""
+        tipos_filmes = ['filme_criado', 'filme_atualizado', 'filme_removido']
+        tipos_sessoes = ['sessao_criada', 'sessao_atualizada', 'sessao_cancelada', 'sessao_alterada', 
+                        'sessao_reagendada', 'reserva_criada', 'reserva_cancelada', 'reserva_confirmada']
+        tipos_suporte = ['suporte_respondido']
+        
+        if self.tipo in tipos_filmes:
+            return 'Filmes'
+        elif self.tipo in tipos_sessoes:
+            return 'Sessões'
+        elif self.tipo in tipos_suporte:
+            return 'Suporte'
+        else:
+            return 'Outro'
 
 class HelpTicket(models.Model):
     STATUS_CHOICES = [

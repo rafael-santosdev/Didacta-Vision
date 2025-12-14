@@ -1,11 +1,11 @@
 :root {
     color-scheme: dark;
-    --background: 231 15% 4%;
-    --background-muted: 233 16% 8%;
+    --background: 240 20% 6%;
+    --background-muted: 240 18% 10%;
     --panel: 232 18% 12%;
     --panel-strong: 234 20% 16%;
-    --foreground: 0 0% 96%;
-    --foreground-muted: 222 9% 78%;
+    --foreground: 0 0% 98%;
+    --foreground-muted: 222 9% 90%;
     --primary: 357 92% 51%;
     --primary-strong: 357 92% 60%;
     --accent: 207 89% 52%;
@@ -41,11 +41,14 @@ body.dv-body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     background: hsl(var(--background));
     background-image:
-        radial-gradient(circle at 15% 15%, rgba(229,9,20,0.2), transparent 40%),
-        radial-gradient(circle at 80% 0%, rgba(0,99,255,0.15), transparent 45%),
-        radial-gradient(circle at 60% 70%, rgba(255,255,255,0.05), transparent 45%),
+        radial-gradient(ellipse 100% 80% at 50% -10%, rgba(229,9,20,0.12), transparent 60%),
+        radial-gradient(ellipse 80% 60% at 100% 50%, rgba(0,99,255,0.1), transparent 60%),
+        radial-gradient(ellipse 60% 50% at 0% 100%, rgba(229,9,20,0.08), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 40%, rgba(0,0,0,0.1) 100%),
         var(--grain);
-    color: hsl(var(--foreground-muted));
+    background-attachment: fixed;
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 140px 140px;
+    color: hsl(222 9% 90%);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
 }
@@ -58,6 +61,14 @@ strong, b {
 a {
     color: inherit;
     text-decoration: none;
+}
+
+/* Sublinhado no hover para links de texto */
+a.text-muted:hover,
+.text-muted a:hover,
+a.text-muted:hover[style*="text-decoration"],
+.text-muted a:hover[style*="text-decoration"] {
+    text-decoration: underline !important;
 }
 
 p {
@@ -187,7 +198,7 @@ main, section, header, footer {
     gap: 6px;
     padding: 10px clamp(12px, 2vw, 20px);
     border-radius: 999px;
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
     font-weight: 600;
     font-size: clamp(0.85rem, 2vw, 0.95rem);
     transition: color var(--transition-fast), background var(--transition-fast);
@@ -276,7 +287,7 @@ main, section, header, footer {
 
 .dv-user-avatar i {
     font-size: clamp(1rem, 2vw, 1.2rem);
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
 }
 
 .dv-user-menu {
@@ -372,7 +383,7 @@ main, section, header, footer {
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: var(--radius-sm);
     padding: 12px;
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
     cursor: pointer;
     display: grid;
     place-items: center;
@@ -387,9 +398,6 @@ main, section, header, footer {
     border-color: rgba(255,255,255,0.2);
 }
 
-/* ============================================
-   ALERTS
-   ============================================ */
 
 .dv-alerts {
     width: min(1100px, calc(100vw - 32px));
@@ -444,8 +452,19 @@ main, section, header, footer {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 18px;
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%) !important;
     padding: 0 clamp(16px, 4vw, 0);
+}
+
+.dv-footer__inner p,
+.dv-footer__inner small,
+.dv-footer__inner span,
+.dv-footer__inner .text-muted {
+    color: hsl(222 9% 90%) !important;
+}
+
+.dv-footer__inner strong {
+    color: hsl(var(--foreground)) !important;
 }
 
 .footer-links {
@@ -455,11 +474,11 @@ main, section, header, footer {
 }
 
 .footer-links a {
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
 }
 
 .text-muted {
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
 }
 
 /* ============================================
@@ -484,7 +503,21 @@ main, section, header, footer {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     filter: brightness(0.75);
+}
+
+/* Ajuste para desktop - melhorar aspecto da imagem */
+@media (min-width: 769px) {
+    .dv-hero__image {
+        object-fit: cover;
+        object-position: center top;
+        filter: brightness(0.7);
+    }
+    
+    .dv-hero {
+        min-height: clamp(500px, 70vh, 800px);
+    }
 }
 
 .dv-hero__overlay {
@@ -510,10 +543,17 @@ main, section, header, footer {
     padding: 6px clamp(10px, 2vw, 14px);
     border-radius: 999px;
     background: rgba(255,255,255,0.08);
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
     font-size: clamp(0.75rem, 1.8vw, 0.85rem);
     letter-spacing: 0.08em;
     white-space: nowrap;
+    border: none;
+    border-top: none;
+    border-bottom: none;
+}
+.dv-badge::before,
+.dv-badge::after {
+    display: none;
 }
 
 .dv-hero__title {
@@ -521,16 +561,30 @@ main, section, header, footer {
     margin: 0;
     line-height: 1.1;
     word-wrap: break-word;
+    border: none;
+    border-top: none;
+    border-bottom: none;
 }
 .dv-hero__title,
 .dv-detail-hero .dv-hero__title {
     text-shadow: 0 12px 35px rgba(0,0,0,0.55);
 }
+.dv-hero__title::before,
+.dv-hero__title::after {
+    display: none;
+}
 
 .dv-hero__lead {
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
     font-size: clamp(1rem, 2vw, 1.12rem);
     line-height: 1.65;
+    border: none;
+    border-top: none;
+    border-bottom: none;
+}
+.dv-hero__lead::before,
+.dv-hero__lead::after {
+    display: none;
 }
 
 .dv-hero__actions {
@@ -539,9 +593,7 @@ main, section, header, footer {
     gap: 14px;
 }
 
-/* ============================================
-   SECTIONS
-   ============================================ */
+
 
 .dv-section {
     margin-top: clamp(40px, 6vw, 60px);
@@ -575,10 +627,20 @@ main, section, header, footer {
     word-wrap: break-word;
 }
 .dv-section__subtitle {
-    margin: 4px 0 0;
-    color: hsl(var(--foreground-muted));
+    margin: 8px 0 0;
+    color: hsl(222 9% 90%);
     font-size: 0.98rem;
     line-height: 1.5;
+}
+
+/* Espaçamento adequado entre subtítulo e botão no toolbar quando em coluna */
+.dv-toolbar {
+    margin-bottom: 24px;
+}
+
+.dv-toolbar > div .text-muted {
+    margin-top: 8px;
+    display: block;
 }
 
 .dv-carousel {
@@ -622,7 +684,6 @@ main, section, header, footer {
     border-radius: var(--radius-md);
     border: 1px solid rgba(255,255,255,0.06);
     overflow: hidden;
-    box-shadow: var(--glow-card);
     transition: transform var(--transition), border-color var(--transition);
     flex-shrink: 0;
 }
@@ -652,7 +713,6 @@ main, section, header, footer {
     border-radius: 8px;
     background: rgba(0,0,0,0.7);
     font-size: 0.75rem;
-    backdrop-filter: blur(8px);
 }
 
 .dv-card__body {
@@ -664,7 +724,7 @@ main, section, header, footer {
 
 .dv-card__body p {
     font-size: clamp(0.85rem, 2vw, 0.95rem);
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
     line-height: 1.55;
 }
 
@@ -673,7 +733,7 @@ main, section, header, footer {
     flex-wrap: wrap;
     gap: 12px;
     font-size: clamp(0.8rem, 1.8vw, 0.86rem);
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
     align-items: center;
 }
 
@@ -693,6 +753,19 @@ main, section, header, footer {
 }
 .dv-card-wide--soft {
     background: linear-gradient(150deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+}
+
+/* Espaçamento adequado entre textos e botões nos cards */
+.dv-card-wide p + .dv-btn,
+.dv-card-wide p + .dv-hero__actions,
+.dv-card-wide .text-muted + .dv-btn,
+.dv-card-wide .text-muted + .dv-hero__actions {
+    margin-top: 20px;
+}
+
+.dv-card__body p + .dv-btn,
+.dv-card__body .dv-meta + .dv-btn {
+    margin-top: 8px;
 }
 
 .dv-detail-hero {
@@ -720,6 +793,19 @@ main, section, header, footer {
     object-fit: cover;
     object-position: center;
     filter: brightness(0.65);
+}
+
+/* Ajustar imagem ao expandir no desktop */
+@media (min-width: 769px) {
+    .dv-detail-hero {
+        max-height: 75vh;
+    }
+    
+    .dv-detail-hero img {
+        max-height: 75vh;
+        object-fit: cover;
+        object-position: center top;
+    }
 }
 
 .dv-detail-hero__content {
@@ -781,7 +867,7 @@ main, section, header, footer {
 .dv-sinopse__text {
     font-size: clamp(0.95rem, 2vw, 1.05rem);
     line-height: 1.7;
-    color: hsl(222 9% 82%);
+    color: hsl(222 9% 90%);
     margin: 0;
 }
 
@@ -817,7 +903,7 @@ main, section, header, footer {
 
 .dv-stat__label {
     font-size: 0.85rem;
-    color: hsl(222 9% 75%);
+    color: hsl(222 9% 90%);
     letter-spacing: 0.06em;
     text-transform: uppercase;
 }
@@ -912,7 +998,7 @@ main, section, header, footer {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    color: hsl(222 9% 80%);
+    color: hsl(222 9% 90%);
 }
 
 .dv-session-card__meta span {
@@ -987,7 +1073,7 @@ main, section, header, footer {
     border-bottom: 1px solid rgba(255,255,255,0.08);
     word-wrap: break-word;
     vertical-align: middle;
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
 }
 .dv-table tbody tr:hover {
     background: rgba(255,255,255,0.03);
@@ -1149,7 +1235,7 @@ main, section, header, footer {
     border-radius: var(--radius-sm);
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.08);
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
     font-size: clamp(0.85rem, 2vw, 0.9rem);
     margin-top: 8px;
 }
@@ -1199,7 +1285,12 @@ main, section, header, footer {
     border: 1px dashed rgba(255,255,255,0.18);
     border-radius: var(--radius-lg);
     background: rgba(255,255,255,0.02);
-    color: hsl(var(--foreground-muted));
+    color: hsl(222 9% 90%);
+}
+
+.dv-empty p + .dv-btn,
+.dv-empty .text-muted + .dv-btn {
+    margin-top: 20px;
 }
 
 .table-responsive {
@@ -1312,8 +1403,9 @@ main, section, header, footer {
 
     .dv-user-chip {
         width: 100%;
-        justify-content: flex-start;
+        justify-content: center;
         padding: 12px 16px;
+        margin: 0 auto;
     }
 
     .dv-user-menu {
@@ -1325,6 +1417,8 @@ main, section, header, footer {
         box-shadow: none;
         border: 1px solid rgba(255,255,255,0.08);
         background: rgba(255,255,255,0.02);
+        text-align: center;
+        align-items: center;
     }
 
     .dv-menu-toggle {
@@ -1377,12 +1471,16 @@ main, section, header, footer {
     .dv-toolbar {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
+        gap: 16px;
     }
 
     .dv-section__header > div,
     .dv-toolbar > div {
         width: 100%;
+    }
+    
+    .dv-toolbar > div + .dv-btn {
+        margin-top: 4px;
     }
 
     /* Esconde subtítulo verboso no mobile */
@@ -1524,9 +1622,13 @@ main, section, header, footer {
     }
 
     .dv-detail-hero__content {
-        padding: clamp(20px, 4vw, 28px);
-        gap: clamp(20px, 4vw, 24px);
-        justify-content: center;
+        padding-top: clamp(16px, 3vw, 20px);
+        padding-left: clamp(20px, 4vw, 28px);
+        padding-right: clamp(20px, 4vw, 28px);
+        padding-bottom: clamp(24px, 5vw, 32px);
+        gap: 0;
+        justify-content: flex-end;
+        align-items: center;
     }
 
     /* Remove badge, meta tags e sinopse no mobile */
@@ -1543,13 +1645,26 @@ main, section, header, footer {
     }
 
     .dv-detail-hero .dv-hero__title {
-        margin-bottom: 0;
+        position: absolute;
+        top: clamp(16px, 3vw, 20px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - clamp(40px, 8vw, 56px));
+        margin: 0;
         text-align: center;
     }
 
     .dv-detail-hero .dv-hero__actions {
         justify-content: center;
-        margin-top: 0;
+        margin-top: auto;
+        margin-bottom: 0;
+        width: 100%;
+        align-self: flex-end;
+    }
+    
+    /* Botões "ver detalhes" e "minhas reservas" mais embaixo no mobile */
+    .dv-hero__actions {
+        margin-top: 24px;
     }
 
     .dv-section__title {
@@ -1575,15 +1690,12 @@ main, section, header, footer {
         position: relative;
     }
 
-    .dv-card__poster::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
-        z-index: 1;
-    }
 
-    .dv-card__tag {
+    .dv-card__tag[style*="bottom"] {
+        display: block !important;
+    }
+    
+    .dv-card__tag:not([style*="bottom"]) {
         display: none;
     }
 
@@ -1828,15 +1940,24 @@ main, section, header, footer {
     }
 
     .dv-detail-hero__content {
-        padding: 16px;
-        gap: 20px;
-        justify-content: center;
+        padding-top: 12px;
+        padding-left: 16px;
+        padding-right: 16px;
+        padding-bottom: 20px;
+        gap: 0;
+        justify-content: flex-end;
+        align-items: center;
     }
 
     .dv-detail-hero .dv-hero__title {
         font-size: 1.5rem;
         text-align: center;
-        margin-bottom: 0;
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 32px);
+        margin: 0;
     }
 
     .dv-detail-hero .dv-hero__actions {
@@ -1844,6 +1965,9 @@ main, section, header, footer {
         flex-direction: column;
         width: 100%;
         gap: 10px;
+        margin-top: auto;
+        margin-bottom: 0;
+        align-self: flex-end;
     }
 
     .dv-detail-hero .dv-hero__actions .dv-btn {
@@ -1979,8 +2103,30 @@ p,
 span,
 small,
 label,
-.help-text {
-    color: hsl(var(--foreground-muted));
+.help-text,
+.dv-section__subtitle,
+.dv-hero__lead,
+.dv-sinopse__text,
+.dv-stat__label {
+    color: hsl(222 9% 90%) !important;
+}
+
+/* Garantir que textos do footer e small fiquem claros */
+.dv-footer small,
+.dv-footer .text-muted,
+.dv-footer p,
+.dv-footer span,
+small.text-muted,
+.dv-footer__inner small,
+.dv-footer__inner .text-muted,
+.dv-footer__inner p.text-muted,
+.dv-footer__inner small.text-muted {
+    color: hsl(222 9% 90%) !important;
+}
+
+/* Garantir que todos os elementos small fiquem claros */
+small {
+    color: hsl(222 9% 90%) !important;
 }
 
 

@@ -9,12 +9,6 @@
     <div class="dv-detail-hero__content">
         <span class="dv-badge">Filme</span>
         <h1 class="dv-hero__title">{{ filme.titulo }}</h1>
-        <div class="dv-meta">
-            <span>{{ filme.get_classificacao_display }}</span>
-            <span>{{ filme.duracao }} min</span>
-            {% if filme.genero %}<span>{{ filme.genero }}</span>{% endif %}
-        </div>
-        <p class="dv-hero__lead">{{ filme.sinopse }}</p>
         <div class="dv-hero__actions">
             {% if filme.trailer_url %}
             <a class="dv-btn primary" href="{{ filme.trailer_url }}" target="_blank" rel="noreferrer">
@@ -40,6 +34,11 @@
             <span class="dv-badge">Ficha do filme</span>
             <h2 class="dv-section__title">Informações principais</h2>
             <p class="text-muted dv-section__subtitle">Resumo rápido com os dados essenciais para decidir sua sessão.</p>
+            <div class="dv-meta" style="margin-top:12px; margin-bottom:16px;">
+                <span>{{ filme.get_classificacao_display }}</span>
+                <span>{{ filme.duracao }} min</span>
+                {% if filme.genero %}<span>{{ filme.genero }}</span>{% endif %}
+            </div>
             <div class="dv-sinopse">
                 <p class="dv-sinopse__text">{{ filme.sinopse }}</p>
             </div>
@@ -86,18 +85,21 @@
             <p class="text-muted" style="margin-top:4px;">{{ sessoes_futuras.0.local }}</p>
         </div>
         <div class="dv-detail-meta__actions">
+            {% if sessoes_futuras.0.tem_vagas %}
+                <span class="dv-status success">Com vagas</span>
+            {% else %}
+                <span class="dv-status danger">Sem vagas</span>
+            {% endif %}
             {% if user.is_authenticated %}
                 {% with reserva=reservas_por_sessao|dict_get:sessoes_futuras.0.id %}
                     {% if reserva %}
                     <a class="dv-btn ghost" href="{% url 'didacta:reservation_cancel' reserva.pk %}">
                         <i class="bi bi-x-circle"></i> Cancelar
                     </a>
-                    {% elif sessoes_futuras.0.tem_vagas and sessoes_futuras.0.ativo %}
+                    {% elif sessoes_futuras.0.tem_vagas and sessoes_futuras.0.ativo and not user.is_admin_or_professor %}
                     <a class="dv-btn primary" href="{% url 'didacta:reservation_create' sessoes_futuras.0.pk %}">
                         <i class="bi bi-calendar-plus"></i> Reservar
                     </a>
-                    {% else %}
-                    <span class="dv-status danger">Sem vagas</span>
                     {% endif %}
                 {% endwith %}
             {% else %}
@@ -152,7 +154,7 @@
                 <a class="dv-btn ghost" href="{% url 'didacta:session_delete' sessao.pk %}" onclick="return confirm('Tem certeza?')" title="Excluir sessão">
                     <i class="bi bi-trash"></i>
                 </a>
-                {% elif user.is_authenticated %}
+                {% elif user.is_authenticated and not user.is_admin_or_professor %}
                     {% with reserva=reservas_por_sessao|dict_get:sessao.id %}
                         {% if reserva %}
                         <a class="dv-btn ghost" href="{% url 'didacta:reservation_cancel' reserva.pk %}"><i class="bi bi-x-circle"></i> Cancelar</a>
@@ -199,7 +201,7 @@
         </div>
     {% elif not pode_comentar %}
         <div class="dv-empty">
-            <p>É necessário ter presença confirmada ou falta justificada em uma sessão deste filme para comentar.</p>
+            <p>É necessário ter presença confirmada em uma sessão deste filme para comentar.</p>
         </div>
     {% endif %}
 
@@ -253,9 +255,11 @@
         {% endfor %}
     </div>
     {% else %}
+    {% if user.is_admin_or_professor %}
     <div class="dv-empty">
         <p>Seja o primeiro a comentar sobre este filme.</p>
     </div>
+    {% endif %}
     {% endif %}
 </section>
 {% endblock %}

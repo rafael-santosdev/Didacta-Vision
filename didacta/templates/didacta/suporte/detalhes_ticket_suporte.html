@@ -25,7 +25,13 @@
             
             {% if ticket.resposta %}
             <article class="dv-card-wide" style="margin-top:24px; background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.25);">
-                <h3 style="margin-bottom:12px;">Resposta</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                    <h3 style="margin:0;">Resposta</h3>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <strong>Didacta Vision</strong>
+                        <span class="text-muted">{{ ticket.updated_at|date:'d/m/Y H:i' }}</span>
+                    </div>
+                </div>
                 <p>{{ ticket.resposta|linebreaks }}</p>
             </article>
             {% endif %}

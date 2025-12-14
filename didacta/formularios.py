@@ -8,8 +8,8 @@ from .models import (
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(
         label='Email',
-        required=True,
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'required': True})
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
     nome_completo = forms.CharField(
         label='Nome de Usuário',
@@ -40,7 +40,10 @@ class CustomUserCreationForm(UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if email:
-            if User.objects.filter(email=email).exists():
+            queryset = User.objects.filter(email=email)
+            if self.instance and self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
                 raise ValidationError('Este email já está cadastrado.')
         return email
 
@@ -120,7 +123,7 @@ class PasswordChangeForm(forms.Form):
 class FilmForm(forms.ModelForm):
     class Meta:
         model = Film
-        fields = ('titulo', 'sinopse', 'duracao', 'classificacao', 'cartaz', 'cartaz_url', 'trailer_url', 'genero', 'ativo')
+        fields = ('titulo', 'sinopse', 'duracao', 'classificacao', 'cartaz', 'cartaz_url', 'trailer_url', 'genero', 'tema', 'ativo')
         widgets = {
             'titulo': forms.TextInput(attrs={'class': 'form-control'}),
             'sinopse': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
@@ -130,8 +133,30 @@ class FilmForm(forms.ModelForm):
             'cartaz_url': forms.URLInput(attrs={'class': 'form-control'}),
             'trailer_url': forms.URLInput(attrs={'class': 'form-control'}),
             'genero': forms.TextInput(attrs={'class': 'form-control'}),
+            'tema': forms.TextInput(attrs={'class': 'form-control'}),
             'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['genero'].required = True
+        self.fields['trailer_url'].required = True
+        self.fields['tema'].required = True
+        if not self.instance or not self.instance.pk:
+            self.fields['cartaz'].required = True
+        else:
+            self.fields['cartaz'].required = False
+
+    def save(self, commit=True):
+        filme = super().save(commit=False)
+        if self.instance and self.instance.pk:
+            if 'cartaz' in self.files:
+                filme.cartaz = self.files['cartaz']
+            elif not self.cleaned_data.get('cartaz') and self.instance.cartaz:
+                filme.cartaz = self.instance.cartaz
+        if commit:
+            filme.save()
+        return filme
 
     def clean_titulo(self):
         titulo = self.cleaned_data.get('titulo')
@@ -165,6 +190,11 @@ class SessionForm(forms.ModelForm):
             'local': forms.TextInput(attrs={'class': 'form-control'}),
             'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk and self.instance.data_hora:
+            self.initial['data_hora'] = self.instance.data_hora.strftime('%Y-%m-%dT%H:%M')
 
 class ReservationForm(forms.ModelForm):
     class Meta:
