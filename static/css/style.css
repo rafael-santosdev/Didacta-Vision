@@ -63,7 +63,7 @@ a {
     text-decoration: none;
 }
 
-/* Sublinhado no hover para links de texto */
+
 a.text-muted:hover,
 .text-muted a:hover,
 a.text-muted:hover[style*="text-decoration"],
@@ -91,9 +91,7 @@ main, section, header, footer {
     min-height: 100vh;
 }
 
-/* ============================================
-   NAVBAR
-   ============================================ */
+
 
 .dv-navbar {
     position: fixed;
@@ -326,9 +324,7 @@ main, section, header, footer {
     color: hsl(var(--danger));
 }
 
-/* ============================================
-   BUTTONS
-   ============================================ */
+
 
 .dv-btn {
     border: none;
@@ -428,9 +424,7 @@ main, section, header, footer {
     border-color: rgba(239, 68, 68, 0.4);
 }
 
-/* ============================================
-   MAIN CONTENT
-   ============================================ */
+
 
 .dv-main {
     width: min(1200px, calc(100vw - 32px));
@@ -481,9 +475,7 @@ main, section, header, footer {
     color: hsl(222 9% 90%);
 }
 
-/* ============================================
-   HERO SECTION
-   ============================================ */
+
 
 .dv-hero {
     position: relative;
@@ -507,7 +499,7 @@ main, section, header, footer {
     filter: brightness(0.75);
 }
 
-/* Ajuste para desktop - melhorar aspecto da imagem */
+
 @media (min-width: 769px) {
     .dv-hero__image {
         object-fit: cover;
@@ -633,7 +625,7 @@ main, section, header, footer {
     line-height: 1.5;
 }
 
-/* Espaçamento adequado entre subtítulo e botão no toolbar quando em coluna */
+
 .dv-toolbar {
     margin-bottom: 24px;
 }
@@ -673,9 +665,7 @@ main, section, header, footer {
     background: transparent;
 }
 
-/* ============================================
-   CARDS
-   ============================================ */
+
 
 .dv-card {
     min-width: clamp(200px, 70vw, 270px);
@@ -706,13 +696,12 @@ main, section, header, footer {
 }
 
 .dv-card__tag {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.7);
-    font-size: 0.75rem;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  backdrop-filter: nonw;
+  color: hsl(var(--foreground));
 }
 
 .dv-card__body {
@@ -1454,6 +1443,12 @@ main, section, header, footer {
 
 /* Mobile */
 @media (max-width: 768px) {
+  .dv-card__tag[style*="bottom"]{
+    top: 12px !important;
+    left: 12px !important;
+    right: auto !important;
+    bottom: auto !important;
+    }
     .dv-wrapper {
         padding-top: 80px;
     }
