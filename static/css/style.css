@@ -710,12 +710,21 @@ main, section, header, footer {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    height: 100%;
 }
 
 .dv-card__body p {
     font-size: clamp(0.85rem, 2vw, 0.95rem);
     color: hsl(222 9% 90%);
     line-height: 1.55;
+}
+
+.dv-card__excerpt {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 3.9em;
 }
 
 .dv-meta {
@@ -1164,6 +1173,15 @@ main, section, header, footer {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.dv-form .dv-status {
+    display: block;
+    width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.4;
+    margin-top: 2px;
 }
 
 .dv-form-group label {

@@ -13,7 +13,7 @@
                     <img class="dv-hero__image" src="{% if destaque.cartaz %}{{ destaque.cartaz.url }}{% elif destaque.cartaz_url %}{{ destaque.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ destaque.titulo }}">
                     <div class="dv-hero__overlay"></div>
                 </div>
-                <div class="dv-hero__content">
+                <div class="dv-hero__content" style="align-items:center;text-align:center;padding-top:clamp(96px,22vh,160px);padding-bottom:clamp(48px,14vh,96px);">
                     <span class="dv-badge"><i class="bi bi-stars"></i> Em destaque</span>
                     <h1 class="dv-hero__title">{{ destaque.titulo }}</h1>
                     <p class="dv-hero__lead">{{ destaque.sinopse|truncatewords:34 }}</p>
@@ -22,7 +22,7 @@
                         <span>{{ destaque.duracao }} min</span>
                         {% if destaque.genero %}<span>{{ destaque.genero }}</span>{% endif %}
                     </div>
-                    <div class="dv-hero__actions">
+                    <div class="dv-hero__actions" style="justify-content:center;flex-wrap:wrap;">
                         <a class="dv-btn primary" href="{% url 'didacta:film_detail' destaque.pk %}">
                             <i class="bi bi-play-circle"></i> Ver detalhes
                         </a>
@@ -68,11 +68,6 @@
                                 <div class="dv-card__body">
                                     <strong>{{ filme.titulo }}</strong>
                                     <p>{{ filme.sinopse|truncatewords:18 }}</p>
-                                    <div class="dv-meta">
-                                        <span>{{ filme.get_classificacao_display }}</span>
-                                        <span>{{ filme.duracao }} min</span>
-                                        {% if filme.genero %}<span>{{ filme.genero }}</span>{% endif %}
-                                    </div>
                                 </div>
                             </a>
                         </article>
@@ -139,12 +134,7 @@
                                 </div>
                                 <div class="dv-card__body">
                                     <strong>{{ filme.titulo }}</strong>
-                                    <p>{{ filme.sinopse|truncatewords:18 }}</p>
-                                    <div class="dv-meta">
-                                        <span>{{ filme.get_classificacao_display }}</span>
-                                        <span>{{ filme.duracao }} min</span>
-                                        {% if filme.genero %}<span>{{ filme.genero }}</span>{% endif %}
-                                    </div>
+                                    <p class="dv-card__excerpt">{{ filme.sinopse|truncatewords:18 }}</p>
                                 </div>
                             </a>
                         </article>

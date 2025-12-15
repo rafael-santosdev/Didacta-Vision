@@ -15,15 +15,6 @@
                 <i class="bi bi-play-circle"></i> Assistir Trailer
             </a>
             {% endif %}
-            {% if sessoes_futuras %}
-            <a class="dv-btn ghost" href="#sessoes">
-                <i class="bi bi-calendar-event"></i> Ver sessões
-            </a>
-            {% elif user.is_admin_or_professor %}
-            <a class="dv-btn ghost" href="{% url 'didacta:session_create' %}">
-                <i class="bi bi-plus-circle"></i> Cadastrar sessão
-            </a>
-            {% endif %}
         </div>
     </div>
 </section>
