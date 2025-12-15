@@ -409,7 +409,6 @@ class Notification(models.Model):
         return f"{self.usuario.nome_completo} - {self.titulo}"
     
     def get_categoria_display(self):
-        """Retorna 'Filmes', 'Sessões', 'Suporte' ou 'Outro' baseado no tipo da notificação"""
         tipos_filmes = ['filme_criado', 'filme_atualizado', 'filme_removido']
         tipos_sessoes = ['sessao_criada', 'sessao_atualizada', 'sessao_cancelada', 'sessao_alterada', 
                         'sessao_reagendada', 'reserva_criada', 'reserva_cancelada', 'reserva_confirmada']

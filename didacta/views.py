@@ -89,9 +89,24 @@ def login_view(request):
                     return redirect(next_url)
                 return redirect('didacta:index')
             else:
-                messages.error(request, 'Conta inativa.')
+                messages.error(request, 'Dados de conta de usuário não encontrados.')
         else:
-            messages.error(request, 'Nome/email ou senha incorretos.')
+            user_check = None
+            try:
+                user_check = User.objects.get(nome_completo__iexact=nome_ou_email)
+            except User.DoesNotExist:
+                try:
+                    user_check = User.objects.get(email__iexact=nome_ou_email)
+                except User.DoesNotExist:
+                    try:
+                        user_check = User.objects.get(username__iexact=nome_ou_email)
+                    except User.DoesNotExist:
+                        pass
+            
+            if user_check and not user_check.is_active and user_check.check_password(password):
+                messages.error(request, 'Dados de conta de usuário não encontrados.')
+            else:
+                messages.error(request, 'Dados de conta de usuário não encontrados.')
 
     return render(request, 'didacta/autenticacao/login.html')
 
@@ -224,7 +239,6 @@ def password_reset_verify(request):
             codigo_obj.usado = True
             codigo_obj.save()
 
-            # Garantir que o usuário não está logado
             if request.user.is_authenticated:
                 logout(request)
             

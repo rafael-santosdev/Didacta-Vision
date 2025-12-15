@@ -36,17 +36,15 @@
                 <thead>
                     <tr>
                         <th>Usuário</th>
-                        <th>Email</th>
-                        <th>Status</th>
-                        <th>Ações</th>
+                        <th style="text-align:right;">Status</th>
+                        <th style="text-align:right;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for reserva in reservas %}
                     <tr>
                         <td>{% if reserva.usuario %}{{ reserva.usuario.nome_completo }}{% else %}Usuário removido{% endif %}</td>
-                        <td>{% if reserva.usuario %}{{ reserva.usuario.email }}{% else %}-{% endif %}</td>
-                        <td>
+                        <td style="text-align:right;">
                             <span class="dv-status
                                 {% if reserva.status == 'presente' %}success
                                 {% elif reserva.status == 'reservado' %}neutral
@@ -55,7 +53,7 @@
                                 {{ reserva.get_status_display }}
                             </span>
                         </td>
-                        <td>
+                        <td style="text-align:right;">
                             {% if reserva.status != 'cancelado' %}
                             <form method="post" action="{% url 'didacta:mark_presence' reserva.pk %}" class="dv-inline-form">
                                 {% csrf_token %}

@@ -583,6 +583,7 @@ main, section, header, footer {
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
+    margin-top: 32px;
 }
 
 
@@ -642,7 +643,7 @@ main, section, header, footer {
 
 .dv-carousel__track {
     display: flex;
-    gap: 18px;
+    gap: 24px;
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 8px;
@@ -744,7 +745,6 @@ main, section, header, footer {
     background: linear-gradient(150deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
 }
 
-/* Espaçamento adequado entre textos e botões nos cards */
 .dv-card-wide p + .dv-btn,
 .dv-card-wide p + .dv-hero__actions,
 .dv-card-wide .text-muted + .dv-btn,
@@ -784,7 +784,6 @@ main, section, header, footer {
     filter: brightness(0.65);
 }
 
-/* Ajustar imagem ao expandir no desktop */
 @media (min-width: 769px) {
     .dv-detail-hero {
         max-height: 75vh;
@@ -917,17 +916,14 @@ main, section, header, footer {
     margin: 0;
 }
 
-/* ============================================
-   TABLES
-   ============================================ */
-
 .dv-table-wrapper {
     width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     border: 1px solid rgba(255,255,255,0.05);
     background: rgba(10,10,20,0.45);
+    padding: 8px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.2) transparent;
@@ -1052,17 +1048,23 @@ main, section, header, footer {
 .dv-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 600px;
+    min-width: 500px;
+    font-size: 0.9rem;
 }
 
 .dv-table th,
 .dv-table td {
     text-align: left;
-    padding: clamp(10px, 2vw, 14px) clamp(8px, 1.5vw, 12px);
+    padding: clamp(8px, 1.5vw, 10px) clamp(6px, 1.2vw, 10px);
     border-bottom: 1px solid rgba(255,255,255,0.08);
     word-wrap: break-word;
     vertical-align: middle;
     color: hsl(222 9% 90%);
+}
+
+.dv-table th[style*="text-align:right"],
+.dv-table td[style*="text-align:right"] {
+    text-align: right;
 }
 .dv-table tbody tr:hover {
     background: rgba(255,255,255,0.03);
@@ -1106,10 +1108,6 @@ main, section, header, footer {
 .dv-chip i {
     opacity: 0.9;
 }
-
-/* ============================================
-   FORMS
-   ============================================ */
 
 .dv-form-card {
     background: var(--gradient-panel);
@@ -1304,11 +1302,6 @@ main, section, header, footer {
     background: transparent;
 }
 
-/* ============================================
-   RESPONSIVE BREAKPOINTS
-   ============================================ */
-
-/* Tablet and below */
 @media (max-width: 1024px) {
     .dv-navbar__inner {
         gap: 16px;
@@ -1331,7 +1324,6 @@ main, section, header, footer {
     }
 }
 
-/* Mobile menu activation */
 @media (max-width: 992px) {
     .dv-navbar__inner {
         justify-content: space-between;
@@ -1441,7 +1433,6 @@ main, section, header, footer {
     }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   .dv-card__tag[style*="bottom"]{
     top: 12px !important;
@@ -1478,7 +1469,6 @@ main, section, header, footer {
         margin-top: 4px;
     }
 
-    /* Esconde subtítulo verboso no mobile */
     .dv-section__subtitle {
         display: none;
     }
@@ -1543,7 +1533,6 @@ main, section, header, footer {
         width: 100%;
     }
 
-    /* Meta tags mais compactas no mobile */
     .dv-meta {
         flex-direction: row;
         align-items: center;
@@ -1552,7 +1541,6 @@ main, section, header, footer {
         font-size: 0.8rem;
     }
 
-    /* Hero - página inicial: apenas título e botões no mobile */
     .dv-hero {
         min-height: clamp(320px, 45vh, 400px);
         border-radius: var(--radius-lg);
@@ -1569,9 +1557,9 @@ main, section, header, footer {
     .dv-hero__content {
         padding: clamp(20px, 4vw, 28px);
         gap: clamp(16px, 3vw, 20px);
+        justify-content: flex-end;
     }
 
-    /* Remove badge, sinopse e meta tags no mobile */
     .dv-hero .dv-badge {
         display: none;
     }
@@ -1591,7 +1579,7 @@ main, section, header, footer {
     }
 
     .dv-hero__actions {
-        margin-top: 0;
+        margin-top: auto;
         gap: 10px;
     }
 
@@ -1602,7 +1590,6 @@ main, section, header, footer {
         padding: 10px 16px;
     }
 
-    /* Detail hero: apenas título e botões no mobile */
     .dv-detail-hero {
         min-height: clamp(280px, 40vh, 380px);
         border-radius: var(--radius-lg);
@@ -1626,7 +1613,6 @@ main, section, header, footer {
         align-items: center;
     }
 
-    /* Remove badge, meta tags e sinopse no mobile */
     .dv-detail-hero .dv-badge {
         display: none;
     }
@@ -1656,10 +1642,10 @@ main, section, header, footer {
         width: 100%;
         align-self: flex-end;
     }
-    
-    /* Botões "ver detalhes" e "minhas reservas" mais embaixo no mobile */
+
     .dv-hero__actions {
-        margin-top: 24px;
+        margin-top: auto;
+        padding-top: 24px;
     }
 
     .dv-section__title {
@@ -1671,7 +1657,6 @@ main, section, header, footer {
         padding: clamp(18px, 3vw, 24px);
     }
 
-    /* Cards de filmes: transforma para layout sobreposto no mobile */
     .dv-card {
         position: relative;
         overflow: hidden;
@@ -1777,13 +1762,11 @@ main, section, header, footer {
         align-items: center;
     }
 
-    /* Badge menor no mobile */
     .dv-badge {
         font-size: 0.7rem;
         padding: 5px 10px;
     }
 
-    /* Seções mais compactas */
     .dv-section {
         margin-top: clamp(32px, 5vw, 48px);
     }
@@ -1793,7 +1776,6 @@ main, section, header, footer {
     }
 }
 
-/* Small mobile */
 @media (max-width: 480px) {
     .dv-wrapper {
         padding-top: 72px;
@@ -2041,7 +2023,6 @@ main, section, header, footer {
 }
 }
 
-/* Extra small devices */
 @media (max-width: 360px) {
     .dv-hero__title {
         font-size: 1.4rem;
@@ -2062,7 +2043,6 @@ main, section, header, footer {
     }
 }
 
-/* Landscape orientation adjustments */
 @media (max-height: 500px) and (orientation: landscape) {
     .dv-hero {
         min-height: 50vh;
@@ -2073,7 +2053,6 @@ main, section, header, footer {
     }
 }
 
-/* Print styles */
 @media print {
     .dv-navbar,
     .dv-footer,
@@ -2091,7 +2070,6 @@ main, section, header, footer {
         padding: 0;
     }
 }
-/* ====== Tornar textos escuros visíveis ====== */
 .text-muted,
 .footer-text,
 p,
@@ -2106,7 +2084,6 @@ label,
     color: hsl(222 9% 90%) !important;
 }
 
-/* Garantir que textos do footer e small fiquem claros */
 .dv-footer small,
 .dv-footer .text-muted,
 .dv-footer p,
@@ -2119,7 +2096,6 @@ small.text-muted,
     color: hsl(222 9% 90%) !important;
 }
 
-/* Garantir que todos os elementos small fiquem claros */
 small {
     color: hsl(222 9% 90%) !important;
 }

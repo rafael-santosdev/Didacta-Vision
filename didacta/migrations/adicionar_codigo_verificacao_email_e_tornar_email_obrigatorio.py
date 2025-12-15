@@ -3,7 +3,6 @@ import django.db.models.deletion
 
 
 def update_null_emails(apps, schema_editor):
-    """Atualiza usuários com email NULL para ter um email baseado no username"""
     User = apps.get_model('didacta', 'User')
     for user in User.objects.filter(email__isnull=True):
         user.email = f"{user.username}@temp.didactavision.com"

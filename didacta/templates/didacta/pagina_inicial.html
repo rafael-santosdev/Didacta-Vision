@@ -24,7 +24,7 @@
                     </div>
                     <div class="dv-hero__actions">
                         <a class="dv-btn primary" href="{% url 'didacta:film_detail' destaque.pk %}">
-                            <i class="bi bi-play-fill"></i> Ver detalhes
+                            <i class="bi bi-play-circle"></i> Ver detalhes
                         </a>
                         {% if user.is_authenticated and not user.is_admin_or_professor %}
                         <a class="dv-btn ghost" href="{% url 'didacta:reservation_list' %}">
@@ -45,7 +45,7 @@
                     <div>
                         <span class="dv-badge">Seleção Didacta</span>
                         <h2 class="dv-section__title">Filmes em cartaz</h2>
-                        <p class="dv-section__subtitle">Escolha um título, veja sessões e reserve em poucos cliques.</p>
+                        <p class="dv-section__subtitle">Escolha um filme, veja sessões e reserve em poucos cliques.</p>
                     </div>
                     {% if page_obj.paginator.num_pages > 1 %}
                     <a href="?page={{ page_obj.paginator.num_pages }}" class="dv-btn ghost sm">Ver todos</a>
@@ -64,12 +64,12 @@
                                     {% else %}
                                         <img src="{% static 'css/img/Oppenheimer_poster.jpg' %}" alt="Cartaz genérico">
                                     {% endif %}
-                                    <span class="dv-card__tag">{{ filme.get_classificacao_display }}</span>
                                 </div>
                                 <div class="dv-card__body">
                                     <strong>{{ filme.titulo }}</strong>
                                     <p>{{ filme.sinopse|truncatewords:18 }}</p>
                                     <div class="dv-meta">
+                                        <span>{{ filme.get_classificacao_display }}</span>
                                         <span>{{ filme.duracao }} min</span>
                                         {% if filme.genero %}<span>{{ filme.genero }}</span>{% endif %}
                                     </div>
@@ -141,6 +141,7 @@
                                     <strong>{{ filme.titulo }}</strong>
                                     <p>{{ filme.sinopse|truncatewords:18 }}</p>
                                     <div class="dv-meta">
+                                        <span>{{ filme.get_classificacao_display }}</span>
                                         <span>{{ filme.duracao }} min</span>
                                         {% if filme.genero %}<span>{{ filme.genero }}</span>{% endif %}
                                     </div>
