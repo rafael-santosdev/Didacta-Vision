@@ -1466,22 +1466,22 @@ main, section, header, footer {
         z-index: 199;
     }
 
-    #dvMenuToggleCheck:checked ~ .dv-nav,
+    #dvMenuToggleCheck:checked + .dv-menu-toggle + .dv-nav,
     .dv-nav.is-open {
         transform: translateY(0);
         opacity: 1;
         visibility: visible;
     }
     
-    #dvMenuToggleCheck:checked ~ .dv-menu-toggle span:nth-child(1) {
+    #dvMenuToggleCheck:checked + .dv-menu-toggle span:nth-child(1) {
         transform: translateY(7px) rotate(45deg);
     }
     
-    #dvMenuToggleCheck:checked ~ .dv-menu-toggle span:nth-child(2) {
+    #dvMenuToggleCheck:checked + .dv-menu-toggle span:nth-child(2) {
         opacity: 0;
     }
     
-    #dvMenuToggleCheck:checked ~ .dv-menu-toggle span:nth-child(3) {
+    #dvMenuToggleCheck:checked + .dv-menu-toggle span:nth-child(3) {
         transform: translateY(-7px) rotate(-45deg);
     }
 

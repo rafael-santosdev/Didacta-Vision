@@ -23,6 +23,12 @@
                 </span>
                 <span>Didacta Vision</span>
             </a>
+            <input type="checkbox" id="dvMenuToggleCheck" class="dv-menu-checkbox">
+            <label for="dvMenuToggleCheck" class="dv-menu-toggle" aria-label="Abrir navegação">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
             <div class="dv-nav" id="dvNav">
                 <div class="dv-nav__links">
                     <a href="{% url 'didacta:index' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'index' %}is-active{% endif %}">Início</a>
@@ -81,12 +87,6 @@
                     {% endif %}
                 </div>
             </div>
-            <input type="checkbox" id="dvMenuToggleCheck" class="dv-menu-checkbox">
-            <label for="dvMenuToggleCheck" class="dv-menu-toggle" aria-label="Abrir navegação">
-                <span></span>
-                <span></span>
-                <span></span>
-            </label>
         </div>
     </header>
 
