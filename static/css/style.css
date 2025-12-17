@@ -21,7 +21,7 @@
     --radius-sm: 12px;
     --transition-fast: 160ms ease;
     --transition: 240ms cubic-bezier(.25,.8,.25,1);
-    --gradient-hero: linear-gradient(125deg, rgba(0,0,0,0.95) 25%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0.2) 100%);
+    --gradient-hero: linear-gradient(125deg, rgba(0,0,0,0.85) 20%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.15) 100%);
     --gradient-panel: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
     --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cpath fill='%23ffffff0d' d='M0 138h1v2H0zM1 0h1v1H1zM1 138h1v2H1zM2 1h1v1H2zM2 138h1v2H2zM3 2h1v1H3zM3 138h1v2H3zM4 3h1v1H4zM4 138h1v2H4zM5 4h1v1H5zM5 138h1v2H5zM6 5h1v1H6zM6 138h1v2H6z'/%3E%3C/svg%3E");
 }

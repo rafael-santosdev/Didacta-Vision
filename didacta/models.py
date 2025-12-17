@@ -76,6 +76,13 @@ class User(AbstractUser):
     )
 
     is_active = models.BooleanField('Ativo', default=True)
+    email_verificado = models.BooleanField('Email Verificado', default=False)
+    acesso_provisorio_expira = models.DateTimeField(
+        'Expiração do Acesso Provisório',
+        null=True,
+        blank=True,
+        help_text='Data/hora em que o acesso provisório expira (1 hora após uso do código temporário)'
+    )
     created_at = models.DateTimeField('Criado em', auto_now_add=True)
     updated_at = models.DateTimeField('Atualizado em', auto_now=True)
 
@@ -426,7 +433,6 @@ class Notification(models.Model):
 class HelpTicket(models.Model):
     STATUS_CHOICES = [
         ('aberto', 'Aberto'),
-        ('respondido', 'Respondido'),
         ('fechado', 'Fechado'),
     ]
 

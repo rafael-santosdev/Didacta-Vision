@@ -9,7 +9,7 @@
             <article class="dv-card-wide">
                 <div class="dv-toolbar">
                     <h2>{{ ticket.assunto }}</h2>
-                    <span class="dv-status {% if ticket.status == 'aberto' %}warning{% elif ticket.status == 'respondido' %}success{% else %}neutral{% endif %}">
+                    <span class="dv-status {% if ticket.status == 'aberto' %}warning{% else %}neutral{% endif %}">
                         {{ ticket.get_status_display }}
                     </span>
                 </div>
@@ -48,10 +48,9 @@
                 </div>
                 <div class="dv-form-group">
                     <label for="status">Status</label>
-                    <select name="status" id="status">
-                        <option value="aberto" {% if ticket.status == 'aberto' %}selected{% endif %}>Aberto</option>
-                        <option value="respondido" {% if ticket.status == 'respondido' %}selected{% endif %}>Respondido</option>
-                        <option value="fechado" {% if ticket.status == 'fechado' %}selected{% endif %}>Fechado</option>
+                    <select name="status" id="status" style="background:#0a0a14; color:#fff; border:1px solid rgba(59,130,246,0.5);">
+                        <option value="aberto" {% if ticket.status == 'aberto' %}selected{% endif %} style="background:#0a0a14; color:#fff;">Aberto</option>
+                        <option value="fechado" {% if ticket.status == 'fechado' %}selected{% endif %} style="background:#0a0a14; color:#fff;">Fechado</option>
                     </select>
                 </div>
                 <div class="dv-form-actions">

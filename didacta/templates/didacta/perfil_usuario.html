@@ -13,18 +13,17 @@
     </div>
 
     <div class="dv-detail-grid">
-        <article class="dv-panel" style="text-align:center;">
+        <article class="dv-panel" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
             {% if user.foto_perfil %}
             <img src="{{ user.foto_perfil.url }}" alt="Foto de Perfil" style="width:140px;height:140px;object-fit:cover;border-radius:999px;margin-bottom:14px;">
             {% else %}
-            <div style="width:140px;height:140px;border-radius:999px;background:rgba(255,255,255,0.06);display:grid;place-items:center;margin:0 auto 14px;">
+            <div style="width:140px;height:140px;border-radius:999px;background:rgba(255,255,255,0.06);display:grid;place-items:center;margin-bottom:14px;">
                 <i class="bi bi-person" style="font-size:2.6rem;color:rgba(255,255,255,0.4);"></i>
             </div>
             {% endif %}
-            <h3>{{ user.nome_completo }}</h3>
-            <p class="text-muted">{{ user.email }}</p>
-            <span class="dv-tag">{{ user.get_tipo_usuario_display }}</span>
-            <div class="dv-hero__actions" style="margin-top:18px;justify-content:center;">
+            <h3 style="margin:0;">{{ user.nome_completo }}</h3>
+            <span class="dv-tag" style="margin-top:8px;">{{ user.get_tipo_usuario_display }}</span>
+            <div style="margin-top:18px;">
                 <a href="{% url 'didacta:delete_account' %}" class="dv-btn ghost" onclick="return confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')">
                     <i class="bi bi-trash"></i> Excluir Conta
                 </a>

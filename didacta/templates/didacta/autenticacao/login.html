@@ -19,11 +19,11 @@
             {% csrf_token %}
             <div class="dv-form-group">
                 <label for="email">Nome de usuário ou email</label>
-                <input type="text" id="email" name="email" placeholder="ex: Ana Beatriz ou ana@email.com" required>
+                <input type="text" id="email" name="email" placeholder="ex: Ana Beatriz ou ana@email.com" required autocomplete="off">
             </div>
             <div class="dv-form-group">
                 <label for="password">Senha</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required autocomplete="new-password">
                 <a class="text-muted" href="{% url 'didacta:password_reset_request' %}" style="text-decoration:none; transition:text-decoration 0.2s;">Esqueci a senha</a>
             </div>
             <button type="submit" class="dv-btn primary">

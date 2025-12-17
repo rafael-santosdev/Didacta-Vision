@@ -93,7 +93,7 @@
             {% for message in messages %}
             <div class="dv-alert {% if 'success' in message.tags %}success{% elif 'error' in message.tags or 'danger' in message.tags %}error{% endif %}">
                 <div>
-                    <strong>{{ message.tags|default:"info"|title }}</strong>
+                    <strong>{% if 'success' in message.tags %}Sucesso{% elif 'error' in message.tags or 'danger' in message.tags %}Erro{% elif 'warning' in message.tags %}Aviso{% else %}Info{% endif %}</strong>
                     <p>{{ message }}</p>
                 </div>
             </div>

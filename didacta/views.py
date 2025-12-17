@@ -31,7 +31,9 @@ def register_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            user.is_active = False  # Usuário inativo até verificar
+            user.save()
             
             import random
             codigo = ''.join([str(random.randint(0, 9)) for _ in range(6)])
@@ -77,36 +79,28 @@ def login_view(request):
             messages.error(request, 'Nome ou email é obrigatório para login.')
             return render(request, 'didacta/autenticacao/login.html')
 
-        from django.contrib.auth import authenticate
-        user = authenticate(request, username=nome_ou_email, password=password)
-
-        if user is not None:
-            if user.is_active:
-                login(request, user, backend='didacta.autenticacao_backend.NomeOrEmailBackend')
-                messages.success(request, f'Bem-vindo, {user.nome_completo}!')
-                next_url = request.GET.get('next')
-                if next_url and next_url.startswith('/'):
-                    return redirect(next_url)
-                return redirect('didacta:index')
-            else:
-                messages.error(request, 'Dados de conta de usuário não encontrados.')
-        else:
-            user_check = None
-            try:
-                user_check = User.objects.get(nome_completo__iexact=nome_ou_email)
-            except User.DoesNotExist:
-                try:
-                    user_check = User.objects.get(email__iexact=nome_ou_email)
-                except User.DoesNotExist:
-                    try:
-                        user_check = User.objects.get(username__iexact=nome_ou_email)
-                    except User.DoesNotExist:
-                        pass
+        # Buscar usuário manualmente para verificar status
+        user_found = User.objects.filter(nome_completo__iexact=nome_ou_email).first()
+        if not user_found:
+            user_found = User.objects.filter(email__iexact=nome_ou_email).first()
+        if not user_found:
+            user_found = User.objects.filter(username__iexact=nome_ou_email).first()
+        
+        if user_found and user_found.check_password(password):
+            if not user_found.is_active:
+                # Usuário existe mas não verificou o cadastro
+                messages.error(request, 'Sua conta ainda não foi verificada. Complete o processo de verificação para fazer login.')
+                return render(request, 'didacta/autenticacao/login.html')
             
-            if user_check and not user_check.is_active and user_check.check_password(password):
-                messages.error(request, 'Dados de conta de usuário não encontrados.')
-            else:
-                messages.error(request, 'Dados de conta de usuário não encontrados.')
+            # Usuário ativo, fazer login
+            login(request, user_found, backend='didacta.autenticacao_backend.NomeOrEmailBackend')
+            messages.success(request, f'Bem-vindo, {user_found.nome_completo}!')
+            next_url = request.GET.get('next')
+            if next_url and next_url.startswith('/'):
+                return redirect(next_url)
+            return redirect('didacta:index')
+        else:
+            messages.error(request, 'Dados de conta de usuário não encontrados.')
 
     return render(request, 'didacta/autenticacao/login.html')
 
@@ -124,13 +118,43 @@ def verify_code_view(request):
         del request.session['verification_user_id']
         return redirect('didacta:login')
 
+    # Gerar código temporário para exibição na tela
+    import random
+    codigo_temporario = request.session.get('codigo_temporario')
+    if not codigo_temporario:
+        codigo_temporario = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        request.session['codigo_temporario'] = codigo_temporario
+
     if request.method == 'POST':
         codigo = request.POST.get('codigo', '').strip()
+        usar_acesso_provisorio = request.POST.get('acesso_provisorio') == '1'
 
         if not codigo:
             messages.error(request, 'Por favor, informe o código de verificação.')
-            return render(request, 'didacta/autenticacao/verify_code.html', {'user': user})
+            return render(request, 'didacta/autenticacao/verify_code.html', {
+                'user': user,
+                'codigo_temporario': codigo_temporario
+            })
 
+        # Verificar se é o código temporário (acesso provisório)
+        if usar_acesso_provisorio and codigo == codigo_temporario:
+            from datetime import timedelta
+            user.is_active = True  # Ativar usuário
+            user.acesso_provisorio_expira = timezone.now() + timedelta(hours=1)
+            user.save()
+            
+            del request.session['verification_user_id']
+            if 'codigo_temporario' in request.session:
+                del request.session['codigo_temporario']
+            
+            login(request, user, backend='didacta.autenticacao_backend.NomeOrEmailBackend')
+            messages.warning(request, 
+                'Acesso provisório ativado! Você tem aproximadamente 1 hora para usar o sistema. '
+                'Para continuar usando após esse período, verifique seu e-mail.'
+            )
+            return redirect('didacta:index')
+
+        # Verificar código de e-mail (verificação definitiva)
         codigo_obj = EmailVerificationCode.objects.filter(
             usuario=user,
             codigo=codigo,
@@ -140,15 +164,45 @@ def verify_code_view(request):
         if codigo_obj and codigo_obj.is_valid():
             codigo_obj.usado = True
             codigo_obj.save()
+            
+            user.is_active = True  # Ativar usuário
+            user.email_verificado = True
+            user.acesso_provisorio_expira = None  # Limpa acesso provisório
+            user.save()
 
             del request.session['verification_user_id']
+            if 'codigo_temporario' in request.session:
+                del request.session['codigo_temporario']
 
-            messages.success(request, 'Código verificado com sucesso! Faça login com suas credenciais.')
+            messages.success(request, 'E-mail verificado com sucesso! Faça login com suas credenciais.')
             return redirect('didacta:login')
         else:
             messages.error(request, 'Código inválido ou expirado. Por favor, tente novamente.')
 
-    return render(request, 'didacta/autenticacao/verify_code.html', {'user': user})
+    return render(request, 'didacta/autenticacao/verify_code.html', {
+        'user': user,
+        'codigo_temporario': codigo_temporario
+    })
+
+def cancel_verification_view(request):
+    """Cancela o processo de verificação e remove o usuário não verificado."""
+    user_id = request.session.get('verification_user_id')
+    
+    if user_id:
+        try:
+            user = User.objects.get(pk=user_id)
+            if not user.is_active:  # Só deleta se não foi ativado
+                user.delete()
+        except User.DoesNotExist:
+            pass
+        
+        if 'verification_user_id' in request.session:
+            del request.session['verification_user_id']
+        if 'codigo_temporario' in request.session:
+            del request.session['codigo_temporario']
+    
+    messages.warning(request, 'Processo de cadastro cancelado. A verificação não foi concluída.')
+    return redirect('didacta:login')
 
 def logout_view(request):
     if request.user.is_authenticated:
@@ -297,7 +351,11 @@ def password_reset_confirm(request):
     return render(request, 'didacta/autenticacao/password_reset_confirm.html', {'user': user})
 
 def index(request):
-    filmes = Film.objects.filter(ativo=True).order_by('-created_at')
+    # Apenas filmes que têm sessões cadastradas
+    filmes = Film.objects.filter(
+        ativo=True,
+        session_set__isnull=False
+    ).distinct().order_by('-created_at')
 
     paginator = Paginator(filmes, 10)
     page_number = request.GET.get('page')
@@ -311,6 +369,7 @@ def index(request):
 @login_required
 def profile_view(request):
     user = request.user
+    form_password = PasswordChangeForm(user)
 
     if request.method == 'POST':
         if 'update_profile' in request.POST:
@@ -326,9 +385,15 @@ def profile_view(request):
                 user.save()
                 messages.success(request, 'Senha alterada com sucesso!')
                 return redirect('didacta:profile')
+            form = UserUpdateForm(instance=user)
+        else:
+            form = UserUpdateForm(instance=user)
     else:
         form = UserUpdateForm(instance=user)
-        form_password = PasswordChangeForm(user)
+        
+    # Garantir que o campo data_nascimento tenha o valor formatado corretamente
+    if user.data_nascimento and not form.initial.get('data_nascimento'):
+        form.initial['data_nascimento'] = user.data_nascimento
 
     reservas = Reservation.objects.filter(usuario=user).select_related('usuario', 'sessao', 'sessao__filme').order_by('-created_at')[:10]
 
@@ -344,10 +409,9 @@ def profile_view(request):
 def delete_account_view(request):
     if request.method == 'POST':
         user = request.user
-        user.is_active = False
-        user.save()
         logout(request)
-        messages.success(request, 'Sua conta foi desativada com sucesso.')
+        user.delete()
+        messages.success(request, 'Sua conta foi excluída com sucesso.')
         return redirect('didacta:index')
 
     return render(request, 'didacta/excluir_conta.html')
@@ -650,7 +714,7 @@ def session_detail_admin(request, pk):
         return redirect('didacta:index')
 
     sessao = get_object_or_404(Session, pk=pk)
-    reservas = Reservation.objects.filter(sessao=sessao).select_related('usuario').order_by('usuario__nome_completo')
+    reservas = Reservation.objects.filter(sessao=sessao).select_related('usuario').order_by('-status', 'usuario__nome_completo')
 
     context = {
         'sessao': sessao,

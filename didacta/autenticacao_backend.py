@@ -13,15 +13,15 @@ class NomeOrEmailBackend(ModelBackend):
             return None
 
         try:
-            user = User.objects.get(nome_completo__iexact=username)
-        except User.DoesNotExist:
-            try:
-                user = User.objects.get(email__iexact=username)
-            except User.DoesNotExist:
-                try:
-                    user = User.objects.get(username__iexact=username)
-                except User.DoesNotExist:
-                    return None
+            user = User.objects.filter(nome_completo__iexact=username).first()
+            if not user:
+                user = User.objects.filter(email__iexact=username).first()
+            if not user:
+                user = User.objects.filter(username__iexact=username).first()
+            if not user:
+                return None
+        except User.MultipleObjectsReturned:
+            return None
 
         if user.check_password(password) and self.user_can_authenticate(user):
             return user

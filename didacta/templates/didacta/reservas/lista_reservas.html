@@ -41,7 +41,7 @@
                             </span>
                         </td>
                         <td>
-                            {% if reserva.status == 'reservado' %}
+                            {% if reserva.status == 'reservado' or reserva.status == 'presente' %}
                             <a class="dv-btn ghost" href="{% url 'didacta:reservation_cancel' reserva.pk %}">
                                 <i class="bi bi-x-circle"></i> Cancelar
                             </a>
