@@ -5,10 +5,6 @@ register = template.Library()
 
 @register.filter
 def dict_get(value, key):
-    """
-    Retorna o valor de um dicionário para a chave informada.
-    Útil para acessar reservas por sessão no template.
-    """
     if value is None:
         return None
     try:
@@ -19,9 +15,6 @@ def dict_get(value, key):
 
 @register.simple_tag
 def unread_notifications_count(user):
-    """
-    Retorna a contagem de notificações não lidas do usuário.
-    """
     if not user or not user.is_authenticated:
         return 0
     try:
@@ -32,9 +25,6 @@ def unread_notifications_count(user):
 
 @register.simple_tag
 def unread_tickets_count(user):
-    """
-    Retorna a contagem de tickets não respondidos para admin.
-    """
     if not user or not user.is_authenticated:
         return 0
     try:
@@ -45,7 +35,3 @@ def unread_tickets_count(user):
         return 0
     except Exception as e:
         return 0
-
-
-
-

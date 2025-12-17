@@ -56,12 +56,15 @@
                         </td>
                         <td style="text-align:center;">
                             {% if reserva.status == 'cancelado' and reserva.justificativa_cancelamento %}
-                            <button type="button" class="dv-btn ghost" style="padding:4px 12px; font-size:0.85rem;" 
-                                    data-justificativa="{{ reserva.justificativa_cancelamento }}"
-                                    data-usuario="{% if reserva.usuario %}{{ reserva.usuario.nome_completo }}{% else %}Usuário removido{% endif %}"
-                                    onclick="mostrarJustificativa(this)">
-                                <i class="bi bi-eye"></i> Ver
-                            </button>
+                            <details>
+                                <summary class="dv-btn ghost" style="padding:4px 12px; font-size:0.85rem;">
+                                    <i class="bi bi-eye"></i> Ver
+                                </summary>
+                                <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:8px; margin-top:8px; text-align:left;">
+                                    <strong>{% if reserva.usuario %}{{ reserva.usuario.nome_completo }}{% else %}Usuário removido{% endif %}</strong>
+                                    <p style="margin:8px 0 0; white-space:pre-wrap;">{{ reserva.justificativa_cancelamento }}</p>
+                                </div>
+                            </details>
                             {% elif reserva.status == 'cancelado' %}
                             <span class="text-muted">Sem justificativa</span>
                             {% else %}
@@ -88,23 +91,6 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Modal para justificativa -->
-        <div id="modalJustificativa" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
-            <div style="background:#1a1a2e; border:1px solid rgba(59,130,246,0.3); border-radius:12px; padding:24px; max-width:500px; width:90%; margin:auto;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                    <h3 style="margin:0;"><i class="bi bi-chat-quote"></i> Justificativa do Cancelamento</h3>
-                    <button type="button" onclick="fecharModal()" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
-                </div>
-                <p style="margin-bottom:8px;"><strong>Usuário:</strong> <span id="modalUsuario"></span></p>
-                <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:8px; margin-top:12px;">
-                    <p id="modalTexto" style="margin:0; white-space:pre-wrap;"></p>
-                </div>
-                <div style="text-align:right; margin-top:16px;">
-                    <button type="button" class="dv-btn ghost" onclick="fecharModal()">Fechar</button>
-                </div>
-            </div>
-        </div>
         {% else %}
         <div class="dv-empty">
             <p class="mb-0">Nenhum participante registrado ainda.</p>
@@ -112,17 +98,4 @@
         {% endif %}
     </div>
 </section>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-function mostrarJustificativa(btn) {
-    document.getElementById('modalUsuario').textContent = btn.dataset.usuario;
-    document.getElementById('modalTexto').textContent = btn.dataset.justificativa;
-    document.getElementById('modalJustificativa').style.display = 'flex';
-}
-function fecharModal() {
-    document.getElementById('modalJustificativa').style.display = 'none';
-}
-</script>
 {% endblock %}

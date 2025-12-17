@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.db.models import Q
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
@@ -32,8 +32,9 @@ def register_view(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False  # Usuário inativo até verificar
+            user.is_active = False
             user.save()
+            user.refresh_from_db()
             
             import random
             codigo = ''.join([str(random.randint(0, 9)) for _ in range(6)])
@@ -79,20 +80,17 @@ def login_view(request):
             messages.error(request, 'Nome ou email é obrigatório para login.')
             return render(request, 'didacta/autenticacao/login.html')
 
-        # Buscar usuário manualmente para verificar status
-        user_found = User.objects.filter(nome_completo__iexact=nome_ou_email).first()
+        user_found = User.objects.filter(username__iexact=nome_ou_email).first()
+        if not user_found:
+            user_found = User.objects.filter(nome_completo__iexact=nome_ou_email).first()
         if not user_found:
             user_found = User.objects.filter(email__iexact=nome_ou_email).first()
-        if not user_found:
-            user_found = User.objects.filter(username__iexact=nome_ou_email).first()
         
         if user_found and user_found.check_password(password):
             if not user_found.is_active:
-                # Usuário existe mas não verificou o cadastro
                 messages.error(request, 'Sua conta ainda não foi verificada. Complete o processo de verificação para fazer login.')
                 return render(request, 'didacta/autenticacao/login.html')
             
-            # Usuário ativo, fazer login
             login(request, user_found, backend='didacta.autenticacao_backend.NomeOrEmailBackend')
             messages.success(request, f'Bem-vindo, {user_found.nome_completo}!')
             next_url = request.GET.get('next')
@@ -118,7 +116,6 @@ def verify_code_view(request):
         del request.session['verification_user_id']
         return redirect('didacta:login')
 
-    # Gerar código temporário para exibição na tela
     import random
     codigo_temporario = request.session.get('codigo_temporario')
     if not codigo_temporario:
@@ -136,10 +133,9 @@ def verify_code_view(request):
                 'codigo_temporario': codigo_temporario
             })
 
-        # Verificar se é o código temporário (acesso provisório)
         if usar_acesso_provisorio and codigo == codigo_temporario:
             from datetime import timedelta
-            user.is_active = True  # Ativar usuário
+            user.is_active = True
             user.acesso_provisorio_expira = timezone.now() + timedelta(hours=1)
             user.save()
             
@@ -154,7 +150,6 @@ def verify_code_view(request):
             )
             return redirect('didacta:index')
 
-        # Verificar código de e-mail (verificação definitiva)
         codigo_obj = EmailVerificationCode.objects.filter(
             usuario=user,
             codigo=codigo,
@@ -165,9 +160,9 @@ def verify_code_view(request):
             codigo_obj.usado = True
             codigo_obj.save()
             
-            user.is_active = True  # Ativar usuário
+            user.is_active = True
             user.email_verificado = True
-            user.acesso_provisorio_expira = None  # Limpa acesso provisório
+            user.acesso_provisorio_expira = None
             user.save()
 
             del request.session['verification_user_id']
@@ -185,13 +180,12 @@ def verify_code_view(request):
     })
 
 def cancel_verification_view(request):
-    """Cancela o processo de verificação e remove o usuário não verificado."""
     user_id = request.session.get('verification_user_id')
     
     if user_id:
         try:
             user = User.objects.get(pk=user_id)
-            if not user.is_active:  # Só deleta se não foi ativado
+            if not user.is_active:
                 user.delete()
         except User.DoesNotExist:
             pass
@@ -351,7 +345,6 @@ def password_reset_confirm(request):
     return render(request, 'didacta/autenticacao/password_reset_confirm.html', {'user': user})
 
 def index(request):
-    # Apenas filmes que têm sessões cadastradas
     filmes = Film.objects.filter(
         ativo=True,
         session_set__isnull=False
@@ -390,10 +383,6 @@ def profile_view(request):
             form = UserUpdateForm(instance=user)
     else:
         form = UserUpdateForm(instance=user)
-        
-    # Garantir que o campo data_nascimento tenha o valor formatado corretamente
-    if user.data_nascimento and not form.initial.get('data_nascimento'):
-        form.initial['data_nascimento'] = user.data_nascimento
 
     reservas = Reservation.objects.filter(usuario=user).select_related('usuario', 'sessao', 'sessao__filme').order_by('-created_at')[:10]
 
@@ -998,4 +987,3 @@ def notification_mark_all_read(request):
     Notification.objects.filter(usuario=request.user, lida=False).update(lida=True)
     messages.success(request, 'Todas as notificações foram marcadas como lidas.')
     return redirect('didacta:notification_list')
-

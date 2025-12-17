@@ -14,17 +14,4 @@
         font-size: 13px;
     }
 </style>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const emailLabel = document.querySelector('label[for="id_username"]');
-    if (emailLabel) {
-        emailLabel.textContent = 'Nome:';
-    }
-    
-    const usernameInput = document.getElementById('id_username');
-    if (usernameInput) {
-        usernameInput.placeholder = 'Digite seu nome completo ou email';
-    }
-});
-</script>
 {% endblock %}

@@ -19,7 +19,7 @@
             </div>
             
             <div class="dv-form-group">
-                <label for="{{ form.email.id_for_label }}">Email *</label>
+                <label for="{{ form.email.id_for_label }}">Email</label>
                 {{ form.email }}
                 {% if form.email.errors %}
                 <span class="dv-status danger">{{ form.email.errors.0 }}</span>
@@ -35,32 +35,19 @@
                     {% endif %}
                 </div>
                 <div class="dv-form-group">
-                    <label for="{{ form.data_nascimento.id_for_label }}">Data de Nascimento</label>
-                    {{ form.data_nascimento }}
-                    {% if form.data_nascimento.errors %}
-                    <span class="dv-status danger">{{ form.data_nascimento.errors.0 }}</span>
+                    <label for="{{ form.tipo_usuario.id_for_label }}">Tipo de Usuário</label>
+                    {{ form.tipo_usuario }}
+                    {% if form.tipo_usuario.errors %}
+                    <span class="dv-status danger">{{ form.tipo_usuario.errors.0 }}</span>
                     {% endif %}
                 </div>
-            </div>
-            
-            <div class="dv-form-group">
-                <label for="{{ form.tipo_usuario.id_for_label }}">Tipo de Usuário</label>
-                {{ form.tipo_usuario }}
-                {% if form.tipo_usuario.errors %}
-                <span class="dv-status danger">{{ form.tipo_usuario.errors.0 }}</span>
-                {% endif %}
             </div>
             
             <div class="dv-form-row">
                 <div class="dv-form-group">
                     <label for="{{ form.password1.id_for_label }}">Senha *</label>
-                    <div class="dv-input-group">
-                        {{ form.password1 }}
-                        <button class="dv-btn-icon" type="button" id="togglePassword1" aria-label="Mostrar senha">
-                            <i class="bi bi-eye" id="eyeIcon1"></i>
-                        </button>
-                    </div>
-                    <div id="passwordRequirements" class="dv-form-hint" style="display: none;">
+                    {{ form.password1 }}
+                    <div class="dv-form-hint">
                         <strong>Condições para a senha:</strong><br>
                         • Mínimo de 8 caracteres<br>
                         • Pelo menos uma letra
@@ -71,12 +58,7 @@
                 </div>
                 <div class="dv-form-group">
                     <label for="{{ form.password2.id_for_label }}">Confirmar Senha *</label>
-                    <div class="dv-input-group">
-                        {{ form.password2 }}
-                        <button class="dv-btn-icon" type="button" id="togglePassword2" aria-label="Mostrar senha">
-                            <i class="bi bi-eye" id="eyeIcon2"></i>
-                        </button>
-                    </div>
+                    {{ form.password2 }}
                     {% if form.password2.errors %}
                     <span class="dv-status danger">{{ form.password2.errors.0 }}</span>
                     {% endif %}
@@ -96,61 +78,3 @@
     </div>
 </section>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const password1 = document.getElementById('id_password1');
-    const password2 = document.getElementById('id_password2');
-    const togglePassword1 = document.getElementById('togglePassword1');
-    const togglePassword2 = document.getElementById('togglePassword2');
-    const eyeIcon1 = document.getElementById('eyeIcon1');
-    const eyeIcon2 = document.getElementById('eyeIcon2');
-    const passwordRequirements = document.getElementById('passwordRequirements');
-    
-    // Mostrar/ocultar condições de senha
-    if (password1) {
-        password1.addEventListener('focus', function() {
-            passwordRequirements.style.display = 'block';
-        });
-        
-        password1.addEventListener('blur', function() {
-            if (password1.value.length >= 8) {
-                passwordRequirements.style.display = 'none';
-            }
-        });
-        
-        password1.addEventListener('input', function() {
-            if (password1.value.length >= 8) {
-                passwordRequirements.style.display = 'none';
-            } else {
-                passwordRequirements.style.display = 'block';
-            }
-        });
-    }
-    
-    // Toggle senha 1
-    if (togglePassword1 && password1) {
-        togglePassword1.addEventListener('click', function() {
-            const type = password1.getAttribute('type') === 'password' ? 'text' : 'password';
-            password1.setAttribute('type', type);
-            eyeIcon1.classList.toggle('bi-eye');
-            eyeIcon1.classList.toggle('bi-eye-slash');
-        });
-    }
-    
-    // Toggle senha 2
-    if (togglePassword2 && password2) {
-        togglePassword2.addEventListener('click', function() {
-            const type = password2.getAttribute('type') === 'password' ? 'text' : 'password';
-            password2.setAttribute('type', type);
-            eyeIcon2.classList.toggle('bi-eye');
-            eyeIcon2.classList.toggle('bi-eye-slash');
-        });
-    }
-});
-</script>
-{% endblock %}
-
-
-

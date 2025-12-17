@@ -1,20 +1,19 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from .models import (
     User, Film, Session, Reservation, ForumComment, HelpTicket
 )
 
-class CustomUserCreationForm(UserCreationForm):
+class CustomUserCreationForm(forms.ModelForm):
+    nome_completo = forms.CharField(
+        label='Nome de Usuário',
+        max_length=255,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'required': True, 'autofocus': True})
+    )
     email = forms.EmailField(
         label='Email',
         required=False,
         widget=forms.EmailInput(attrs={'class': 'form-control'})
-    )
-    nome_completo = forms.CharField(
-        label='Nome de Usuário',
-        max_length=255,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'required': True})
     )
     telefone = forms.CharField(
         label='Telefone',
@@ -22,20 +21,23 @@ class CustomUserCreationForm(UserCreationForm):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
-    data_nascimento = forms.DateField(
-        label='Data de Nascimento',
-        required=False,
-        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
-    )
     tipo_usuario = forms.ChoiceField(
         label='Tipo de Usuário',
         choices=User.TIPO_USUARIO_CHOICES,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+    password1 = forms.CharField(
+        label='Senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    password2 = forms.CharField(
+        label='Confirmar Senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
 
     class Meta:
         model = User
-        fields = ('email', 'nome_completo', 'telefone', 'data_nascimento', 'tipo_usuario', 'password1', 'password2')
+        fields = ('nome_completo', 'email', 'telefone', 'tipo_usuario')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -56,8 +58,17 @@ class CustomUserCreationForm(UserCreationForm):
                 raise ValidationError('A senha deve conter pelo menos uma letra.')
         return password1
 
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+        if password1 and password2 and password1 != password2:
+            raise ValidationError('As senhas não coincidem.')
+        return cleaned_data
+
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password1'])
         if not user.username:
             user.username = user.email if user.email else user.nome_completo.lower().replace(' ', '_')
         if commit:
@@ -67,11 +78,10 @@ class CustomUserCreationForm(UserCreationForm):
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('nome_completo', 'telefone', 'data_nascimento', 'foto_perfil')
+        fields = ('nome_completo', 'telefone', 'foto_perfil')
         widgets = {
             'nome_completo': forms.TextInput(attrs={'class': 'form-control'}),
             'telefone': forms.TextInput(attrs={'class': 'form-control'}),
-            'data_nascimento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'foto_perfil': forms.FileInput(attrs={'class': 'form-control'}),
         }
 
@@ -283,4 +293,3 @@ class ReservationCancelForm(forms.Form):
         }),
         help_text='Opcional: Informe o motivo do cancelamento'
     )
-
