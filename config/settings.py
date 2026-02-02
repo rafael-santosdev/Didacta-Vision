@@ -74,11 +74,11 @@ if USE_MYSQL:
     }
 else:
     DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 AUTH_USER_MODEL = 'didacta.User'
 
@@ -133,6 +133,14 @@ EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+# Timeout (segundos) para conexão SMTP; evita travar em redes que bloqueiam a porta (ex.: IFRN)
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=10, cast=int)
+
+# Opcional: Mailgun (HTTPS, porta 443) para redes onde SMTP é bloqueado
+EMAIL_MAILGUN_API_KEY = config('EMAIL_MAILGUN_API_KEY', default='')
+EMAIL_MAILGUN_DOMAIN = config('EMAIL_MAILGUN_DOMAIN', default='')
+# Se True, usa apenas Mailgun (não tenta SMTP). Se False e ambos configurados, tenta Mailgun primeiro.
+EMAIL_MAILGUN_ONLY = config('EMAIL_MAILGUN_ONLY', default=False, cast=bool)
 
 DEFAULT_FROM_EMAIL = config(
     'DEFAULT_FROM_EMAIL',

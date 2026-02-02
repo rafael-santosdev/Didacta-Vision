@@ -4,16 +4,18 @@
 
 {% block content %}
 <section class="dv-section">
-    <div class="dv-section__header">
+    <div class="dv-section__header dv-section__header--centered">
         <div>
             <span class="dv-badge">Suporte</span>
             <h1 class="dv-section__title">Solicitações de suporte</h1>
             <p class="dv-section__subtitle">Acompanhe solicitações abertas e o histórico de atendimentos.</p>
         </div>
         {% if not user.is_admin_or_professor %}
-        <a href="{% url 'didacta:help_ticket_create' %}" class="dv-btn primary">
-            <i class="bi bi-plus-circle"></i> Nova solicitação
-        </a>
+        <div class="dv-section__header-actions">
+            <a href="{% url 'didacta:help_ticket_create' %}" class="dv-btn primary">
+                <i class="bi bi-plus-circle"></i> Nova solicitação
+            </a>
+        </div>
         {% endif %}
     </div>
 
@@ -68,9 +70,6 @@
     <div class="dv-empty">
         <h3>Nenhuma solicitação encontrada</h3>
         <p class="text-muted">Abra uma solicitação para falar com nossa equipe.</p>
-        {% if not user.is_admin_or_professor %}
-        <a class="dv-btn primary" href="{% url 'didacta:help_ticket_create' %}">Nova solicitação</a>
-        {% endif %}
     </div>
     {% endif %}
 </section>

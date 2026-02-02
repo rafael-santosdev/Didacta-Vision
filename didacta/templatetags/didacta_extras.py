@@ -19,7 +19,7 @@ def unread_notifications_count(user):
         return 0
     try:
         return user.notification_set.filter(lida=False).count()
-    except:
+    except Exception:
         return 0
 
 

@@ -7,12 +7,20 @@
     <div class="dv-form-card">
         <h2><i class="bi bi-shield-check"></i> Verificação de Email</h2>
         
-        <!-- Informação sobre o e-mail enviado -->
+        <!-- Informação sobre o e-mail enviado ou falha de entrega -->
+        {% if email_entrega_falhou %}
+        <div class="dv-panel" style="background:rgba(251,191,36,0.12); border-color:rgba(251,191,36,0.35); margin-bottom:16px;">
+            <i class="bi bi-exclamation-triangle-fill"></i> 
+            <strong>E-mail pode não ter sido entregue</strong> (comum em redes institucionais como o IFRN).
+            <br><small>Use o <strong>código temporário</strong> abaixo para acessar agora. Você terá 1 hora para usar o sistema e poderá verificar o e-mail depois em outra rede.</small>
+        </div>
+        {% else %}
         <div class="dv-panel" style="background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.25); margin-bottom:16px;">
             <i class="bi bi-envelope-check"></i> 
             <strong>E-mail enviado!</strong> Um código de verificação foi enviado para <strong>{{ user.email }}</strong>.
-            <br><small>Fora da rede do IF, o e-mail será recebido normalmente.</small>
+            <br><small>Não recebeu em 2–3 minutos? <strong>Confira a pasta de spam e o lixo eletrônico.</strong> Você também pode usar o código temporário abaixo.</small>
         </div>
+        {% endif %}
         
         <!-- Formulário de verificação por e-mail -->
         <form method="post" class="dv-form">
@@ -37,17 +45,18 @@
             <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--dv-bg-secondary, #1a1a2e); padding: 0 16px; color: rgba(255,255,255,0.5);">ou</span>
         </div>
         
-        <!-- Acesso provisório para rede do IF -->
+        <!-- Código temporário: sempre disponível (rede do IF ou qualquer rede) -->
         <div class="dv-panel" style="background:rgba(251,191,36,0.08); border-color:rgba(251,191,36,0.25); margin-bottom:16px;">
             <h4 style="margin: 0 0 12px 0; color: #fbbf24;">
-                <i class="bi bi-clock-history"></i> Acesso Provisório (Rede do IF)
+                <i class="bi bi-clock-history"></i> Código temporário (sempre disponível)
             </h4>
             <p style="margin: 0 0 8px 0; font-size: 0.9rem;">
-                <strong>Não recebeu o e-mail?</strong> Isso pode acontecer na rede do IF devido a limitações técnicas.
+                <strong>Você pode usar o código do e-mail ou o código temporário abaixo.</strong>
+                O código temporário é útil na rede do IFRN (onde o e-mail pode não chegar) ou em qualquer rede.
             </p>
             <p style="margin: 0 0 16px 0; font-size: 0.85rem; opacity: 0.8;">
                 Use o código temporário abaixo para acessar o sistema por <strong>aproximadamente 1 hora</strong>.
-                Após esse período, será necessário verificar o e-mail para continuar usando o sistema.
+                Depois você pode verificar o e-mail em outra rede para acesso permanente.
             </p>
             
             <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; text-align: center; margin-bottom: 16px;">
@@ -66,14 +75,14 @@
                 </div>
                 <div class="dv-form-actions">
                     <button type="submit" class="dv-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                        <i class="bi bi-hourglass-split"></i> Usar Acesso Provisório (1 hora)
+                        <i class="bi bi-hourglass-split"></i> Usar código temporário (1 hora)
                     </button>
                 </div>
             </form>
             
             <p style="margin: 12px 0 0 0; font-size: 0.8rem; opacity: 0.7; text-align: center;">
-                <i class="bi bi-exclamation-triangle"></i> 
-                Este acesso é temporário. O e-mail continua sendo enviado e você precisará verificá-lo para acesso permanente.
+                <i class="bi bi-info-circle"></i> 
+                Acesso com código temporário vale por 1 hora. Para acesso permanente, verifique o e-mail depois (em outra rede, se estiver no IFRN).
             </p>
         </div>
         

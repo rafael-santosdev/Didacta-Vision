@@ -162,7 +162,7 @@ class FilmForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             if 'cartaz' in self.files:
                 filme.cartaz = self.files['cartaz']
-            elif not self.cleaned_data.get('cartaz') and self.instance.cartaz:
+            elif self.instance.cartaz:
                 filme.cartaz = self.instance.cartaz
         if commit:
             filme.save()

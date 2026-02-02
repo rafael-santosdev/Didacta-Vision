@@ -16,6 +16,7 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('profile/delete/', views.delete_account_view, name='delete_account'),
     path('films/<int:pk>/', views.film_detail, name='film_detail'),
+    path('sessions/<int:pk>/', views.session_detail, name='session_detail'),
     path('admin/films/', views.film_list_admin, name='film_list_admin'),
     path('admin/films/create/', views.FilmCreateView.as_view(), name='film_create'),
     path('admin/films/<int:pk>/edit/', views.FilmUpdateView.as_view(), name='film_update'),

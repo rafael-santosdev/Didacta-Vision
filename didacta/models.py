@@ -113,7 +113,7 @@ class Film(models.Model):
         ('18', '18 anos'),
     ]
 
-    titulo = models.CharField('Título', max_length=255, unique=True)
+    titulo = models.CharField('Título', max_length=255)
     sinopse = models.TextField('Sinopse')
     duracao = models.PositiveIntegerField('Duração (minutos)', help_text='Duração em minutos')
     classificacao = models.CharField(
@@ -137,7 +137,6 @@ class Film(models.Model):
     )
     trailer_url = models.URLField(
         'URL do Trailer (YouTube)',
-        unique=True,
         blank=True,
         null=True,
         help_text='URL do trailer no YouTube'
@@ -433,6 +432,7 @@ class Notification(models.Model):
 class HelpTicket(models.Model):
     STATUS_CHOICES = [
         ('aberto', 'Aberto'),
+        ('respondido', 'Respondido'),
         ('fechado', 'Fechado'),
     ]
 

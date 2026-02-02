@@ -10,9 +10,11 @@
             <h1 class="dv-section__title">Minhas reservas</h1>
             <p class="dv-section__subtitle">Acompanhe sessões confirmadas, históricos e cancele quando necessário.</p>
         </div>
+        {% if reservas_futuras or reservas_passadas %}
         <a class="dv-btn ghost" href="{% url 'didacta:index' %}">
             <i class="bi bi-film"></i> Ver filmes
         </a>
+        {% endif %}
     </div>
 
     {% if reservas_futuras %}

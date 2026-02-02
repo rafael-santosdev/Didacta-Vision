@@ -117,7 +117,9 @@
         <div class="dv-session-card">
             <div class="dv-session-card__info">
                 <div class="dv-session-card__title">
-                    <strong>{{ sessao.data_hora|date:'d/m/Y H:i' }}</strong>
+                    <a href="{% url 'didacta:session_detail' sessao.pk %}" class="dv-session-card__link">
+                        <strong>{{ sessao.data_hora|date:'d/m/Y H:i' }}</strong>
+                    </a>
                     <span class="dv-tag">{% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}</span>
                 </div>
                 <div class="dv-session-card__meta">

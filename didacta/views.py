@@ -11,7 +11,6 @@ from django.views.generic import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.http import JsonResponse
-from django.core.mail import send_mail
 from django.conf import settings
 
 from .models import (
@@ -23,6 +22,7 @@ from .formularios import (
     FilmForm, SessionForm, ReservationForm, ForumCommentForm, HelpTicketForm,
     ReservationCancelForm
 )
+from .email_utils import send_verification_email
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -44,23 +44,36 @@ def register_view(request):
                 codigo=codigo
             )
 
-            email_enviado = False
-            try:
-                if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
-                    send_mail(
-                        subject='Código de Verificação - Didacta Vision',
-                        message=f'Olá {user.nome_completo},\n\nBem-vindo ao Didacta Vision!\n\nSeu código de verificação é: {codigo}\n\nEste código é válido por 10 minutos.\n\nUse este código para verificar sua conta e fazer login.',
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[user.email],
-                        fail_silently=False,
+            subject = 'Código de Verificação - Didacta Vision'
+            body = (
+                f'Olá {user.nome_completo},\n\nBem-vindo ao Didacta Vision!\n\n'
+                f'Seu código de verificação é: {codigo}\n\n'
+                f'Este código é válido por 10 minutos.\n\n'
+                'Use este código para verificar sua conta e fazer login.'
+            )
+            recipient_list = [user.email] if user.email else []
+            enviado, erro = send_verification_email(recipient_list, subject, body)
+
+            if enviado:
+                messages.success(
+                    request,
+                    f'Conta criada com sucesso! Código de verificação enviado para {user.email}. '
+                    'Se não receber em 2–3 minutos, confira a pasta de spam ou use o código temporário na próxima tela.'
+                )
+                request.session.pop('email_entrega_falhou', None)
+            else:
+                request.session['email_entrega_falhou'] = True
+                if user.email:
+                    msg = (
+                        'Conta criada! O e-mail pode não ter sido entregue. '
+                        'Use o código temporário na próxima tela para acessar.'
                     )
-                    email_enviado = True
-                    messages.success(request, f'Conta criada com sucesso! Código de verificação enviado para {user.email}')
+                    if settings.DEBUG and erro:
+                        msg += f' (Detalhe: {erro})'
+                    messages.warning(request, msg)
                 else:
                     messages.success(request, f'Conta criada com sucesso! Seu código de verificação é: {codigo}')
-            except Exception as e:
-                messages.warning(request, f'Conta criada! Seu código de verificação é: {codigo}. Configure o email no servidor para receber por email.')
-            
+
             request.session['verification_user_id'] = user.id
             return redirect('didacta:verify_code')
     else:
@@ -174,9 +187,12 @@ def verify_code_view(request):
         else:
             messages.error(request, 'Código inválido ou expirado. Por favor, tente novamente.')
 
+    email_entrega_falhou = request.session.pop('email_entrega_falhou', False)
+
     return render(request, 'didacta/autenticacao/verify_code.html', {
         'user': user,
-        'codigo_temporario': codigo_temporario
+        'codigo_temporario': codigo_temporario,
+        'email_entrega_falhou': email_entrega_falhou,
     })
 
 def cancel_verification_view(request):
@@ -230,21 +246,28 @@ def password_reset_request(request):
                 codigo=codigo
             )
 
-            try:
-                if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
-                    send_mail(
-                        subject='Recuperação de Senha - Didacta Vision',
-                        message=f'Olá {user.nome_completo},\n\nVocê solicitou a recuperação de senha.\n\nSeu código de verificação é: {codigo}\n\nEste código é válido por 10 minutos.\n\nSe você não solicitou esta recuperação, ignore este email.',
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[user.email],
-                        fail_silently=False,
-                    )
-                    messages.success(request, f'Código de verificação enviado para {user.email}')
-                else:
-                    messages.success(request, f'Seu código de verificação é: {codigo}')
-            except Exception as e:
-                messages.warning(request, f'Seu código de verificação é: {codigo}. Configure o email no servidor para receber por email.')
-            
+            subject = 'Recuperação de Senha - Didacta Vision'
+            body = (
+                f'Olá {user.nome_completo},\n\nVocê solicitou a recuperação de senha.\n\n'
+                f'Seu código de verificação é: {codigo}\n\n'
+                'Este código é válido por 10 minutos.\n\n'
+                'Se você não solicitou esta recuperação, ignore este email.'
+            )
+            recipient_list = [user.email]
+            enviado, erro = send_verification_email(recipient_list, subject, body)
+
+            if enviado:
+                messages.success(
+                    request,
+                    f'Código de verificação enviado para {user.email}. '
+                    'Se não receber em 2–3 minutos, confira a pasta de spam.'
+                )
+            else:
+                msg = f'O e-mail pode não ter sido entregue. Use o código abaixo para continuar: {codigo}'
+                if settings.DEBUG and erro:
+                    msg += f' (Detalhe: {erro})'
+                messages.warning(request, msg)
+
             request.session['password_reset_user_id'] = user.id
             return redirect('didacta:password_reset_verify')
         except User.DoesNotExist:
