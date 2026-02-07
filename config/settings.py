@@ -21,6 +21,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -73,10 +74,12 @@ if USE_MYSQL:
         }
     }
 else:
+    sqlite_path = config('SQLITE_DB_PATH', default=None)
+    db_name = sqlite_path if sqlite_path else BASE_DIR / 'db.sqlite3'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': db_name,
         }
     }
 
@@ -116,6 +119,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media/'
 
@@ -145,4 +149,11 @@ EMAIL_MAILGUN_ONLY = config('EMAIL_MAILGUN_ONLY', default=False, cast=bool)
 DEFAULT_FROM_EMAIL = config(
     'DEFAULT_FROM_EMAIL',
     default='Didacta Vision <didactavision@gmail.com>',
+)
+
+# HTTPS / proxy (obrigatório se usar Cloud Run, App Engine, etc.)
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='',
+    cast=Csv(),
 )

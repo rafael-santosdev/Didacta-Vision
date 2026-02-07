@@ -1,0 +1,28 @@
+# Didacta-Vision — Produção com SQLite (volume persistente)
+# Para usar MySQL, descomente o serviço db e defina DB_USE_MYSQL=True no .env
+
+services:
+  web:
+    build: .
+    container_name: didacta-vision-web
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8000:8000"
+    # GCloud Cloud Run usa PORT=8080; o entrypoint já lê ${PORT}
+    volumes:
+      - sqlite_data:/app/db
+      - media_data:/app/media
+    # SQLite: arquivo fora do código para persistência
+    environment:
+      - SQLITE_DB_PATH=/app/db/db.sqlite3
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  sqlite_data:
+  media_data:

@@ -1,0 +1,27 @@
+# Evita copiar para a imagem e possíveis erros de build
+venv
+.venv
+env
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.sqlite
+db.sqlite3
+.git
+.gitignore
+.dockerignore
+*.md
+doc
+*.log
+staticfiles
+.idea
+.vscode
+*.egg-info
+dist
+build

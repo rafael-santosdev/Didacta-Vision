@@ -82,8 +82,16 @@
                         </div>
                     </div>
                     {% else %}
-                    <a href="{% url 'didacta:login' %}" class="dv-btn ghost">Entrar</a>
-                    <a href="{% url 'didacta:register' %}" class="dv-btn primary">Criar conta</a>
+                    {% with current_url_name=request.resolver_match.url_name %}
+                        {% if current_url_name == 'login' %}
+                            <span class="dv-btn ghost dv-btn--current" aria-current="page">Entrar</span>
+                        {% elif current_url_name == 'register' %}
+                            <span class="dv-btn primary dv-btn--current" aria-current="page">Criar conta</span>
+                        {% else %}
+                            <a href="{% url 'didacta:login' %}" class="dv-btn ghost">Entrar</a>
+                            <a href="{% url 'didacta:register' %}" class="dv-btn primary">Criar conta</a>
+                        {% endif %}
+                    {% endwith %}
                     {% endif %}
                 </div>
             </div>

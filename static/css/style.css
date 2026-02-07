@@ -436,6 +436,14 @@ main, section, header, footer {
     text-align: center;
 }
 
+.dv-btn--current {
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.92;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
 .dv-btn.sm {
     padding: 8px 16px;
     font-size: clamp(0.8rem, 1.8vw, 0.85rem);
