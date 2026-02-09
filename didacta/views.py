@@ -514,6 +514,13 @@ class FilmUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         messages.success(self.request, 'Filme atualizado com sucesso!')
         return super().form_valid(form)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        filme = self.object
+        if filme:
+            context['sessoes'] = filme.session_set.all().order_by('data_hora')
+        return context
+
 class FilmDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Film
     template_name = 'didacta/filmes/confirmar_exclusao_filme.html'
@@ -1010,3 +1017,81 @@ def notification_mark_all_read(request):
     Notification.objects.filter(usuario=request.user, lida=False).update(lida=True)
     messages.success(request, 'Todas as notificações foram marcadas como lidas.')
     return redirect('didacta:notification_list')
+
+
+@login_required
+def ajax_session_delete(request, pk):
+    """
+    Exclui uma sessão via AJAX, sem recarregar a página.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
+
+    if not request.user.is_admin_or_professor():
+        return JsonResponse({'success': False, 'message': 'Você não tem permissão para excluir sessões.'}, status=403)
+
+    sessao = get_object_or_404(Session, pk=pk)
+    sessao.delete()
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Sessão excluída com sucesso.',
+        'session_id': pk,
+    })
+
+
+@login_required
+def ajax_session_edit(request, pk):
+    """
+    Edita uma sessão via AJAX.
+
+    GET  -> retorna o formulário HTML preenchido para o modal
+    POST -> processa o formulário e retorna JSON com os dados atualizados
+    """
+    if not request.user.is_admin_or_professor():
+        if request.method == 'POST':
+            return JsonResponse({'success': False, 'message': 'Você não tem permissão para editar sessões.'}, status=403)
+        return JsonResponse({'success': False, 'message': 'Você não tem permissão para editar sessões.'}, status=403)
+
+    sessao = get_object_or_404(Session, pk=pk)
+
+    if request.method == 'GET':
+        form = SessionForm(instance=sessao)
+        return render(
+            request,
+            'didacta/sessoes/partials/_form_sessao_modal.html',
+            {'form': form, 'sessao': sessao},
+        )
+
+    if request.method == 'POST':
+        form = SessionForm(request.POST, instance=sessao)
+        if form.is_valid():
+            sessao = form.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Sessão atualizada com sucesso.',
+                'session': {
+                    'id': sessao.pk,
+                    'data_hora': sessao.data_hora.strftime('%d/%m/%Y %H:%M'),
+                    'local': sessao.local,
+                    'capacidade_total': sessao.capacidade_total,
+                    'ativo': sessao.ativo,
+                    'vagas_disponiveis': sessao.vagas_disponiveis,
+                }
+            })
+
+        # Em caso de erro de validação, retornamos o HTML do formulário com erros
+        html = render(
+            request,
+            'didacta/sessoes/partials/_form_sessao_modal.html',
+            {'form': form, 'sessao': sessao},
+        ).content.decode('utf-8')
+
+        return JsonResponse({
+            'success': False,
+            'message': 'Corrija os erros do formulário.',
+            'form_html': html,
+        }, status=400)
+
+    return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)

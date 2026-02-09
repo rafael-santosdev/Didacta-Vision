@@ -42,13 +42,19 @@
                     </td>
                     <td style="text-align:right;">
                         <div class="dv-form-actions" style="justify-content:flex-end;">
-                            <a href="{% url 'didacta:film_detail' filme.pk %}" class="dv-btn ghost sm">
+                            <a href="{% url 'didacta:film_detail' filme.pk %}"
+                               class="dv-btn ghost sm js-admin-panel-link"
+                               data-panel-url="{% url 'didacta:film_detail' filme.pk %}">
                                 <i class="bi bi-eye"></i> Ver
                             </a>
-                            <a href="{% url 'didacta:film_update' filme.pk %}" class="dv-btn ghost sm">
+                            <a href="{% url 'didacta:film_update' filme.pk %}"
+                               class="dv-btn ghost sm js-admin-panel-link"
+                               data-panel-url="{% url 'didacta:film_update' filme.pk %}">
                                 <i class="bi bi-pencil"></i> Editar
                             </a>
-                            <a href="{% url 'didacta:film_delete' filme.pk %}" class="dv-btn ghost sm" onclick="return confirm('Tem certeza?')">
+                            <a href="{% url 'didacta:film_delete' filme.pk %}"
+                               class="dv-btn ghost sm js-admin-panel-link"
+                               data-panel-url="{% url 'didacta:film_delete' filme.pk %}">
                                 <i class="bi bi-trash"></i> Excluir
                             </a>
                         </div>
@@ -79,5 +85,160 @@
         <a href="{% url 'didacta:film_create' %}" class="dv-btn primary">Adicionar filme</a>
     </div>
     {% endif %}
+
+    <!-- Painel lateral para ver/editar/excluir via AJAX -->
+    <div id="adminPanel" class="dv-panel" aria-hidden="true">
+        <div class="dv-panel__backdrop"></div>
+        <div class="dv-panel__content" role="dialog" aria-modal="true" aria-labelledby="adminPanelTitle">
+            <div class="dv-panel__header">
+                <h2 id="adminPanelTitle" class="dv-section__title" style="font-size:1.1rem;">Detalhes do item</h2>
+                <button type="button" class="dv-panel__close" id="adminPanelCloseBtn" aria-label="Fechar painel">
+                    &times;
+                </button>
+            </div>
+            <div class="dv-panel__body" id="adminPanelBody">
+                <!-- Conteúdo carregado via AJAX -->
+            </div>
+        </div>
+    </div>
 </section>
 {% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .dv-panel {
+        position: fixed;
+        inset: 0;
+        display: none;
+        z-index: 250;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dv-panel.is-open {
+        display: flex;
+    }
+
+    .dv-panel__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+    .dv-panel__content {
+        position: relative;
+        width: min(900px, 100% - 32px);
+        max-height: min(90vh, 720px);
+        background: hsl(var(--panel));
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--glow-card);
+        padding: 20px clamp(16px, 3vw, 24px);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 1;
+    }
+
+    .dv-panel__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .dv-panel__close {
+        border: none;
+        background: transparent;
+        color: hsl(var(--foreground-muted));
+        font-size: 1.6rem;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .dv-panel__body {
+        margin-top: 8px;
+        overflow-y: auto;
+    }
+
+    /* Dentro do painel, mostrar só o miolo da página carregada */
+    .dv-panel__body .dv-navbar,
+    .dv-panel__body .dv-footer {
+        display: none;
+    }
+
+    .dv-panel__body .dv-wrapper {
+        padding-top: 0;
+    }
+
+    .dv-panel__body .dv-wrapper > *:not(.dv-main) {
+        display: none;
+    }
+
+    .dv-panel__body .dv-main {
+        padding: 0;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    (function() {
+        const panel = document.getElementById('adminPanel');
+        if (!panel) return;
+
+        const panelBody = document.getElementById('adminPanelBody');
+        const closeBtn = document.getElementById('adminPanelCloseBtn');
+
+        function openPanel() {
+            panel.classList.add('is-open');
+            panel.setAttribute('aria-hidden', 'false');
+        }
+
+        function closePanel() {
+            panel.classList.remove('is-open');
+            panel.setAttribute('aria-hidden', 'true');
+            panelBody.innerHTML = '';
+        }
+
+        document.addEventListener('click', function(event) {
+            const link = event.target.closest('.js-admin-panel-link');
+            if (!link) return;
+
+            const url = link.getAttribute('data-panel-url') || link.getAttribute('href');
+            if (!url) return;
+
+            event.preventDefault();
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                panelBody.innerHTML = html;
+                openPanel();
+            })
+            .catch(error => {
+                console.error('Erro ao carregar conteúdo do painel:', error);
+                alert('Erro ao carregar conteúdo. Tente novamente.');
+            });
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closePanel);
+        }
+
+        panel.addEventListener('click', function(event) {
+            if (event.target === panel || event.target.classList.contains('dv-panel__backdrop')) {
+                closePanel();
+            }
+        });
+    })();
+</script>
+{% endblock %}
+

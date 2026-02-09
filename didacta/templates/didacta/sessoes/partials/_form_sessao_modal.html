@@ -1,0 +1,46 @@
+<form id="ajax-session-form" method="post">
+    {% csrf_token %}
+    <div class="dv-form-group">
+        <label for="{{ form.filme.id_for_label }}">Filme *</label>
+        {{ form.filme }}
+    </div>
+    <div class="dv-form-group">
+        <label for="{{ form.data_hora.id_for_label }}">Data e hora *</label>
+        {{ form.data_hora }}
+    </div>
+    <div class="dv-form-grid two">
+        <div class="dv-form-group">
+            <label for="{{ form.local.id_for_label }}">Local *</label>
+            {{ form.local }}
+        </div>
+        <div class="dv-form-group">
+            <label for="{{ form.capacidade_total.id_for_label }}">Capacidade total *</label>
+            {{ form.capacidade_total }}
+        </div>
+        <div class="dv-form-group">
+            <label class="text-muted" for="{{ form.ativo.id_for_label }}">Disponibilidade</label>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                {{ form.ativo }}
+                <span>Ativa</span>
+            </div>
+        </div>
+    </div>
+
+    {% if form.errors %}
+    <div class="dv-status danger" style="flex-direction:column;display:flex;gap:4px;margin-top:8px;">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <span>{{ error }}</span>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="dv-form-actions" style="margin-top:16px;justify-content:flex-end;">
+        <button type="button" class="dv-btn ghost" id="sessionModalCancelBtn">Cancelar</button>
+        <button type="submit" class="dv-btn primary">
+            <i class="bi bi-check-circle"></i> Salvar alterações
+        </button>
+    </div>
+</form>
+
