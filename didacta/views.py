@@ -1056,11 +1056,23 @@ def ajax_session_edit(request, pk):
     sessao = get_object_or_404(Session, pk=pk)
 
     if request.method == 'GET':
+        from django.urls import reverse
         form = SessionForm(instance=sessao)
+        edit_url = reverse('didacta:ajax_session_edit', args=[sessao.pk])
+        html = render(
+            request,
+            'didacta/sessoes/partials/_form_sessao_modal.html',
+            {'form': form, 'sessao': sessao, 'edit_url': edit_url},
+        ).content.decode('utf-8')
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            from django.http import HttpResponse
+            return HttpResponse(html, content_type='text/html')
+        
         return render(
             request,
             'didacta/sessoes/partials/_form_sessao_modal.html',
-            {'form': form, 'sessao': sessao},
+            {'form': form, 'sessao': sessao, 'edit_url': edit_url},
         )
 
     if request.method == 'POST':
@@ -1082,10 +1094,12 @@ def ajax_session_edit(request, pk):
             })
 
         # Em caso de erro de validação, retornamos o HTML do formulário com erros
+        from django.urls import reverse
+        edit_url = reverse('didacta:ajax_session_edit', args=[sessao.pk])
         html = render(
             request,
             'didacta/sessoes/partials/_form_sessao_modal.html',
-            {'form': form, 'sessao': sessao},
+            {'form': form, 'sessao': sessao, 'edit_url': edit_url},
         ).content.decode('utf-8')
 
         return JsonResponse({

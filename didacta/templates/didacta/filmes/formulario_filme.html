@@ -106,7 +106,7 @@
         <div class="dv-section__header">
             <div>
                 <h2 class="dv-section__title">Sessões deste filme</h2>
-                <p class="text-muted" style="margin-top:6px;">Edite ou exclua sessões rapidamente, sem recarregar a página.</p>
+                <p class="text-muted" style="margin-top:6px;">Gerencie as sessões normalmente (sem AJAX) ou use a tela "Gerenciar sessões".</p>
             </div>
             <a href="{% url 'didacta:session_create' %}?filme={{ object.pk }}" class="dv-btn ghost">
                 <i class="bi bi-plus-circle"></i> Nova sessão
@@ -115,7 +115,7 @@
 
         {% if sessoes %}
         <div class="dv-table-wrapper">
-            <table class="dv-table" id="filmSessionsTable">
+            <table class="dv-table">
                 <thead>
                     <tr>
                         <th>Data e hora</th>
@@ -128,32 +128,31 @@
                 </thead>
                 <tbody>
                     {% for sessao in sessoes %}
-                    <tr data-session-id="{{ sessao.pk }}">
-                        <td class="dv-session-data-hora">{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
-                        <td class="dv-session-local">{{ sessao.local }}</td>
-                        <td class="dv-session-capacidade">{{ sessao.capacidade_total }}</td>
-                        <td class="dv-session-vagas">
+                    <tr>
+                        <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
+                        <td>{{ sessao.local }}</td>
+                        <td>{{ sessao.capacidade_total }}</td>
+                        <td>
                             <span class="dv-status {% if sessao.vagas_disponiveis > 0 %}success{% else %}danger{% endif %}">
                                 {{ sessao.vagas_disponiveis }}
                             </span>
                         </td>
-                        <td class="dv-session-status">
+                        <td>
                             <span class="dv-status {% if sessao.ativo %}success{% else %}neutral{% endif %}">
                                 {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
                             </span>
                         </td>
                         <td style="text-align:right;">
                             <div class="dv-form-actions" style="justify-content:flex-end;">
-                                <button type="button"
-                                        class="dv-btn ghost sm js-session-edit"
-                                        data-edit-url="{% url 'didacta:ajax_session_edit' sessao.pk %}">
+                                <a class="dv-btn ghost sm" href="{% url 'didacta:session_detail_admin' sessao.pk %}">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                                <a class="dv-btn ghost sm" href="{% url 'didacta:session_update' sessao.pk %}">
                                     <i class="bi bi-pencil"></i> Editar
-                                </button>
-                                <button type="button"
-                                        class="dv-btn ghost sm js-session-delete"
-                                        data-delete-url="{% url 'didacta:ajax_session_delete' sessao.pk %}">
+                                </a>
+                                <a class="dv-btn ghost sm" href="{% url 'didacta:session_delete' sessao.pk %}">
                                     <i class="bi bi-trash"></i> Excluir
-                                </button>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -169,265 +168,6 @@
         </div>
         {% endif %}
     </div>
-
-    <!-- Modal de edição de sessão -->
-    <div id="sessionModal" class="dv-modal" aria-hidden="true">
-        <div class="dv-modal__backdrop"></div>
-        <div class="dv-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="sessionModalTitle">
-            <div class="dv-modal__header">
-                <h2 id="sessionModalTitle" class="dv-section__title" style="font-size:1.2rem;">Editar sessão</h2>
-                <button type="button" class="dv-modal__close" id="sessionModalCloseBtn" aria-label="Fechar modal">
-                    &times;
-                </button>
-            </div>
-            <div class="dv-modal__body" id="sessionModalBody">
-                <!-- Formulário será carregado via AJAX -->
-            </div>
-        </div>
-    </div>
     {% endif %}
 </section>
 {% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-<style>
-    .dv-modal {
-        position: fixed;
-        inset: 0;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 300;
-    }
-
-    .dv-modal.is-open {
-        display: flex;
-    }
-
-    .dv-modal__backdrop {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-    }
-
-    .dv-modal__dialog {
-        position: relative;
-        max-width: 640px;
-        width: 100%;
-        margin: 16px;
-        background: hsl(var(--panel));
-        border-radius: var(--radius-lg);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: var(--glow-card);
-        padding: 20px clamp(18px, 3vw, 24px);
-        z-index: 1;
-    }
-
-    .dv-modal__header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-
-    .dv-modal__close {
-        border: none;
-        background: transparent;
-        color: hsl(var(--foreground-muted));
-        font-size: 1.6rem;
-        cursor: pointer;
-        line-height: 1;
-    }
-
-    .dv-modal__body {
-        max-height: min(70vh, 520px);
-        overflow-y: auto;
-    }
-</style>
-{% endblock %}
-
-{% block extra_js %}
-{{ block.super }}
-<script>
-    (function() {
-        const table = document.getElementById('filmSessionsTable');
-        const modal = document.getElementById('sessionModal');
-        if (!table || !modal) {
-            return;
-        }
-
-        const modalBody = document.getElementById('sessionModalBody');
-        const modalCloseBtn = document.getElementById('sessionModalCloseBtn');
-
-        function openModal() {
-            modal.classList.add('is-open');
-            modal.setAttribute('aria-hidden', 'false');
-        }
-
-        function closeModal() {
-            modal.classList.remove('is-open');
-            modal.setAttribute('aria-hidden', 'true');
-            modalBody.innerHTML = '';
-        }
-
-        function getCSRFToken() {
-            const cookie = document.cookie.split('; ')
-                .find(row => row.startsWith('csrftoken='));
-            return cookie ? cookie.split('=')[1] : '';
-        }
-
-        function attachFormHandlers() {
-            const form = modalBody.querySelector('#ajax-session-form');
-            if (!form) {
-                return;
-            }
-
-            const cancelBtn = modalBody.querySelector('#sessionModalCancelBtn');
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', function() {
-                    closeModal();
-                });
-            }
-
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
-
-                const formData = new FormData(form);
-                const actionUrl = form.getAttribute('data-action-url') || window.location.href;
-
-                fetch(actionUrl, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.success) {
-                        if (data.form_html) {
-                            modalBody.innerHTML = data.form_html;
-                            attachFormHandlers();
-                        }
-                        alert(data.message || 'Erro ao salvar sessão.');
-                        return;
-                    }
-
-                    const sessao = data.session;
-                    const row = table.querySelector('tr[data-session-id=\"' + sessao.id + '\"]');
-                    if (row) {
-                        const dataHoraCell = row.querySelector('.dv-session-data-hora');
-                        const localCell = row.querySelector('.dv-session-local');
-                        const capacidadeCell = row.querySelector('.dv-session-capacidade');
-                        const vagasCell = row.querySelector('.dv-session-vagas span');
-                        const statusCell = row.querySelector('.dv-session-status span');
-
-                        if (dataHoraCell) dataHoraCell.textContent = sessao.data_hora;
-                        if (localCell) localCell.textContent = sessao.local;
-                        if (capacidadeCell) capacidadeCell.textContent = sessao.capacidade_total;
-                        if (vagasCell) {
-                            vagasCell.textContent = sessao.vagas_disponiveis;
-                            vagasCell.classList.toggle('success', sessao.vagas_disponiveis > 0);
-                            vagasCell.classList.toggle('danger', sessao.vagas_disponiveis === 0);
-                        }
-                        if (statusCell) {
-                            statusCell.textContent = sessao.ativo ? 'Ativa' : 'Inativa';
-                            statusCell.classList.toggle('success', !!sessao.ativo);
-                            statusCell.classList.toggle('neutral', !sessao.ativo);
-                        }
-                    }
-
-                    closeModal();
-                    alert(data.message || 'Sessão atualizada com sucesso.');
-                })
-                .catch(error => {
-                    console.error('Erro ao salvar sessão:', error);
-                    alert('Erro ao salvar sessão. Tente novamente.');
-                });
-            });
-        }
-
-        table.addEventListener('click', function(event) {
-            const editBtn = event.target.closest('.js-session-edit');
-            const deleteBtn = event.target.closest('.js-session-delete');
-
-            if (editBtn) {
-                const url = editBtn.getAttribute('data-edit-url');
-                if (!url) return;
-
-                fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.text())
-                .then(html => {
-                    modalBody.innerHTML = html;
-                    const form = modalBody.querySelector('#ajax-session-form');
-                    if (form) {
-                        form.setAttribute('data-action-url', url);
-                    }
-                    attachFormHandlers();
-                    openModal();
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar formulário da sessão:', error);
-                    alert('Erro ao carregar o formulário de edição. Tente novamente.');
-                });
-            }
-
-            if (deleteBtn) {
-                const url = deleteBtn.getAttribute('data-delete-url');
-                if (!url) return;
-
-                const confirmado = confirm('Tem certeza de que deseja excluir esta sessão? Esta ação não pode ser desfeita.');
-                if (!confirmado) return;
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': getCSRFToken(),
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: new URLSearchParams()
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.success) {
-                        alert(data.message || 'Erro ao excluir sessão.');
-                        return;
-                    }
-
-                    const row = table.querySelector('tr[data-session-id=\"' + data.session_id + '\"]');
-                    if (row && row.parentNode) {
-                        row.parentNode.removeChild(row);
-                    }
-
-                    alert(data.message || 'Sessão excluída com sucesso.');
-                })
-                .catch(error => {
-                    console.error('Erro ao excluir sessão:', error);
-                    alert('Erro ao excluir sessão. Tente novamente.');
-                });
-            }
-        });
-
-        if (modalCloseBtn) {
-            modalCloseBtn.addEventListener('click', closeModal);
-        }
-
-        modal.addEventListener('click', function(event) {
-            if (event.target === modal) {
-                closeModal();
-            }
-        });
-    })();
-</script>
-{% endblock %}
-
-
-

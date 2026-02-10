@@ -1,4 +1,4 @@
-<form id="ajax-session-form" method="post">
+<form id="ajax-session-form" method="post" data-action-url="{% if edit_url %}{{ edit_url }}{% else %}{{ request.path }}{% endif %}">
     {% csrf_token %}
     <div class="dv-form-group">
         <label for="{{ form.filme.id_for_label }}">Filme *</label>

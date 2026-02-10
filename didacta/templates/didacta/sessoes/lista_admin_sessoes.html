@@ -17,7 +17,7 @@
 
     {% if page_obj %}
     <div class="dv-table-wrapper">
-        <table class="dv-table">
+        <table class="dv-table" id="adminSessionsTable">
             <thead>
                 <tr>
                     <th>Filme</th>
@@ -31,38 +31,36 @@
             </thead>
             <tbody>
                 {% for sessao in page_obj %}
-                <tr>
-                    <td><strong>{{ sessao.filme.titulo }}</strong></td>
-                    <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
-                    <td>{{ sessao.local }}</td>
-                    <td>{{ sessao.capacidade_total }}</td>
+                <tr data-session-id="{{ sessao.pk }}">
+                    <td class="dv-session-filme"><strong>{{ sessao.filme.titulo }}</strong></td>
+                    <td class="dv-session-data-hora">{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
+                    <td class="dv-session-local">{{ sessao.local }}</td>
+                    <td class="dv-session-capacidade">{{ sessao.capacidade_total }}</td>
                     <td>
                         <span class="dv-status {% if sessao.vagas_disponiveis > 0 %}success{% else %}danger{% endif %}">
                             {{ sessao.vagas_disponiveis }}
                         </span>
                     </td>
                     <td>
-                        <span class="dv-status {% if sessao.ativo %}success{% else %}neutral{% endif %}">
+                        <span class="dv-status dv-session-status {% if sessao.ativo %}success{% else %}neutral{% endif %}">
                             {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
                         </span>
                     </td>
                     <td style="text-align:right;">
                         <div class="dv-form-actions" style="justify-content:flex-end;">
-                            <a href="{% url 'didacta:session_detail_admin' sessao.pk %}"
-                               class="dv-btn ghost sm js-admin-panel-link"
-                               data-panel-url="{% url 'didacta:session_detail_admin' sessao.pk %}">
+                            <a href="{% url 'didacta:session_detail_admin' sessao.pk %}" class="dv-btn ghost sm">
                                 <i class="bi bi-eye"></i> Ver
                             </a>
-                            <a href="{% url 'didacta:session_update' sessao.pk %}"
-                               class="dv-btn ghost sm js-admin-panel-link"
-                               data-panel-url="{% url 'didacta:session_update' sessao.pk %}">
+                            <button type="button"
+                                    class="dv-btn ghost sm js-session-edit"
+                                    data-edit-url="{% url 'didacta:ajax_session_edit' sessao.pk %}">
                                 <i class="bi bi-pencil"></i> Editar
-                            </a>
-                            <a href="{% url 'didacta:session_delete' sessao.pk %}"
-                               class="dv-btn ghost sm js-admin-panel-link"
-                               data-panel-url="{% url 'didacta:session_delete' sessao.pk %}">
+                            </button>
+                            <button type="button"
+                                    class="dv-btn ghost sm js-session-delete"
+                                    data-delete-url="{% url 'didacta:ajax_session_delete' sessao.pk %}">
                                 <i class="bi bi-trash"></i> Excluir
-                            </a>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -92,18 +90,23 @@
     </div>
     {% endif %}
 
-    <!-- Painel lateral para ver/editar/excluir via AJAX -->
-    <div id="adminPanel" class="dv-panel" aria-hidden="true">
-        <div class="dv-panel__backdrop"></div>
-        <div class="dv-panel__content" role="dialog" aria-modal="true" aria-labelledby="adminPanelTitle">
-            <div class="dv-panel__header">
-                <h2 id="adminPanelTitle" class="dv-section__title" style="font-size:1.1rem;">Detalhes da sessão</h2>
-                <button type="button" class="dv-panel__close" id="adminPanelCloseBtn" aria-label="Fechar painel">
+    <!-- CSRF "holder" para POSTs AJAX (delete) -->
+    <form id="csrfTokenHolder" style="display:none;">
+        {% csrf_token %}
+    </form>
+
+    <!-- Modal de edição de sessão (AJAX) -->
+    <div id="sessionModal" class="dv-modal" aria-hidden="true">
+        <div class="dv-modal__backdrop"></div>
+        <div class="dv-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="sessionModalTitle">
+            <div class="dv-modal__header">
+                <h2 id="sessionModalTitle" class="dv-section__title" style="font-size:1.2rem;">Editar sessão</h2>
+                <button type="button" class="dv-modal__close" id="sessionModalCloseBtn" aria-label="Fechar modal">
                     &times;
                 </button>
             </div>
-            <div class="dv-panel__body" id="adminPanelBody">
-                <!-- Conteúdo carregado via AJAX -->
+            <div class="dv-modal__body" id="sessionModalBody">
+                <!-- Formulário será carregado via AJAX -->
             </div>
         </div>
     </div>
@@ -113,48 +116,47 @@
 {% block extra_css %}
 {{ block.super }}
 <style>
-    .dv-panel {
+    .dv-modal {
         position: fixed;
         inset: 0;
         display: none;
-        z-index: 250;
         align-items: center;
         justify-content: center;
+        z-index: 300;
     }
 
-    .dv-panel.is-open {
+    .dv-modal.is-open {
         display: flex;
     }
 
-    .dv-panel__backdrop {
+    .dv-modal__backdrop {
         position: absolute;
         inset: 0;
         background: rgba(0, 0, 0, 0.7);
     }
 
-    .dv-panel__content {
+    .dv-modal__dialog {
         position: relative;
-        width: min(900px, 100% - 32px);
-        max-height: min(90vh, 720px);
+        max-width: 640px;
+        width: 100%;
+        margin: 16px;
         background: hsl(var(--panel));
         border-radius: var(--radius-lg);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         box-shadow: var(--glow-card);
-        padding: 20px clamp(16px, 3vw, 24px);
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+        padding: 20px clamp(18px, 3vw, 24px);
         z-index: 1;
     }
 
-    .dv-panel__header {
+    .dv-modal__header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
+        margin-bottom: 12px;
     }
 
-    .dv-panel__close {
+    .dv-modal__close {
         border: none;
         background: transparent;
         color: hsl(var(--foreground-muted));
@@ -163,27 +165,9 @@
         line-height: 1;
     }
 
-    .dv-panel__body {
-        margin-top: 8px;
+    .dv-modal__body {
+        max-height: min(70vh, 520px);
         overflow-y: auto;
-    }
-
-    /* Dentro do painel, mostrar só o miolo da página carregada */
-    .dv-panel__body .dv-navbar,
-    .dv-panel__body .dv-footer {
-        display: none;
-    }
-
-    .dv-panel__body .dv-wrapper {
-        padding-top: 0;
-    }
-
-    .dv-panel__body .dv-wrapper > *:not(.dv-main) {
-        display: none;
-    }
-
-    .dv-panel__body .dv-main {
-        padding: 0;
     }
 </style>
 {% endblock %}
@@ -192,56 +176,169 @@
 {{ block.super }}
 <script>
     (function() {
-        const panel = document.getElementById('adminPanel');
-        if (!panel) return;
+        const table = document.getElementById('adminSessionsTable');
+        const modal = document.getElementById('sessionModal');
+        const modalBody = document.getElementById('sessionModalBody');
+        const modalCloseBtn = document.getElementById('sessionModalCloseBtn');
+        const csrfHolder = document.querySelector('#csrfTokenHolder input[name=csrfmiddlewaretoken]');
 
-        const panelBody = document.getElementById('adminPanelBody');
-        const closeBtn = document.getElementById('adminPanelCloseBtn');
+        if (!table || !modal || !modalBody) return;
 
-        function openPanel() {
-            panel.classList.add('is-open');
-            panel.setAttribute('aria-hidden', 'false');
+        function openModal() {
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
         }
 
-        function closePanel() {
-            panel.classList.remove('is-open');
-            panel.setAttribute('aria-hidden', 'true');
-            panelBody.innerHTML = '';
+        function closeModal() {
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+            modalBody.innerHTML = '';
         }
 
-        document.addEventListener('click', function(event) {
-            const link = event.target.closest('.js-admin-panel-link');
-            if (!link) return;
+        function getCSRFToken() {
+            // Preferir token do form do modal
+            const formToken = modalBody.querySelector('[name=csrfmiddlewaretoken]');
+            if (formToken) return formToken.value;
+            if (csrfHolder) return csrfHolder.value;
+            return '';
+        }
 
-            const url = link.getAttribute('data-panel-url') || link.getAttribute('href');
-            if (!url) return;
+        function attachModalFormHandlers(row) {
+            const form = modalBody.querySelector('#ajax-session-form');
+            if (!form) return;
 
-            event.preventDefault();
+            const cancelBtn = modalBody.querySelector('#sessionModalCancelBtn');
+            if (cancelBtn) cancelBtn.onclick = closeModal;
 
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+            form.onsubmit = function(e) {
+                e.preventDefault();
+
+                const actionUrl = form.getAttribute('data-action-url');
+                if (!actionUrl) {
+                    alert('Erro: URL de ação não encontrada.');
+                    return;
                 }
-            })
-            .then(response => response.text())
-            .then(html => {
-                panelBody.innerHTML = html;
-                openPanel();
-            })
-            .catch(error => {
-                console.error('Erro ao carregar conteúdo do painel:', error);
-                alert('Erro ao carregar conteúdo. Tente novamente.');
-            });
+
+                const formData = new FormData(form);
+                fetch(actionUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken(),
+                    }
+                })
+                .then(async (resp) => {
+                    const contentType = resp.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) return resp.json();
+                    const text = await resp.text();
+                    try { return JSON.parse(text); } catch { throw new Error(text); }
+                })
+                .then((data) => {
+                    if (!data.success) {
+                        if (data.form_html) {
+                            modalBody.innerHTML = data.form_html;
+                            attachModalFormHandlers(row);
+                        }
+                        alert(data.message || 'Erro ao salvar sessão.');
+                        return;
+                    }
+
+                    const sessao = data.session;
+                    if (row) {
+                        const dataHoraCell = row.querySelector('.dv-session-data-hora');
+                        const localCell = row.querySelector('.dv-session-local');
+                        const capacidadeCell = row.querySelector('.dv-session-capacidade');
+                        const statusBadge = row.querySelector('.dv-session-status');
+
+                        if (dataHoraCell) dataHoraCell.textContent = sessao.data_hora;
+                        if (localCell) localCell.textContent = sessao.local;
+                        if (capacidadeCell) capacidadeCell.textContent = sessao.capacidade_total;
+
+                        // Status badge (texto + classe)
+                        if (statusBadge) {
+                            statusBadge.textContent = sessao.ativo ? 'Ativa' : 'Inativa';
+                            statusBadge.classList.toggle('success', !!sessao.ativo);
+                            statusBadge.classList.toggle('neutral', !sessao.ativo);
+                        }
+                    }
+
+                    closeModal();
+                })
+                .catch((err) => {
+                    console.error(err);
+                    alert('Erro ao salvar sessão. Veja o console.');
+                });
+            };
+        }
+
+        table.addEventListener('click', function(event) {
+            const editBtn = event.target.closest('.js-session-edit');
+            const deleteBtn = event.target.closest('.js-session-delete');
+            const row = event.target.closest('tr[data-session-id]');
+
+            if (editBtn) {
+                event.preventDefault();
+                const url = editBtn.getAttribute('data-edit-url');
+                if (!url) return;
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(resp => resp.text())
+                .then(html => {
+                    modalBody.innerHTML = html;
+                    // garante actionUrl (caso venha sem)
+                    const form = modalBody.querySelector('#ajax-session-form');
+                    if (form && !form.getAttribute('data-action-url')) {
+                        form.setAttribute('data-action-url', url);
+                    }
+                    attachModalFormHandlers(row);
+                    openModal();
+                })
+                .catch((err) => {
+                    console.error(err);
+                    alert('Erro ao carregar formulário.');
+                });
+            }
+
+            if (deleteBtn) {
+                event.preventDefault();
+                const url = deleteBtn.getAttribute('data-delete-url');
+                if (!url) return;
+
+                const ok = confirm('Tem certeza de que deseja excluir esta sessão?');
+                if (!ok) return;
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken(),
+                    },
+                    body: new URLSearchParams(),
+                })
+                .then(resp => resp.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert(data.message || 'Erro ao excluir sessão.');
+                        return;
+                    }
+                    if (row && row.parentNode) row.parentNode.removeChild(row);
+                })
+                .catch((err) => {
+                    console.error(err);
+                    alert('Erro ao excluir sessão. Veja o console.');
+                });
+            }
         });
 
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closePanel);
-        }
-
-        panel.addEventListener('click', function(event) {
-            if (event.target === panel || event.target.classList.contains('dv-panel__backdrop')) {
-                closePanel();
+        if (modalCloseBtn) modalCloseBtn.onclick = closeModal;
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal || event.target.classList.contains('dv-modal__backdrop')) {
+                closeModal();
             }
         });
     })();
