@@ -1,6 +1,5 @@
 name: Bug
 description: Registre um erro ou comportamento inesperado do sistema.
-title: ""
 labels: ["bug"]
 
 body:
