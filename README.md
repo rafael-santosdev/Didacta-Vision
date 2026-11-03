@@ -1,5 +1,22 @@
 # Didacta-Vision
 
+## Sobre o projeto
+
+O **Didacta-Vision** é um sistema web desenvolvido para apoiar o projeto de extensão "Luz, Ciência e Ação", do IFRN. A plataforma busca facilitar a organização e divulgação de sessões de cinema educativo, permitindo aos usuários consultar filmes, realizar reservas e participar de discussões. Também oferece recursos para o gerenciamento de filmes, sessões e usuários.
+
+## Tecnologias previstas
+
+- **Back-end:** Python e Django.
+- **Front-end:** HTML, CSS e JavaScript.
+- **Banco de dados:** MySQL.
+- **Prototipação:** Figma.
+- **Versionamento e gerenciamento:** Git, GitHub e GitHub Projects.
+
+## Equipe
+
+- Danilo Lima
+- Rafael Santos
+
 Link do Projeto no Figma: https://www.figma.com/design/x5HZ5erW9YcUf0RG3AK78u/Didacta-Vision?node-id=0-1&p=f&t=c4CgvDEdQZ8LHJxc-0
 
 ## Envio de e-mail (código de verificação)
