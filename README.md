@@ -62,3 +62,15 @@ Variáveis no `.env` (e-mail):
 
 5. **Mailgun (alternativa ao Gmail)**  
    Se Gmail continuar bloqueando ou o e-mail não chegar, use Mailgun (conta gratuita, envio por HTTPS). Configure `EMAIL_MAILGUN_API_KEY` e `EMAIL_MAILGUN_DOMAIN` no `.env`.
+
+## Definição de Pronto (DoD)
+
+Uma atividade será considerada concluída quando:
+
+- A funcionalidade estiver implementada.
+- Os critérios de aceitação forem atendidos.
+- A funcionalidade tiver sido testada.
+- O código tiver sido revisado e integrado à branch principal por meio de Pull Request.
+- A Issue correspondente estiver encerrada e marcada como Done no GitHub Project.
+
+
