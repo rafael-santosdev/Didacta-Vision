@@ -366,7 +366,9 @@ main, section, header, footer {
 .dv-user-info {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 2px;
+    text-align: center;
 }
 
 .dv-user-menu-inline {
@@ -2246,5 +2248,3 @@ small.text-muted,
 small {
     color: hsl(222 9% 90%) !important;
 }
-
-
