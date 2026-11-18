@@ -29,6 +29,9 @@ def register_view(request):
         return redirect('didacta:index')
 
     if request.method == 'POST':
+        if not request.POST.get('email', '').strip():
+            messages.error(request, 'Por favor, preencha o email.')
+
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)

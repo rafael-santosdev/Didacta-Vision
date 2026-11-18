@@ -49,7 +49,7 @@ class User(AbstractUser):
         ('comunidade_externa', 'Comunidade Externa'),
     ]
 
-    email = models.EmailField('Email', unique=True, db_index=True, blank=True, null=True)
+    email = models.EmailField('Email', unique=True, db_index=True)
     nome_completo = models.CharField('Nome de Usuário', max_length=255)
     telefone = models.CharField('Telefone', max_length=20, blank=True)
     data_nascimento = models.DateField('Data de Nascimento', null=True, blank=True)

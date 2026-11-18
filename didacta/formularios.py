@@ -12,8 +12,9 @@ class CustomUserCreationForm(forms.ModelForm):
     )
     email = forms.EmailField(
         label='Email',
-        required=False,
-        widget=forms.EmailInput(attrs={'class': 'form-control'})
+        required=True,
+        error_messages={'required': 'Por favor, preencha o email.'},
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'required': True})
     )
     telefone = forms.CharField(
         label='Telefone',

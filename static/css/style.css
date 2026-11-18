@@ -1414,6 +1414,25 @@ main, section, header, footer {
     margin-top: 20px;
 }
 
+/* Centraliza apenas o estado vazio da página inicial na área principal. */
+.dv-wrapper:has(.dv-empty--page-center) {
+    display: flex;
+    flex-direction: column;
+}
+
+.dv-wrapper:has(.dv-empty--page-center) .dv-main {
+    flex: 1;
+    display: grid;
+    place-items: center;
+}
+
+.dv-empty--page-center {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 .table-responsive {
     width: 100%;
     overflow-x: auto;
