@@ -1,5 +1,22 @@
 # Didacta-Vision
 
+## Sobre o projeto
+
+O **Didacta-Vision** é um sistema web desenvolvido para apoiar o projeto de extensão "Luz, Ciência e Ação", do IFRN. A plataforma busca facilitar a organização e divulgação de sessões de cinema educativo, permitindo aos usuários consultar filmes, realizar reservas e participar de discussões. Também oferece recursos para o gerenciamento de filmes, sessões e usuários.
+
+## Tecnologias previstas
+
+- **Back-end:** Python e Django.
+- **Front-end:** HTML, CSS e JavaScript.
+- **Banco de dados:** MySQL.
+- **Prototipação:** Figma.
+- **Versionamento e gerenciamento:** Git, GitHub e GitHub Projects.
+
+## Equipe
+
+- Danilo Lima
+- Rafael Santos
+
 Link do Projeto no Figma: https://www.figma.com/design/x5HZ5erW9YcUf0RG3AK78u/Didacta-Vision?node-id=0-1&p=f&t=c4CgvDEdQZ8LHJxc-0
 
 ## Envio de e-mail (código de verificação)
@@ -45,3 +62,15 @@ Variáveis no `.env` (e-mail):
 
 5. **Mailgun (alternativa ao Gmail)**  
    Se Gmail continuar bloqueando ou o e-mail não chegar, use Mailgun (conta gratuita, envio por HTTPS). Configure `EMAIL_MAILGUN_API_KEY` e `EMAIL_MAILGUN_DOMAIN` no `.env`.
+
+## Definição de Pronto (DoD)
+
+Uma atividade será considerada concluída quando:
+
+- A funcionalidade estiver implementada.
+- Os critérios de aceitação forem atendidos.
+- A funcionalidade tiver sido testada.
+- O código tiver sido revisado e integrado à branch principal por meio de Pull Request.
+- A Issue correspondente estiver encerrada e marcada como Done no GitHub Project.
+
+
