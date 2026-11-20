@@ -3,28 +3,28 @@
 {% block title %}Deletar Filme - Didacta Vision{% endblock %}
 
 {% block content %}
-<section class="dv-section">
-    <div class="dv-dialog">
-        <div class="dv-dialog__icon" style="background:rgba(239,68,68,0.2);color:#f87171;">
+<div class="container-xl d-flex justify-content-center py-5">
+    <div class="dv-dialog" style="max-width:540px;width:100%;">
+        <div class="dv-dialog__icon" style="background:rgba(239,68,68,0.15);color:#ef4444;font-size:2rem;width:64px;height:64px;display:grid;place-items:center;border-radius:50%;margin:0 auto 16px;">
             <i class="bi bi-exclamation-triangle"></i>
         </div>
-        <h2>Remover filme?</h2>
-        <p class="text-muted">Esta ação remove o título da vitrine e cancela futuras sessões associadas.</p>
+        <h2 class="fs-4 text-white text-center fw-bold mb-2">Remover Filme?</h2>
+        <p class="text-muted text-center mb-3" style="line-height:1.6;">Esta ação remove o título do catálogo oficial e cancela todas as futuras sessões associadas a ele.</p>
 
-        <div class="dv-card-wide" style="margin-top:18px;">
-            <strong>{{ object.titulo }}</strong>
-            <p class="text-muted" style="margin-top:6px;">Confirme antes de prosseguir, esta ação é irreversível.</p>
+        <div class="dv-card-wide p-3 mb-4 text-center">
+            <strong class="text-white fs-5 d-block">{{ object.titulo }}</strong>
+            <p class="text-muted small mt-1 mb-0">Confirme antes de prosseguir, esta ação não pode ser desfeita.</p>
         </div>
 
-        <form method="post" class="dv-dialog__actions">
+        <form method="post" class="d-flex flex-column flex-sm-row justify-content-end gap-2">
             {% csrf_token %}
-            <a href="{% url 'didacta:film_list_admin' %}" class="dv-btn ghost">Cancelar</a>
-            <button type="submit" class="dv-btn primary">
-                <i class="bi bi-trash"></i> Sim, deletar
+            <a href="{% url 'didacta:film_list_admin' %}" class="dv-btn ghost justify-content-center">Cancelar</a>
+            <button type="submit" class="dv-btn danger justify-content-center">
+                <i class="bi bi-trash me-1"></i> Sim, Excluir Filme
             </button>
         </form>
     </div>
-</section>
+</div>
 {% endblock %}
 
 

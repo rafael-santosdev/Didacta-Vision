@@ -10,37 +10,36 @@
     </div>
     <div class="dv-form-grid two">
         <div class="dv-form-group">
-            <label for="{{ form.local.id_for_label }}">Local *</label>
+            <label for="{{ form.local.id_for_label }}">Local / Sala *</label>
             {{ form.local }}
         </div>
         <div class="dv-form-group">
-            <label for="{{ form.capacidade_total.id_for_label }}">Capacidade total *</label>
+            <label for="{{ form.capacidade_total.id_for_label }}">Capacidade total (lugares) *</label>
             {{ form.capacidade_total }}
         </div>
-        <div class="dv-form-group">
-            <label class="text-muted" for="{{ form.ativo.id_for_label }}">Disponibilidade</label>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                {{ form.ativo }}
-                <span>Ativa</span>
-            </div>
+    </div>
+    <div class="dv-form-group">
+        <label class="text-muted" for="{{ form.ativo.id_for_label }}">Disponibilidade</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+            {{ form.ativo }}
+            <span>Sessão Ativa (disponível para reservas)</span>
         </div>
     </div>
 
     {% if form.errors %}
-    <div class="dv-status danger" style="flex-direction:column;display:flex;gap:4px;margin-top:8px;">
+    <div class="dv-status danger" style="flex-direction:column;display:flex;gap:4px;margin-top:12px;padding:10px 14px;border-radius:8px;">
         {% for field, errors in form.errors.items %}
             {% for error in errors %}
-            <span>{{ error }}</span>
+            <span><strong>{{ field|title }}:</strong> {{ error }}</span>
             {% endfor %}
         {% endfor %}
     </div>
     {% endif %}
 
-    <div class="dv-form-actions" style="margin-top:16px;justify-content:flex-end;">
-        <button type="button" class="dv-btn ghost" id="sessionModalCancelBtn">Cancelar</button>
+    <div class="dv-form-actions" style="margin-top:20px;justify-content:flex-end;gap:10px;">
+        <button type="button" class="dv-btn ghost" data-bs-dismiss="modal" id="sessionModalCancelBtn">Cancelar</button>
         <button type="submit" class="dv-btn primary">
-            <i class="bi bi-check-circle"></i> Salvar alterações
+            <i class="bi bi-check-circle"></i> {% if is_create %}Criar sessão{% else %}Salvar alterações{% endif %}
         </button>
     </div>
 </form>
-

@@ -56,6 +56,24 @@ strong, b {
     color: hsl(var(--foreground));
 }
 
+html.dv-ajax-navigation-pending::before {
+    content: "";
+    position: fixed;
+    z-index: 3000;
+    top: 0;
+    left: 0;
+    width: 35%;
+    height: 3px;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.7);
+    animation: dv-navigation-progress 1s ease-in-out infinite;
+}
+
+@keyframes dv-navigation-progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+}
+
 a {
     color: inherit;
     text-decoration: none;
@@ -2161,6 +2179,7 @@ main, section, header, footer {
         font-size: 0.9rem;
         line-height: 1.6;
     }
+}
 
 .dv-notification {
     border: 1px solid rgba(255,255,255,0.08);
@@ -2187,81 +2206,1670 @@ main, section, header, footer {
     gap: 10px;
     flex-wrap: wrap;
 }
+
+/* ==========================================================================
+   DIDACTA VISION 2.0 - SISTEMA DE DESIGN & INTERFACE MODERNA
+   ========================================================================== */
+
+/* 1. BREADCRUMBS DE NAVEGAÇÃO */
+.dv-breadcrumb-nav {
+    margin-bottom: 20px;
 }
 
-@media (max-width: 360px) {
-    .dv-hero__title {
-        font-size: 1.4rem;
-    }
+.dv-breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    padding: 10px 16px;
+    margin: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+}
 
-    .dv-section__title {
-        font-size: 1.2rem;
-    }
+.dv-breadcrumbs__item {
+    display: inline-flex;
+    align-items: center;
+    color: hsl(var(--foreground-muted));
+}
 
-    .dv-card-wide,
-    .dv-panel,
-    .dv-form-card {
-        padding: 14px;
-    }
+.dv-breadcrumbs__item:not(:last-child)::after {
+    content: '/';
+    margin-left: 8px;
+    color: rgba(255, 255, 255, 0.25);
+}
 
-    .dv-table {
-        min-width: 350px;
+.dv-breadcrumbs__item a {
+    color: hsl(var(--foreground-muted));
+    transition: color var(--transition-fast);
+}
+
+.dv-breadcrumbs__item a:hover {
+    color: hsl(var(--primary-strong));
+    text-decoration: none;
+}
+
+.dv-breadcrumbs__item.is-active {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+}
+
+/* 2. LOGO E NAVBAR REFINADOS */
+.dv-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.dv-logo__icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
+}
+
+.dv-logo__text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dv-logo__brand {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: hsl(var(--foreground));
+}
+
+.dv-logo__badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: hsl(var(--accent));
+}
+
+.dv-nav-desktop {
+    display: none;
+    align-items: center;
+    gap: 6px;
+}
+
+@media (min-width: 992px) {
+    .dv-nav-desktop {
+        display: flex;
     }
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-    .dv-hero {
-        min-height: 50vh;
-    }
+.dv-nav__item {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: hsl(var(--foreground-muted));
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    position: relative;
+}
 
-    .dv-detail-hero {
-        min-height: 40vh;
+.dv-nav__item:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dv-nav__item.is-active {
+    color: #fff;
+    background: rgba(229, 9, 20, 0.15);
+    border: 1px solid rgba(229, 9, 20, 0.3);
+}
+
+.dv-notification-badge {
+    background: hsl(var(--primary));
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 999px;
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+}
+
+/* User Pill & Dropdown */
+.dv-user-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 4px 6px;
+    border-radius: 999px;
+    color: inherit;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.dv-user-pill:hover,
+.dv-user-pill:focus,
+.dv-user-pill:active,
+.dv-user-pill.show {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    color: #fff;
+}
+
+.dv-user-pill.dropdown-toggle::after {
+    display: none;
+}
+
+.dv-user-pill:focus-visible {
+    outline: none;
+}
+
+.dv-user-pill,
+.dv-user-pill:hover,
+.dv-user-pill:focus,
+.dv-user-pill:active,
+.dv-user-pill.show {
+    appearance: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.dv-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.dv-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dv-user-pill__name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
+.dv-dropdown-menu {
+    background: #0b0b18 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75) !important;
+    padding: 8px !important;
+    min-width: 220px;
+}
+
+.dv-dropdown-item {
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: hsl(var(--foreground-muted)) !important;
+    font-size: 0.88rem;
+    transition: all var(--transition-fast);
+}
+
+.dv-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #fff !important;
+}
+
+/* 3. SISTEMA DE TOASTS FLUTUANTES */
+.dv-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1080;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 380px;
+    width: calc(100% - 48px);
+    pointer-events: none;
+}
+
+.dv-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #0d0d1f;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 0.9rem;
+    opacity: 0;
+    transform: translateY(-16px) scale(0.95);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+}
+
+.dv-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.dv-toast__icon {
+    font-size: 1.15rem;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.dv-toast__body {
+    flex: 1;
+    line-height: 1.5;
+}
+
+.dv-toast__close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+.dv-toast__close:hover {
+    color: #fff;
+}
+
+.dv-toast--success { border-color: rgba(34, 197, 94, 0.5); background: linear-gradient(145deg, #0d1f14, #080f0a); }
+.dv-toast--error { border-color: rgba(239, 68, 68, 0.5); background: linear-gradient(145deg, #220d0f, #120608); }
+.dv-toast--warning { border-color: rgba(245, 158, 11, 0.5); background: linear-gradient(145deg, #22180d, #120d06); }
+.dv-toast--info { border-color: rgba(59, 130, 246, 0.5); background: linear-gradient(145deg, #0d1628, #070c17); }
+
+/* 4. MODAIS BOOTSTRAP MODERNIZADOS */
+.dv-modal-content {
+    background: #090916 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85) !important;
+    color: #fff !important;
+}
+
+.dv-modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 18px 24px !important;
+}
+
+.dv-modal-title {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: #fff !important;
+}
+
+.dv-modal-body {
+    padding: 24px !important;
+}
+
+/* 5. BARRA DE BUSCA E FILTROS DE CATÁLOGO */
+.dv-filter-bar {
+    margin: 24px 0 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.dv-search-box {
+    position: relative;
+    max-width: 600px;
+    width: 100%;
+}
+
+.dv-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.05rem;
+}
+
+.dv-search-input {
+    width: 100%;
+    padding: 12px 18px 12px 46px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: all var(--transition-fast);
+}
+
+.dv-search-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.25);
+}
+
+.dv-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dv-filter-pill {
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    color: hsl(var(--foreground-muted));
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.dv-filter-pill:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #fff;
+}
+
+.dv-filter-pill.is-active {
+    background: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+    color: #fff;
+    font-weight: 600;
+}
+
+/* 6. GRADE MODERNA DE FILMES */
+.dv-film-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+    gap: 24px;
+}
+
+.dv-card {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.dv-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.65);
+}
+
+.dv-card__media {
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    background: #05050c;
+}
+
+.dv-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.dv-card:hover .dv-card__media img {
+    transform: scale(1.04);
+}
+
+.dv-card__badges {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    z-index: 2;
+}
+
+.dv-card__trailer-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all var(--transition-fast);
+    z-index: 3;
+}
+
+.dv-card__trailer-btn:hover {
+    background: hsl(var(--primary));
+    transform: scale(1.1);
+    border-color: hsl(var(--primary));
+}
+
+.dv-card__content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.dv-card__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    min-height: 2.6em;
+    margin: 0 0 6px 0;
+    line-height: 1.3;
+}
+
+.dv-card__title a {
+    color: hsl(var(--foreground));
+    text-decoration: none;
+}
+
+.dv-card__title a:hover {
+    color: hsl(var(--primary-strong));
+}
+
+.dv-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 10px;
+}
+
+.dv-card__excerpt {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.5;
+    min-height: 4.5em;
+    margin-bottom: 14px;
+    flex-grow: 1;
+}
+
+.dv-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 992px) {
+    .dv-film-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
     }
 }
 
-@media print {
-    .dv-navbar,
-    .dv-footer,
-    .dv-btn,
-    .dv-menu-toggle {
+@media (max-width: 480px) {
+    .dv-film-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .dv-card__content {
+        padding: 12px;
+    }
+
+    .dv-card__footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* 7. DETALHES DE FILME & HERO CINEMATOGRÁFICO */
+.dv-detail-hero {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    padding: clamp(24px, 4vw, 40px);
+    background: #090918;
+    margin-bottom: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dv-detail-hero__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.dv-detail-hero__backdrop img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(28px) brightness(0.25);
+    transform: scale(1.1);
+}
+
+.dv-detail-hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(7,7,18,0.7) 0%, rgba(7,7,18,0.95) 100%);
+}
+
+.dv-detail-hero__content {
+    position: relative;
+    z-index: 1;
+}
+
+.dv-detail-poster img {
+    max-width: 220px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.85);
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+.dv-detail-title {
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.2;
+    color: #fff;
+    margin: 0;
+}
+
+.dv-sinopse-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* 8. CARDS DE SESSÃO NA PÁGINA DO FILME */
+.dv-session-cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.dv-session-box {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    transition: all var(--transition-fast);
+}
+
+.dv-session-box:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.dv-session-box__date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 68px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.dv-session-box__day {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+}
+
+.dv-session-box__month {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: hsl(var(--primary));
+}
+
+.dv-session-box__time {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 4px;
+}
+
+.dv-session-box__info {
+    flex: 1;
+    min-width: 200px;
+}
+
+.dv-session-box__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 9. CARDS DE ETAPA DIDÁTICA */
+.dv-step-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-lg);
+    padding: 28px 24px;
+    text-align: center;
+    height: 100%;
+    transition: transform var(--transition);
+}
+
+.dv-step-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.dv-step-card__icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(229, 9, 20, 0.15), rgba(0, 99, 255, 0.15));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1.6rem;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 16px;
+}
+
+.dv-step-card__number {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: hsl(var(--primary));
+    margin-bottom: 8px;
+}
+
+/* 10. AUTH CARDS */
+.dv-auth-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    max-width: 440px;
+    width: 100%;
+}
+
+.dv-auth-card--wide {
+    max-width: 720px;
+}
+
+.dv-input-group-text {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-right: none;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.dv-input-group-text + .dv-form-control,
+.dv-input-group-text + .form-control {
+    border-left: none;
+}
+
+.dv-select-dark {
+    background-color: #0b0b18 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+}
+
+.dv-select-dark:focus {
+    border-color: hsl(var(--primary)) !important;
+    box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.25) !important;
+}
+
+/* 11. FÓRUM E BOX DE AVISO */
+.dv-forum-form-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    padding: 20px;
+}
+
+.dv-notice-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+}
+
+.dv-user-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    display: grid;
+    place-items: center;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.dv-user-avatar-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 12. RESERVAS & PROFILE AVATAR */
+.dv-reservation-card__poster {
+    width: 70px;
+    height: 100px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+}
+
+.dv-reservation-card__poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dv-profile-avatar-wrapper {
+    width: 110px;
+    height: 110px;
+}
+
+.dv-profile-avatar-img,
+.dv-profile-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+}
+
+.dv-profile-avatar-placeholder {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    display: grid;
+    place-items: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.dv-tag--admin {
+    background: rgba(229, 9, 20, 0.18);
+    border: 1px solid rgba(229, 9, 20, 0.4);
+    color: #ff6b72;
+}
+
+.dv-tag--rating {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
+    font-weight: 700;
+}
+
+/* Animação suave para novos itens */
+@keyframes dvFadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-in {
+    animation: dvFadeSlideIn 0.35s ease forwards;
+}
+
+/* ==========================================================================
+   SISTEMA DE DESIGN ULTRA-RESPONSIVO & ALINHAMENTO PERFEITO (DESKTOP & MOBILE)
+   ========================================================================== */
+
+/* 1. GRADE MODERNA DE FILMES & CARDS */
+.dv-film-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 24px !important;
+    align-items: stretch !important;
+}
+
+.dv-film-grid > .dv-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 100% !important;
+}
+
+.dv-card {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: var(--radius-md) !important;
+    overflow: hidden !important;
+    transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition) !important;
+}
+
+.dv-card:hover {
+    transform: translateY(-5px) !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75) !important;
+}
+
+.dv-card__media {
+    position: relative !important;
+    width: 100% !important;
+    aspect-ratio: 2 / 3 !important;
+    overflow: hidden !important;
+    background: #05050c !important;
+}
+
+.dv-card__media img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.4s ease !important;
+}
+
+.dv-card:hover .dv-card__media img {
+    transform: scale(1.05) !important;
+}
+
+.dv-card__content {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-grow: 1 !important;
+    padding: clamp(12px, 2.5vw, 16px) !important;
+}
+
+.dv-card__title {
+    font-size: clamp(0.95rem, 2vw, 1.1rem) !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    margin: 0 0 6px 0 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    min-height: 2.7em !important;
+}
+
+.dv-card__meta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: clamp(0.74rem, 1.8vw, 0.82rem) !important;
+    color: rgba(255, 255, 255, 0.55) !important;
+    margin-bottom: 8px !important;
+    flex-wrap: wrap !important;
+}
+
+.dv-card__excerpt {
+    font-size: clamp(0.8rem, 1.8vw, 0.85rem) !important;
+    line-height: 1.5 !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    margin-bottom: 12px !important;
+    flex-grow: 1 !important;
+}
+
+.dv-card__footer {
+    margin-top: auto !important;
+    padding-top: 12px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+}
+
+.dv-card__session-info {
+    font-size: 0.82rem;
+    line-height: 1.3;
+}
+
+.dv-film-grid > .dv-card.is-filtered-out {
+    display: none !important;
+}
+
+@media (max-width: 1200px) {
+    .dv-film-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 20px !important;
+    }
+}
+
+@media (max-width: 880px) {
+    .dv-film-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .dv-film-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    .dv-card__content {
+        padding: 10px !important;
+    }
+
+    .dv-card__title {
+        min-height: auto !important;
+        font-size: 0.92rem !important;
+    }
+
+    .dv-card__excerpt {
+        display: none !important; /* Excerpt resumido omitido em telas mínimas para manter alinhamento estético */
+    }
+
+    .dv-card__footer {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+    }
+
+    .dv-card__footer .dv-btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 340px) {
+    .dv-film-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* 2. MENU MOBILE OFFCANVAS & BOTÃO HAMBURGUER */
+.dv-menu-mobile-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+}
+
+.dv-menu-mobile-btn:hover,
+.dv-menu-mobile-btn:focus-visible {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    outline: none;
+}
+
+.dv-offcanvas {
+    background: #080814 !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(24px) !important;
+    width: min(340px, 85vw) !important;
+    color: #fff !important;
+}
+
+.dv-offcanvas .offcanvas-header {
+    padding: 18px 20px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.dv-offcanvas .offcanvas-title {
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+}
+
+.dv-mobile-user-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+    padding: 14px;
+}
+
+.dv-mobile-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dv-mobile-link {
+    display: flex;
+    align-items: center;
+    padding: 11px 14px;
+    border-radius: 10px;
+    color: hsl(var(--foreground-muted));
+    font-size: 0.92rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.dv-mobile-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.dv-mobile-link.is-active {
+    background: rgba(229, 9, 20, 0.16);
+    border: 1px solid rgba(229, 9, 20, 0.35);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* 3. TABELAS RESPONSIVAS INTELIGENTES (TRANSFORMAÇÃO EM CARDS NO MOBILE) */
+.dv-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 10, 22, 0.45);
+    padding: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.dv-table-poster {
+    width: 44px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+    .dv-table-responsive {
+        min-width: 0 !important;
+        width: 100% !important;
+        display: block !important;
+        border: none !important;
+    }
+
+    .dv-table-responsive thead {
+        display: none !important;
+    }
+
+    .dv-table-responsive tbody {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 14px !important;
+        width: 100% !important;
+    }
+
+    .dv-table-responsive tr {
+        display: flex !important;
+        flex-direction: column !important;
+        background: rgba(255, 255, 255, 0.035) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: var(--radius-md) !important;
+        padding: 16px !important;
+        gap: 8px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+        transition: transform var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .dv-table-responsive tr:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.18) !important;
+    }
+
+    .dv-table-responsive td {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        padding: 7px 0 !important;
+        font-size: 0.88rem !important;
+        gap: 12px !important;
+        text-align: right !important;
+        white-space: normal !important;
+    }
+
+    .dv-table-responsive td::before {
+        content: attr(data-label) !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.06em !important;
+        color: rgba(255, 255, 255, 0.45) !important;
+        text-align: left !important;
+        flex-shrink: 0 !important;
+    }
+
+    .dv-table-responsive .dv-table-col-media {
+        justify-content: center !important;
+        border-bottom: none !important;
+        padding-bottom: 4px !important;
+    }
+
+    .dv-table-responsive .dv-table-col-media::before {
+        display: none !important;
+    }
+
+    .dv-table-responsive .dv-table-poster {
+        width: 60px !important;
+        height: 85px !important;
+        border-radius: 6px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .dv-table-responsive .dv-table-col-title {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px !important;
+        justify-content: center !important;
+        font-size: 1.05rem !important;
+        text-align: center !important;
+    }
+
+    .dv-table-responsive .dv-table-col-title::before {
+        display: none !important;
+    }
+
+    .dv-table-responsive .dv-table-col-actions {
+        border-bottom: none !important;
+        padding-top: 12px !important;
+        margin-top: 4px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+        justify-content: flex-end !important;
+        width: 100% !important;
+    }
+
+    .dv-table-responsive .dv-table-col-actions::before {
+        display: none !important;
+    }
+
+    .dv-table-responsive .dv-table-col-actions .dv-btn {
+        padding: 7px 14px !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+/* 4. ABAS DE RESERVAS (PILLS) */
+.dv-nav-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.dv-nav-pills .nav-link {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    color: hsl(var(--foreground-muted));
+    font-weight: 500;
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    transition: all var(--transition-fast);
+}
+
+.dv-nav-pills .nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.dv-nav-pills .nav-link.active {
+    background: hsl(var(--primary)) !important;
+    border-color: hsl(var(--primary)) !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
+}
+
+/* 5. CARDS DE RESERVAS */
+.dv-reservation-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    transition: all var(--transition);
+}
+
+.dv-reservation-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+}
+
+.dv-reservation-card__poster {
+    width: 76px;
+    height: 110px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    background: #000;
+}
+
+.dv-reservation-card__poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 480px) {
+    .dv-reservation-card__poster {
+        width: 68px;
+        height: 98px;
+        margin: 0 auto 8px;
+    }
+}
+
+/* 6. SESSÕES NO DETALHE DO FILME */
+@media (max-width: 768px) {
+    .dv-session-box {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 14px !important;
+    }
+
+    .dv-session-box__date {
+        align-self: flex-start !important;
+    }
+
+    .dv-session-box__actions {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding-top: 12px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .dv-session-box__actions .dv-btn {
+        flex-grow: 1;
+        justify-content: center;
+    }
+}
+
+/* 7. ALERTAS FLASH */
+.dv-alerts {
+    margin-bottom: 20px;
+}
+
+.dv-alert {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #0d0d1f;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    margin-bottom: 12px;
+}
+
+.dv-alert__icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.dv-alert__content {
+    flex: 1;
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+/* 8. PAGINAÇÃO MODERNA */
+.dv-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 16px;
+    flex-wrap: wrap;
+}
+
+.dv-pagination__info {
+    font-size: 0.9rem;
+    color: hsl(var(--foreground-muted));
+    font-weight: 500;
+    padding: 6px 12px;
+}
+
+/* 9. RODAPÉ RESPONSIVO */
+.dv-footer {
+    background: #05050e;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 48px 0 24px;
+    margin-top: 64px;
+}
+
+.dv-footer__inner {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.dv-footer__links {
+    display: flex;
+    gap: clamp(24px, 4vw, 56px);
+    flex-wrap: wrap;
+}
+
+.dv-footer__col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 140px;
+}
+
+.dv-footer__col h6 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.dv-footer__col a {
+    color: hsl(var(--foreground-muted));
+    font-size: 0.9rem;
+    transition: color var(--transition-fast);
+}
+
+.dv-footer__col a:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+.dv-footer__bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 36px;
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* 10. FORMULÁRIOS AMPLOS & CONTROLES UNIVERSAIS */
+.dv-form-card--wide {
+    max-width: 780px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+}
+
+.dv-form-control,
+.dv-form input[type="text"],
+.dv-form input[type="email"],
+.dv-form input[type="password"],
+.dv-form input[type="url"],
+.dv-form input[type="number"],
+.dv-form input[type="datetime-local"],
+.dv-form textarea,
+.dv-form select {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    font-size: 0.92rem !important;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+.dv-form-control:focus,
+.dv-form input:focus,
+.dv-form textarea:focus,
+.dv-form select:focus {
+    border-color: hsl(var(--primary)) !important;
+    box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.25) !important;
+    outline: none !important;
+    background: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* 11. COMUNICADOS E COMENTÁRIOS DO FÓRUM */
+.dv-comment {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+}
+
+.dv-comment__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.dv-comment__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dv-comment__text {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.dv-comment__replies {
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+    padding-left: 18px;
+    margin-top: 14px;
+}
+
+.dv-comment--reply {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+}
+
+/* 12. CENTRAL DE NOTIFICAÇÕES */
+.dv-notification {
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 12px;
+    transition: all var(--transition-fast);
+}
+
+.dv-notification.is-unread {
+    border-color: rgba(59, 130, 246, 0.35);
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.06), rgba(255, 255, 255, 0.02));
+}
+
+.dv-notification__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.dv-notification__body {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+/* Ajustes finais de alinhamento e responsividade */
+.dv-navbar__inner {
+    flex-wrap: nowrap;
+    gap: clamp(12px, 2vw, 24px);
+}
+
+.dv-nav-desktop {
+    flex-wrap: nowrap;
+    gap: clamp(2px, 0.6vw, 8px);
+    margin-left: auto;
+}
+
+.dv-navbar__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-left: 0;
+    flex-shrink: 0;
+}
+
+.dv-navbar__actions > .dropdown {
+    flex-shrink: 0;
+}
+
+.dv-section__subtitle {
+    display: block !important;
+    max-width: 68ch;
+    color: rgba(226, 232, 240, 0.72);
+    line-height: 1.65;
+}
+
+.dv-filter-pill {
+    flex: 0 0 auto;
+}
+
+.dv-btn:focus-visible,
+.dv-filter-pill:focus-visible,
+.dv-mobile-link:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: 3px;
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .dv-nav-desktop {
         display: none;
     }
 
-    .dv-wrapper {
-        padding-top: 0;
-    }
-
-    .dv-main {
-        margin: 0;
-        padding: 0;
+    .dv-navbar__actions {
+        margin-left: auto;
     }
 }
-.text-muted,
-.footer-text,
-p,
-span,
-small,
-label,
-.help-text,
-.dv-section__subtitle,
-.dv-hero__lead,
-.dv-sinopse__text,
-.dv-stat__label {
-    color: hsl(222 9% 90%) !important;
+
+@media (min-width: 1200px) {
+    .dv-nav-desktop {
+        display: flex;
+    }
+
+    .dv-hero__content {
+        margin-left: clamp(24px, 4vw, 60px);
+        margin-right: auto;
+    }
 }
 
-.dv-footer small,
-.dv-footer .text-muted,
-.dv-footer p,
-.dv-footer span,
-small.text-muted,
-.dv-footer__inner small,
-.dv-footer__inner .text-muted,
-.dv-footer__inner p.text-muted,
-.dv-footer__inner small.text-muted {
-    color: hsl(222 9% 90%) !important;
+@media (max-width: 768px) {
+    .dv-section__subtitle {
+        font-size: 0.9rem;
+    }
+
+    .dv-filter-pills {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 2px 2px 8px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .dv-filter-pills::-webkit-scrollbar {
+        display: none;
+    }
 }
 
-small {
-    color: hsl(222 9% 90%) !important;
+@media (max-width: 480px) {
+    .dv-navbar__inner {
+        min-height: 64px;
+        gap: 10px;
+    }
+
+    .dv-logo {
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .dv-logo__brand {
+        font-size: 0.94rem;
+    }
+
+    .dv-logo__badge {
+        font-size: 0.58rem;
+        padding: 2px 4px;
+    }
+
+    .dv-navbar__actions {
+        gap: 8px;
+    }
+
+    .dv-navbar__actions > .d-flex {
+        gap: 0 !important;
+    }
+
+    .dv-navbar__actions > .d-flex .dv-btn.ghost {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

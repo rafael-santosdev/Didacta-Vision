@@ -1,101 +1,154 @@
 {% extends 'didacta/base.html' %}
+{% load static %}
 
-{% block title %}Detalhes da Sessão - Didacta Vision{% endblock %}
+{% block title %}Controle de Presença - Sessão de {{ sessao.filme.titulo }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
+    <ol class="dv-breadcrumbs">
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:session_list_admin' %}">Sessões</a></li>
+        <li class="dv-breadcrumbs__item is-active" aria-current="page">Lista de Presença ({{ sessao.filme.titulo }})</li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-<section class="dv-section">
-    <div class="dv-toolbar">
-        <div>
-            <span class="dv-badge">Administração</span>
-            <h1 class="dv-section__title">Sessão de {{ sessao.filme.titulo }}</h1>
-            <p class="text-muted" style="margin-top:6px;">Visualize participantes e atualize presenças em tempo real.</p>
-        </div>
-        <a href="{% url 'didacta:session_list_admin' %}" class="dv-btn ghost">
-            <i class="bi bi-arrow-left"></i> Voltar
-        </a>
-    </div>
-
-    <article class="dv-card-wide">
-        <div class="dv-meta" style="margin-bottom:12px;">
-            <span><i class="bi bi-calendar3"></i> {{ sessao.data_hora|date:'d/m/Y H:i' }}</span>
-            <span><i class="bi bi-geo-alt"></i> {{ sessao.local }}</span>
-            <span>{{ sessao.vagas_disponiveis }} / {{ sessao.capacidade_total }} vagas</span>
-        </div>
-        <p class="text-muted mb-0">Status: <strong>{% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}</strong></p>
-    </article>
-
-    <div class="dv-section" style="margin-top:32px;">
-        <div class="dv-toolbar">
-            <h2 class="dv-section__title" style="margin:0;">Participantes</h2>
-            <span class="text-muted">{{ reservas|length }} registros</span>
+<div class="container-xl">
+    <section class="dv-section">
+        <!-- CABEÇALHO DA SESSÃO -->
+        <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div>
+                <span class="dv-badge dv-badge--primary"><i class="bi bi-people-fill me-1"></i> Chamada e Presença</span>
+                <h1 class="dv-section__title">Sessão: {{ sessao.filme.titulo }}</h1>
+                <p class="dv-section__subtitle">Registre presenças, faltas e acompanhe as inscrições dos alunos em tempo real via AJAX.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="dv-btn ghost sm js-session-edit" data-edit-url="{% url 'didacta:ajax_session_edit' sessao.pk %}">
+                    <i class="bi bi-pencil me-1"></i> Editar Sessão
+                </button>
+                <a href="{% url 'didacta:session_list_admin' %}" class="dv-btn ghost sm">
+                    <i class="bi bi-arrow-left me-1"></i> Voltar às Sessões
+                </a>
+            </div>
         </div>
 
-        {% if reservas %}
-        <div class="dv-table-wrapper">
-            <table class="dv-table">
-                <thead>
-                    <tr>
-                        <th>Usuário</th>
-                        <th style="text-align:center;">Status</th>
-                        <th style="text-align:center;">Justificativa</th>
-                        <th style="text-align:right;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for reserva in reservas %}
-                    <tr>
-                        <td>{% if reserva.usuario %}{{ reserva.usuario.nome_completo }}{% else %}Usuário removido{% endif %}</td>
-                        <td style="text-align:center;">
-                            <span class="dv-status
-                                {% if reserva.status == 'presente' %}success
-                                {% elif reserva.status == 'reservado' %}neutral
-                                {% elif reserva.status == 'falta_justificada' %}warning
-                                {% else %}danger{% endif %}">
-                                {{ reserva.get_status_display }}
-                            </span>
-                        </td>
-                        <td style="text-align:center;">
-                            {% if reserva.status == 'cancelado' and reserva.justificativa_cancelamento %}
-                            <details>
-                                <summary class="dv-btn ghost" style="padding:4px 12px; font-size:0.85rem;">
-                                    <i class="bi bi-eye"></i> Ver
-                                </summary>
-                                <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:8px; margin-top:8px; text-align:left;">
-                                    <strong>{% if reserva.usuario %}{{ reserva.usuario.nome_completo }}{% else %}Usuário removido{% endif %}</strong>
-                                    <p style="margin:8px 0 0; white-space:pre-wrap;">{{ reserva.justificativa_cancelamento }}</p>
+        <!-- RESUMO DA SESSÃO -->
+        <div class="dv-card-wide p-4 mb-4">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <small class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.75rem;">Data e Horário</small>
+                    <strong class="fs-5 text-white"><i class="bi bi-calendar3 me-1 text-primary"></i> {{ sessao.data_hora|date:'d/m/Y às H:i' }}</strong>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.75rem;">Local de Exibição</small>
+                    <span class="fs-6 text-white"><i class="bi bi-geo-alt me-1 text-danger"></i> {{ sessao.local }}</span>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.75rem;">Ocupação</small>
+                    <span class="fs-6 text-white"><i class="bi bi-ticket-perforated me-1 text-success"></i> {{ reservas|length }} / {{ sessao.capacidade_total }} inscritos</span>
+                </div>
+                <div class="col-md-3 text-md-end">
+                    <small class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.75rem;">Status</small>
+                    <span class="dv-status {% if sessao.ativo %}success{% else %}neutral{% endif %}">
+                        {% if sessao.ativo %}Sessão Ativa{% else %}Inativa{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABELA DE ALUNOS INSCRITOS -->
+        <div class="dv-section mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fs-5 text-white mb-0"><i class="bi bi-person-check me-2"></i> Lista de Participantes Inscritos ({{ reservas|length }})</h3>
+                <small class="text-muted"><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Alterações salvas instantaneamente via AJAX</small>
+            </div>
+
+            {% if reservas %}
+            <div class="dv-table-wrapper">
+                <table class="dv-table dv-table-responsive">
+                    <thead>
+                        <tr>
+                            <th>Aluno / Participante</th>
+                            <th>Tipo</th>
+                            <th style="text-align:center;">Situação Atual</th>
+                            <th style="text-align:center;">Justificativa</th>
+                            <th style="text-align:right;">Registrar Presença</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas %}
+                        <tr id="reserva-row-{{ reserva.pk }}">
+                            <td data-label="Participante">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="dv-user-avatar-sm" style="width:34px;height:34px;flex-shrink:0;">
+                                        {% if reserva.usuario and reserva.usuario.foto_perfil %}
+                                        <img src="{{ reserva.usuario.foto_perfil.url }}" alt="{{ reserva.usuario.nome_completo }}">
+                                        {% else %}
+                                        <i class="bi bi-person"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <strong class="text-white">{% if reserva.usuario %}{{ reserva.usuario.nome_completo }}{% else %}Usuário Removido{% endif %}</strong>
+                                        <small class="text-muted d-block text-break" style="font-size:0.8rem;">{{ reserva.usuario.email|default:"-" }}</small>
+                                    </div>
                                 </div>
-                            </details>
-                            {% elif reserva.status == 'cancelado' %}
-                            <span class="text-muted">Sem justificativa</span>
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                        <td style="text-align:right;">
-                            {% if reserva.status != 'cancelado' %}
-                            <form method="post" action="{% url 'didacta:mark_presence' reserva.pk %}" class="dv-inline-form">
-                                {% csrf_token %}
-                                <select name="status" onchange="this.form.submit()">
-                                    <option value="reservado" {% if reserva.status == 'reservado' %}selected{% endif %}>Reservado</option>
-                                    <option value="presente" {% if reserva.status == 'presente' %}selected{% endif %}>Presente</option>
-                                    <option value="falta" {% if reserva.status == 'falta' %}selected{% endif %}>Falta</option>
-                                    <option value="falta_justificada" {% if reserva.status == 'falta_justificada' %}selected{% endif %}>Falta justificada</option>
-                                </select>
-                            </form>
-                            {% else %}
-                            <span class="text-muted">Cancelada</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                            <td data-label="Tipo">
+                                <span class="dv-tag">{{ reserva.usuario.get_tipo_usuario_display|default:"Aluno" }}</span>
+                            </td>
+                            <td data-label="Situação Atual" style="text-align:center;">
+                                <span class="dv-status js-status-badge
+                                    {% if reserva.status == 'presente' %}success
+                                    {% elif reserva.status == 'reservado' %}neutral
+                                    {% elif reserva.status == 'falta_justificada' %}warning
+                                    {% else %}danger{% endif %}">
+                                    {{ reserva.get_status_display }}
+                                </span>
+                            </td>
+                            <td data-label="Justificativa" style="text-align:center;">
+                                {% if reserva.status == 'cancelado' and reserva.justificativa_cancelamento %}
+                                <button type="button" class="dv-btn ghost sm" data-bs-toggle="collapse" data-bs-target="#justificativa-{{ reserva.pk }}">
+                                    <i class="bi bi-chat-left-text me-1"></i> Ver motivo
+                                </button>
+                                <div class="collapse text-start mt-2" id="justificativa-{{ reserva.pk }}">
+                                    <div class="p-2 rounded" style="background:rgba(255,255,255,0.05); font-size:0.85rem;">
+                                        {{ reserva.justificativa_cancelamento }}
+                                    </div>
+                                </div>
+                                {% elif reserva.status == 'cancelado' %}
+                                <span class="text-muted" style="font-size:0.85rem;">Sem justificativa</span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td data-label="Registrar Presença" class="dv-table-col-actions" style="text-align:right;">
+                                {% if reserva.status != 'cancelado' %}
+                                <div class="d-inline-block w-100" style="max-width:200px;">
+                                    <select class="form-select form-select-sm dv-select-dark js-presence-select w-100" data-url="{% url 'didacta:mark_presence' reserva.pk %}" aria-label="Mudar status de presença">
+                                        <option value="reservado" {% if reserva.status == 'reservado' %}selected{% endif %}>Reservado</option>
+                                        <option value="presente" {% if reserva.status == 'presente' %}selected{% endif %}>Presente</option>
+                                        <option value="falta" {% if reserva.status == 'falta' %}selected{% endif %}>Falta</option>
+                                        <option value="falta_justificada" {% if reserva.status == 'falta_justificada' %}selected{% endif %}>Falta Justificada</option>
+                                    </select>
+                                </div>
+                                {% else %}
+                                <span class="text-muted" style="font-size:0.85rem;">Cancelada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="dv-empty">
+                <i class="bi bi-people" style="font-size:2.5rem;color:rgba(255,255,255,0.25);"></i>
+                <h4 class="mt-2">Nenhum participante inscrito nesta sessão até o momento</h4>
+                <p class="text-muted">Assim que os alunos realizarem reservas para esta data, a lista será atualizada automaticamente.</p>
+            </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="dv-empty">
-            <p class="mb-0">Nenhum participante registrado ainda.</p>
-        </div>
-        {% endif %}
-    </div>
-</section>
+    </section>
+</div>
 {% endblock %}

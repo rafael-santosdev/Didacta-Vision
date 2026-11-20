@@ -6,11 +6,11 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.db.models import Q
+from django.db.models import Prefetch
 from django.views.generic import CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 
 from .models import (
@@ -371,17 +371,84 @@ def password_reset_confirm(request):
     return render(request, 'didacta/autenticacao/password_reset_confirm.html', {'user': user})
 
 def index(request):
-    filmes = Film.objects.filter(
-        ativo=True,
-        session_set__isnull=False
-    ).distinct().order_by('-created_at')
+    filmes_qs = Film.objects.filter(ativo=True).prefetch_related(
+        Prefetch('session_set', queryset=Session.objects.filter(ativo=True, data_hora__gt=timezone.now()).order_by('data_hora'))
+    ).order_by('-created_at')
 
-    paginator = Paginator(filmes, 10)
+    genero = request.GET.get('genero', '').strip()
+    tema = request.GET.get('tema', '').strip()
+
+    generos_catalogo = sorted(
+        set(Film.objects.filter(ativo=True).exclude(genero='').values_list('genero', flat=True)),
+        key=str.casefold,
+    )
+    categorias_genero = {}
+    for genero_catalogo in generos_catalogo:
+        for categoria in genero_catalogo.split('/'):
+            categoria = categoria.strip()
+            if categoria:
+                categorias_genero.setdefault(categoria.casefold(), {'nome': categoria, 'generos': set()})
+                categorias_genero[categoria.casefold()]['generos'].add(genero_catalogo)
+
+    if genero:
+        generos_correspondentes = categorias_genero.get(genero.casefold(), {}).get('generos', set())
+        filmes_qs = filmes_qs.filter(genero__in=generos_correspondentes)
+    if tema:
+        filmes_qs = filmes_qs.filter(tema__iexact=tema)
+
+    todos_temas = Film.objects.filter(ativo=True).exclude(tema='').values_list('tema', flat=True).distinct()
+    todos_generos = sorted(
+        (categoria['nome'] for categoria in categorias_genero.values()),
+        key=str.casefold,
+    )
+
+    paginator = Paginator(filmes_qs, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    destaque = None
+    if page_obj.object_list and (not page_number or str(page_number) == '1') and not genero and not tema:
+        # Prioriza filme que tenha sessão futura como destaque; senão, o mais recente
+        for f in page_obj.object_list:
+            if f.session_set.exists():
+                destaque = f
+                break
+        if not destaque and page_obj.object_list:
+            destaque = page_obj.object_list[0]
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' and request.GET.get('format') == 'json':
+        filmes_data = []
+        for f in page_obj:
+            proxima = f.session_set.first()
+            filmes_data.append({
+                'id': f.id,
+                'titulo': f.titulo,
+                'sinopse': f.sinopse[:160] + '...' if len(f.sinopse) > 160 else f.sinopse,
+                'genero': f.genero,
+                'tema': f.tema,
+                'classificacao': f.get_classificacao_display(),
+                'duracao': f.duracao,
+                'cartaz_url': f.cartaz.url if f.cartaz else (f.cartaz_url or '/static/css/img/Oppenheimer_poster.jpg'),
+                'tem_sessao': proxima is not None,
+                'proxima_data': proxima.data_hora.strftime('%d/%m/%Y às %H:%M') if proxima else None,
+                'proximo_local': proxima.local if proxima else None,
+                'url': reverse('didacta:film_detail', args=[f.id])
+            })
+        return JsonResponse({
+            'success': True,
+            'filmes': filmes_data,
+            'total_pages': paginator.num_pages,
+            'current_page': page_obj.number,
+            'total_count': paginator.count
+        })
+
     context = {
         'page_obj': page_obj,
+        'destaque': destaque,
+        'todos_temas': sorted(set(t for t in todos_temas if t), key=str.casefold),
+        'todos_generos': todos_generos,
+        'genero_selecionado': genero,
+        'tema_selecionado': tema,
     }
     return render(request, 'didacta/pagina_inicial.html', context)
 
@@ -433,33 +500,45 @@ def delete_account_view(request):
 
 def film_detail(request, pk):
     filme = get_object_or_404(Film, pk=pk, ativo=True)
-    sessoes_futuras = filme.session_set.filter(
-        ativo=True
-    ).order_by('data_hora')
+    agora = timezone.now()
+
+    sessoes_ativas = filme.session_set.filter(ativo=True).order_by('data_hora')
+    sessoes_futuras = [s for s in sessoes_ativas if s.data_hora > agora]
+    sessoes_passadas = [s for s in sessoes_ativas if s.data_hora <= agora]
 
     reservas_por_sessao = {}
     if request.user.is_authenticated:
         reservas = Reservation.objects.filter(
             usuario=request.user,
-            sessao__in=sessoes_futuras,
+            sessao__in=sessoes_ativas,
             status__in=['reservado', 'presente']
         ).select_related('sessao')
         for reserva in reservas:
             reservas_por_sessao[reserva.sessao_id] = reserva
 
-    comentarios = filme.forumcomment_set.filter(ativo=True, parent=None).order_by('-created_at')
+    comentarios = filme.forumcomment_set.filter(
+        ativo=True, parent=None
+    ).select_related('usuario').prefetch_related(
+        Prefetch('replies', queryset=ForumComment.objects.filter(ativo=True).select_related('usuario').order_by('created_at'))
+    ).order_by('-created_at')
 
     pode_comentar = False
+    form_comentario = None
     if request.user.is_authenticated:
         comment = ForumComment(filme=filme, usuario=request.user)
         pode_comentar = comment.pode_comentar(request.user)
+        if pode_comentar:
+            form_comentario = ForumCommentForm(user=request.user, filme=filme)
 
     context = {
         'filme': filme,
         'sessoes_futuras': sessoes_futuras,
+        'sessoes_passadas': sessoes_passadas,
+        'sessoes_ativas': sessoes_ativas,
         'reservas_por_sessao': reservas_por_sessao,
         'comentarios': comentarios,
         'pode_comentar': pode_comentar,
+        'form_comentario': form_comentario,
     }
     return render(request, 'didacta/filmes/detalhes_filme.html', context)
 
@@ -534,8 +613,12 @@ class FilmDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         filme = self.get_object()
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         if not filme.pode_ser_deletado():
-            messages.error(request, 'Não é possível deletar este filme. Ele possui sessões futuras ou comentários ativos.')
+            msg = 'Não é possível deletar este filme. Ele possui sessões futuras ou comentários ativos.'
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': msg}, status=400)
+            messages.error(request, msg)
             return redirect('didacta:film_list_admin')
         
         titulo_filme = filme.titulo
@@ -557,6 +640,8 @@ class FilmDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             notif.save()
         
         response = super().delete(request, *args, **kwargs)
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': f'Filme "{titulo_filme}" excluído com sucesso.', 'film_id': filme_id})
         messages.success(request, 'Filme deletado com sucesso!')
         return response
 
@@ -657,6 +742,7 @@ class SessionDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         sessao = self.get_object()
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
         titulo_filme = sessao.filme.titulo
         data_hora = sessao.data_hora.strftime("%d/%m/%Y às %H:%M")
@@ -696,6 +782,8 @@ class SessionDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             notif.save()
 
         response = super().delete(request, *args, **kwargs)
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': 'Sessão excluída com sucesso.', 'session_id': sessao_id})
         messages.success(request, 'Sessão deletada com sucesso!')
         return response
 
@@ -747,9 +835,30 @@ def session_detail_admin(request, pk):
 @login_required
 def reservation_create(request, session_id):
     sessao = get_object_or_404(Session.objects.select_related('filme'), pk=session_id, ativo=True)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if request.method == 'POST':
-        form = ReservationForm(request.POST, user=request.user)
+        # Validação preventiva de vagas
+        if not sessao.tem_vagas():
+            msg = 'Não há vagas disponíveis para esta sessão.'
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('didacta:film_detail', pk=sessao.filme.pk)
+
+        # Validação preventiva de duplicidade
+        if Reservation.objects.filter(usuario=request.user, sessao=sessao, status__in=['reservado', 'presente']).exists():
+            msg = 'Você já possui uma reserva ativa para esta sessão.'
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('didacta:film_detail', pk=sessao.filme.pk)
+
+        post_data = request.POST.copy()
+        if 'sessao' not in post_data:
+            post_data['sessao'] = str(sessao.pk)
+
+        form = ReservationForm(post_data, user=request.user)
         form.fields['sessao'].initial = sessao
         if form.is_valid():
             try:
@@ -766,16 +875,27 @@ def reservation_create(request, session_id):
                     tipo='reserva_criada'
                 )
 
-                messages.success(request, 'Reserva realizada com sucesso!')
+                msg = 'Reserva realizada com sucesso!'
+                if is_ajax:
+                    return JsonResponse({
+                        'success': True,
+                        'message': msg,
+                        'reserva_id': reserva.pk,
+                        'sessao_id': sessao.pk,
+                        'vagas_disponiveis': sessao.vagas_disponiveis
+                    })
+
+                messages.success(request, msg)
                 return redirect('didacta:reservation_list')
-            except (ValidationError, IntegrityError) as e:
-                if isinstance(e, ValidationError) and hasattr(e, 'error_dict'):
-                    for field, errors in e.error_dict.items():
-                        for error in errors:
-                            form.add_error(field, error)
-                else:
-                    form.add_error(None, 'Você já possui uma reserva ativa para esta sessão ou não há vagas disponíveis.')
-                    messages.error(request, 'Não foi possível criar a reserva. Verifique se há vagas e se você já não possui uma reserva.')
+            except (ValidationError, IntegrityError):
+                err_msg = 'Você já possui uma reserva ativa para esta sessão ou não há vagas disponíveis.'
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': err_msg}, status=400)
+                messages.error(request, err_msg)
+                return redirect('didacta:film_detail', pk=sessao.filme.pk)
+        else:
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': 'Não foi possível validar a reserva.'}, status=400)
     else:
         form = ReservationForm(user=request.user, initial={'sessao': sessao})
         form.fields['sessao'].initial = sessao
@@ -804,9 +924,13 @@ def reservation_list(request):
 @login_required
 def reservation_cancel(request, pk):
     reserva = get_object_or_404(Reservation.objects.select_related('usuario', 'sessao', 'sessao__filme'), pk=pk, usuario=request.user)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if reserva.status not in ['reservado', 'presente']:
-        messages.error(request, 'Esta reserva não pode ser cancelada.')
+        msg = 'Esta reserva não pode ser cancelada.'
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': msg}, status=400)
+        messages.error(request, msg)
         return redirect('didacta:reservation_list')
 
     if request.method == 'POST':
@@ -823,8 +947,21 @@ def reservation_cancel(request, pk):
                 tipo='reserva_cancelada'
             )
 
-            messages.success(request, 'Reserva cancelada com sucesso!')
+            msg = 'Reserva cancelada com sucesso!'
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': msg,
+                    'reserva_id': reserva.pk,
+                    'sessao_id': reserva.sessao.pk,
+                    'vagas_disponiveis': reserva.sessao.vagas_disponiveis
+                })
+
+            messages.success(request, msg)
             return redirect('didacta:reservation_list')
+        else:
+            if is_ajax:
+                return JsonResponse({'success': False, 'message': 'Formulário inválido.'}, status=400)
     else:
         form = ReservationCancelForm()
 
@@ -833,10 +970,13 @@ def reservation_cancel(request, pk):
 @login_required
 def mark_presence(request, reservation_id):
     if not request.user.is_admin_or_professor():
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'message': 'Você não tem permissão para esta ação.'}, status=403)
         messages.error(request, 'Você não tem permissão para acessar esta página.')
         return redirect('didacta:index')
 
     reserva = get_object_or_404(Reservation.objects.select_related('usuario', 'sessao', 'sessao__filme'), pk=reservation_id)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if request.method == 'POST':
         status = request.POST.get('status')
@@ -852,7 +992,19 @@ def mark_presence(request, reservation_id):
                     tipo='reserva_confirmada'
                 )
 
-            messages.success(request, f'Status atualizado para: {reserva.get_status_display()}')
+            msg = f'Status atualizado para: {reserva.get_status_display()}'
+            if is_ajax:
+                badge_class = 'success' if status == 'presente' else ('warning' if status == 'falta_justificada' else ('danger' if status == 'falta' else 'neutral'))
+                return JsonResponse({
+                    'success': True,
+                    'message': msg,
+                    'reserva_id': reserva.pk,
+                    'new_status': reserva.status,
+                    'status_display': reserva.get_status_display(),
+                    'badge_class': badge_class,
+                })
+
+            messages.success(request, msg)
             return redirect('didacta:session_detail_admin', pk=reserva.sessao.pk)
 
     return redirect('didacta:session_detail_admin', pk=reserva.sessao.pk)
@@ -860,13 +1012,14 @@ def mark_presence(request, reservation_id):
 @login_required
 def forum_comment_create(request, film_id):
     filme = get_object_or_404(Film, pk=film_id, ativo=True)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     comment = ForumComment(filme=filme, usuario=request.user)
     if not comment.pode_comentar(request.user):
-        messages.error(
-            request,
-            'Você precisa ter presença confirmada ou falta justificada em uma sessão deste filme para comentar.'
-        )
+        msg = 'Você precisa ter presença confirmada ou falta justificada em uma sessão deste filme para comentar.'
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': msg}, status=403)
+        messages.error(request, msg)
         return redirect('didacta:film_detail', pk=film_id)
 
     if request.method == 'POST':
@@ -876,8 +1029,32 @@ def forum_comment_create(request, film_id):
             comentario.filme = filme
             comentario.usuario = request.user
             comentario.save()
-            messages.success(request, 'Comentário publicado com sucesso!')
+            msg = 'Comentário publicado com sucesso!'
+            if is_ajax:
+                foto_url = request.user.foto_perfil.url if request.user.foto_perfil else None
+                return JsonResponse({
+                    'success': True,
+                    'message': msg,
+                    'comment': {
+                        'id': comentario.pk,
+                        'autor': comentario.usuario.nome_completo or comentario.usuario.get_full_name() or comentario.usuario.username,
+                        'tipo_usuario': comentario.usuario.get_tipo_usuario_display() if hasattr(comentario.usuario, 'get_tipo_usuario_display') else 'Usuário',
+                        'foto_url': foto_url,
+                        'texto': comentario.texto,
+                        'created_at': comentario.created_at.strftime('%d/%m/%Y %H:%M'),
+                        'parent_id': comentario.parent_id,
+                        'can_delete': True,
+                        'delete_url': reverse('didacta:forum_comment_delete', args=[comentario.pk]),
+                    }
+                })
+            messages.success(request, msg)
             return redirect('didacta:film_detail', pk=film_id)
+        else:
+            if is_ajax:
+                errors = []
+                for field, errs in form.errors.items():
+                    errors.extend(errs)
+                return JsonResponse({'success': False, 'message': ' '.join(errors)}, status=400)
     else:
         parent_id = request.GET.get('parent')
         form = ForumCommentForm(user=request.user, filme=filme)
@@ -897,16 +1074,23 @@ def forum_comment_create(request, film_id):
 @login_required
 def forum_comment_delete(request, pk):
     comentario = get_object_or_404(ForumComment, pk=pk)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if not (request.user.is_admin_or_professor() or comentario.usuario == request.user):
-        messages.error(request, 'Você não tem permissão para deletar este comentário.')
+        msg = 'Você não tem permissão para deletar este comentário.'
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': msg}, status=403)
+        messages.error(request, msg)
         return redirect('didacta:film_detail', pk=comentario.filme.pk)
 
     if request.method == 'POST':
         filme_id = comentario.filme.pk
         comentario.ativo = False
         comentario.save()
-        messages.success(request, 'Comentário removido com sucesso!')
+        msg = 'Comentário removido com sucesso!'
+        if is_ajax:
+            return JsonResponse({'success': True, 'message': msg, 'comment_id': pk})
+        messages.success(request, msg)
         return redirect('didacta:film_detail', pk=filme_id)
 
     return render(request, 'didacta/forum/confirmar_exclusao_comentario.html', {'comentario': comentario})
@@ -1008,9 +1192,10 @@ def notification_mark_read(request, pk):
     notificacao = get_object_or_404(Notification, pk=pk, usuario=request.user)
     notificacao.lida = True
     notificacao.save()
+    unread_count = Notification.objects.filter(usuario=request.user, lida=False).count()
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({'success': True})
+        return JsonResponse({'success': True, 'unread_count': unread_count})
 
     messages.success(request, 'Notificação marcada como lida.')
     return redirect('didacta:notification_list')
@@ -1018,6 +1203,10 @@ def notification_mark_read(request, pk):
 @login_required
 def notification_mark_all_read(request):
     Notification.objects.filter(usuario=request.user, lida=False).update(lida=True)
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True, 'message': 'Todas as notificações foram marcadas como lidas.', 'unread_count': 0})
+
     messages.success(request, 'Todas as notificações foram marcadas como lidas.')
     return redirect('didacta:notification_list')
 
@@ -1044,6 +1233,72 @@ def ajax_session_delete(request, pk):
 
 
 @login_required
+def ajax_session_create(request):
+    """
+    Cria uma nova sessão via AJAX.
+    """
+    if not request.user.is_admin_or_professor():
+        return JsonResponse({'success': False, 'message': 'Você não tem permissão para criar sessões.'}, status=403)
+
+    if request.method == 'GET':
+        filme_id = request.GET.get('filme_id')
+        initial = {}
+        if filme_id:
+            try:
+                filme = Film.objects.get(pk=filme_id)
+                initial['filme'] = filme
+            except Film.DoesNotExist:
+                pass
+        form = SessionForm(initial=initial)
+        action_url = reverse('didacta:ajax_session_create')
+        html = render(
+            request,
+            'didacta/sessoes/partials/_form_sessao_modal.html',
+            {'form': form, 'edit_url': action_url, 'is_create': True},
+        ).content.decode('utf-8')
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return HttpResponse(html, content_type='text/html')
+        return render(
+            request,
+            'didacta/sessoes/partials/_form_sessao_modal.html',
+            {'form': form, 'edit_url': action_url, 'is_create': True},
+        )
+
+    if request.method == 'POST':
+        form = SessionForm(request.POST)
+        if form.is_valid():
+            sessao = form.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Sessão criada com sucesso!',
+                'session': {
+                    'id': sessao.pk,
+                    'filme_titulo': sessao.filme.titulo,
+                    'data_hora': sessao.data_hora.strftime('%d/%m/%Y %H:%M'),
+                    'local': sessao.local,
+                    'capacidade_total': sessao.capacidade_total,
+                    'ativo': sessao.ativo,
+                    'vagas_disponiveis': sessao.vagas_disponiveis,
+                }
+            })
+
+        action_url = reverse('didacta:ajax_session_create')
+        html = render(
+            request,
+            'didacta/sessoes/partials/_form_sessao_modal.html',
+            {'form': form, 'edit_url': action_url, 'is_create': True},
+        ).content.decode('utf-8')
+        return JsonResponse({
+            'success': False,
+            'message': 'Corrija os erros do formulário.',
+            'form_html': html,
+        }, status=400)
+
+    return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
+
+
+@login_required
 def ajax_session_edit(request, pk):
     """
     Edita uma sessão via AJAX.
@@ -1059,7 +1314,6 @@ def ajax_session_edit(request, pk):
     sessao = get_object_or_404(Session, pk=pk)
 
     if request.method == 'GET':
-        from django.urls import reverse
         form = SessionForm(instance=sessao)
         edit_url = reverse('didacta:ajax_session_edit', args=[sessao.pk])
         html = render(
@@ -1069,7 +1323,6 @@ def ajax_session_edit(request, pk):
         ).content.decode('utf-8')
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            from django.http import HttpResponse
             return HttpResponse(html, content_type='text/html')
         
         return render(
@@ -1088,6 +1341,7 @@ def ajax_session_edit(request, pk):
                 'message': 'Sessão atualizada com sucesso.',
                 'session': {
                     'id': sessao.pk,
+                    'filme_titulo': sessao.filme.titulo,
                     'data_hora': sessao.data_hora.strftime('%d/%m/%Y %H:%M'),
                     'local': sessao.local,
                     'capacidade_total': sessao.capacidade_total,
@@ -1097,7 +1351,6 @@ def ajax_session_edit(request, pk):
             })
 
         # Em caso de erro de validação, retornamos o HTML do formulário com erros
-        from django.urls import reverse
         edit_url = reverse('didacta:ajax_session_edit', args=[sessao.pk])
         html = render(
             request,
@@ -1105,6 +1358,65 @@ def ajax_session_edit(request, pk):
             {'form': form, 'sessao': sessao, 'edit_url': edit_url},
         ).content.decode('utf-8')
 
+        return JsonResponse({
+            'success': False,
+            'message': 'Corrija os erros do formulário.',
+            'form_html': html,
+        }, status=400)
+
+    return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
+
+
+@login_required
+def ajax_film_modal(request, pk=None):
+    """
+    Carrega e processa formulário de filme via modal AJAX (criação e edição).
+    """
+    if not request.user.is_admin_or_professor():
+        return JsonResponse({'success': False, 'message': 'Você não tem permissão para gerenciar filmes.'}, status=403)
+
+    filme = get_object_or_404(Film, pk=pk) if pk else None
+
+    if request.method == 'GET':
+        form = FilmForm(instance=filme) if filme else FilmForm()
+        action_url = reverse('didacta:ajax_film_edit', args=[filme.pk]) if filme else reverse('didacta:ajax_film_create')
+        html = render(
+            request,
+            'didacta/filmes/partials/_form_filme_modal.html',
+            {'form': form, 'filme': filme, 'action_url': action_url},
+        ).content.decode('utf-8')
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return HttpResponse(html, content_type='text/html')
+        return render(
+            request,
+            'didacta/filmes/partials/_form_filme_modal.html',
+            {'form': form, 'filme': filme, 'action_url': action_url},
+        )
+
+    if request.method == 'POST':
+        form = FilmForm(request.POST, request.FILES, instance=filme) if filme else FilmForm(request.POST, request.FILES)
+        if form.is_valid():
+            filme = form.save()
+            return JsonResponse({
+                'success': True,
+                'message': f'Filme "{filme.titulo}" {"atualizado" if pk else "cadastrado"} com sucesso!',
+                'film': {
+                    'id': filme.pk,
+                    'titulo': filme.titulo,
+                    'classificacao': filme.get_classificacao_display(),
+                    'duracao': filme.duracao,
+                    'genero': filme.genero,
+                    'ativo': filme.ativo,
+                }
+            })
+
+        action_url = reverse('didacta:ajax_film_edit', args=[filme.pk]) if filme else reverse('didacta:ajax_film_create')
+        html = render(
+            request,
+            'didacta/filmes/partials/_form_filme_modal.html',
+            {'form': form, 'filme': filme, 'action_url': action_url},
+        ).content.decode('utf-8')
         return JsonResponse({
             'success': False,
             'message': 'Corrija os erros do formulário.',

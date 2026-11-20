@@ -38,7 +38,10 @@ urlpatterns = [
     path('notifications/', views.notification_list, name='notification_list'),
     path('notifications/<int:pk>/read/', views.notification_mark_read, name='notification_mark_read'),
     path('notifications/mark-all-read/', views.notification_mark_all_read, name='notification_mark_all_read'),
-    # AJAX para sessões vinculadas a filmes (admin custom)
+    # AJAX para sessões e filmes (modais admin)
     path('admin/films/sessions/<int:pk>/delete/', views.ajax_session_delete, name='ajax_session_delete'),
     path('admin/films/sessions/<int:pk>/edit/', views.ajax_session_edit, name='ajax_session_edit'),
+    path('admin/sessions/ajax/create/', views.ajax_session_create, name='ajax_session_create'),
+    path('admin/films/ajax/create/', views.ajax_film_modal, name='ajax_film_create'),
+    path('admin/films/ajax/<int:pk>/edit/', views.ajax_film_modal, name='ajax_film_edit'),
 ]

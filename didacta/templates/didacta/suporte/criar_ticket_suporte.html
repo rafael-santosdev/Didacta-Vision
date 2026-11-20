@@ -1,49 +1,59 @@
 {% extends 'didacta/base.html' %}
+{% load static %}
 
-{% block title %}Suporte - Didacta Vision{% endblock %}
+{% block title %}Abrir Chamado de Suporte - Didacta Vision{% endblock %}
+
+{% block breadcrumb %}
+<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
+    <ol class="dv-breadcrumbs">
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:help_ticket_list' %}">Suporte</a></li>
+        <li class="dv-breadcrumbs__item is-active" aria-current="page">Novo Chamado</li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-<section class="dv-section">
-    <div class="dv-section__header">
-        <div>
-            <span class="dv-badge">Suporte</span>
-            <h1 class="dv-section__title">Solicitar atendimento</h1>
-            <p class="dv-section__subtitle">Descreva o problema para que possamos ajudar o quanto antes.</p>
+<div class="container-xl">
+    <section class="dv-section" style="max-width:760px;margin:0 auto;">
+        <div class="dv-section__header text-center flex-column align-items-center">
+            <span class="dv-badge dv-badge--primary"><i class="bi bi-headset me-1"></i> Atendimento Didacta</span>
+            <h1 class="dv-section__title mt-2">Abrir Nova Solicitação</h1>
+            <p class="dv-section__subtitle">Envie sua dúvida, relato de problema ou sugestão para nossa equipe.</p>
         </div>
-        <a href="{% url 'didacta:help_ticket_list' %}" class="dv-btn ghost">
-            <i class="bi bi-arrow-left"></i> Minhas solicitações
-        </a>
-    </div>
 
-    <div class="dv-form-card">
-        <form method="post" class="dv-form">
-            {% csrf_token %}
-            <div class="dv-form-group">
-                <label for="{{ form.assunto.id_for_label }}">Assunto *</label>
-                {{ form.assunto }}
-            </div>
-            <div class="dv-form-group">
-                <label for="{{ form.mensagem.id_for_label }}">Mensagem *</label>
-                {{ form.mensagem }}
-            </div>
+        <div class="dv-form-card p-4 p-md-5">
+            <form method="post" class="dv-form">
+                {% csrf_token %}
+                <div class="dv-form-group mb-3">
+                    <label for="{{ form.assunto.id_for_label }}" class="form-label text-white fw-medium">Assunto da Solicitação *</label>
+                    {{ form.assunto }}
+                    <small class="text-muted">Ex: Dúvida sobre reserva de sessão, sugestão de filme, problema de acesso...</small>
+                </div>
 
-            {% if form.errors %}
-            <div class="dv-status danger">
-                {% for field, errors in form.errors.items %}
-                    {% for error in errors %}
-                        <p>{{ error }}</p>
+                <div class="dv-form-group mb-4">
+                    <label for="{{ form.mensagem.id_for_label }}" class="form-label text-white fw-medium">Descreva sua Mensagem *</label>
+                    {{ form.mensagem }}
+                </div>
+
+                {% if form.errors %}
+                <div class="dv-status danger mb-3 p-3 rounded">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
-            </div>
-            {% endif %}
+                </div>
+                {% endif %}
 
-            <div class="dv-hero__actions" style="justify-content:flex-end;">
-                <a href="{% url 'didacta:index' %}" class="dv-btn ghost">Cancelar</a>
-                <button type="submit" class="dv-btn primary">
-                    <i class="bi bi-send"></i> Enviar
-                </button>
-            </div>
-        </form>
-    </div>
-</section>
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'didacta:help_ticket_list' %}" class="dv-btn ghost">Cancelar</a>
+                    <button type="submit" class="dv-btn primary">
+                        <i class="bi bi-send-check me-1"></i> Enviar Solicitação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
 {% endblock %}

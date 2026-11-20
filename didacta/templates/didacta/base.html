@@ -1,131 +1,345 @@
 {% load static didacta_extras %}
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <meta name="theme-color" content="#05050c">
-    <title>{% block title %}Didacta Vision{% endblock %}</title>
+    <meta name="theme-color" content="#070712">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Didacta Vision - Cinema & Ciência{% endblock %}</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20261118-1">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20261120-7">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="dv-body">
+
+    <!-- CABEÇALHO / NAVEGAÇÃO SUPERIOR -->
     <header class="dv-navbar" id="dvNavbar">
         <div class="dv-navbar__inner">
-            <a href="{% url 'didacta:index' %}" class="dv-logo">
+            <!-- LOGO DA PLATAFORMA -->
+            <a href="{% url 'didacta:index' %}" class="dv-logo" title="Didacta Vision - Início">
                 <span class="dv-logo__icon">
-                    <img src="{{ MEDIA_URL }}perfis/foto-do-sisterma.jpeg" alt="Didacta Vision">
+                    <i class="bi bi-film"></i>
                 </span>
-                <span>Didacta Vision</span>
-            </a>
-            <input type="checkbox" id="dvMenuToggleCheck" class="dv-menu-checkbox">
-            <label for="dvMenuToggleCheck" class="dv-menu-toggle" aria-label="Abrir navegação">
-                <span></span>
-                <span></span>
-                <span></span>
-            </label>
-            <div class="dv-nav" id="dvNav">
-                <div class="dv-nav__links">
-                    <a href="{% url 'didacta:index' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'index' %}is-active{% endif %}">Início</a>
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'didacta:notification_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'notification_list' %}is-active{% endif %}">
-                        Notificações
-                        {% unread_notifications_count user as unread_count %}
-                        {% if unread_count > 0 %}
-                        <span class="dv-notification-badge">{{ unread_count }}</span>
-                        {% endif %}
-                    </a>
-                    <a href="{% url 'didacta:help_ticket_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'help_ticket_list' or request.resolver_match.url_name == 'help_ticket_detail' %}is-active{% endif %}">
-                        Suporte
-                        {% if user.is_admin_or_professor %}
-                        {% unread_tickets_count user as unread_tickets %}
-                        {% if unread_tickets > 0 %}
-                        <span class="dv-notification-badge">{{ unread_tickets }}</span>
-                        {% endif %}
-                        {% endif %}
-                    </a>
-                    {% if not user.is_admin_or_professor %}
-                    <a href="{% url 'didacta:reservation_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'reservation_list' %}is-active{% endif %}">Minhas reservas</a>
-                    {% endif %}
-                    {% if user.is_admin_or_professor %}
-                    <a href="{% url 'didacta:film_list_admin' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'film_list_admin' or request.resolver_match.url_name == 'film_create' or request.resolver_match.url_name == 'film_update' or request.resolver_match.url_name == 'film_delete' or request.resolver_match.url_name == 'film_detail' %}is-active{% endif %}">Filmes</a>
-                    <a href="{% url 'didacta:session_list_admin' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'session_list_admin' or request.resolver_match.url_name == 'session_create' or request.resolver_match.url_name == 'session_update' or request.resolver_match.url_name == 'session_delete' %}is-active{% endif %}">Sessões</a>
-                    {% endif %}
-                    {% endif %}
+                <div class="dv-logo__text">
+                    <span class="dv-logo__brand">Didacta Vision</span>
+                    <span class="dv-logo__badge">IFRN</span>
                 </div>
-                <div class="dv-nav__actions">
-                    {% if user.is_authenticated %}
-                    <div class="dv-user-chip-wrapper">
+            </a>
+
+            <!-- NAVEGAÇÃO DESKTOP -->
+            <nav class="dv-nav-desktop" aria-label="Navegação Principal">
+                <a href="{% url 'didacta:index' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'index' and not request.GET.genero and not request.GET.tema and not request.GET.q %}is-active{% endif %}">
+                    <i class="bi bi-house-door me-1"></i> Início
+                </a>
+
+                <a href="{% url 'didacta:index' %}#catalogo" class="dv-nav__item">
+                    <i class="bi bi-collection-play me-1"></i> Catálogo de Filmes
+                </a>
+
+                {% if user.is_authenticated %}
+                    {% if not user.is_admin_or_professor %}
+                    <a href="{% url 'didacta:reservation_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'reservation_list' or request.resolver_match.url_name == 'reservation_create' or request.resolver_match.url_name == 'reservation_cancel' %}is-active{% endif %}">
+                        <i class="bi bi-calendar-check me-1"></i> Minhas Reservas
+                    </a>
+                    {% endif %}
+
+                    {% if user.is_admin_or_professor %}
+                    <!-- DROPDOWN ADMIN -->
+                    <div class="dropdown d-inline-block">
+                        <button class="dv-nav__item dropdown-toggle {% if 'admin' in request.path %}is-active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background:none;border:none;cursor:pointer;">
+                            <i class="bi bi-shield-lock me-1"></i> Painel do Gestor
+                        </button>
+                        <ul class="dropdown-menu dv-dropdown-menu">
+                            <li><h6 class="dropdown-header text-uppercase text-muted" style="font-size:0.75rem;">Administração</h6></li>
+                            <li><a class="dropdown-item dv-dropdown-item" href="{% url 'didacta:film_list_admin' %}"><i class="bi bi-film me-2"></i> Gerenciar Filmes</a></li>
+                            <li><a class="dropdown-item dv-dropdown-item" href="{% url 'didacta:session_list_admin' %}"><i class="bi bi-calendar-event me-2"></i> Gerenciar Sessões</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <a href="{% url 'didacta:notification_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'notification_list' %}is-active{% endif %}">
+                        <i class="bi bi-bell me-1"></i> Notificações
+                        {% unread_notifications_count user as unread_count %}
+                        <span class="dv-notification-badge dv-notification-badge--notifications" {% if unread_count == 0 %}style="display:none;"{% endif %}>
+                            {{ unread_count }}
+                        </span>
+                    </a>
+                {% endif %}
+
+                <a href="{% url 'didacta:help_ticket_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'help_ticket_list' or request.resolver_match.url_name == 'help_ticket_detail' or request.resolver_match.url_name == 'help_ticket_create' %}is-active{% endif %}">
+                    <i class="bi bi-question-circle me-1"></i> Suporte
+                </a>
+            </nav>
+
+            <!-- AÇÕES DA NAVBAR (USUÁRIO / LOGIN) -->
+            <div class="dv-navbar__actions">
+                {% if user.is_authenticated %}
+                <!-- DROPDOWN PERFIL DE USUÁRIO -->
+                <div class="dropdown">
+                    <button class="dv-user-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background:transparent!important;background-color:transparent!important;background-image:none!important;border:0!important;box-shadow:none!important;outline:0!important;">
                         <div class="dv-user-avatar">
                             {% if user.foto_perfil %}
-                            <img src="{{ user.foto_perfil.url }}" alt="{{ user.nome_completo }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                            <img src="{{ user.foto_perfil.url }}" alt="{{ user.nome_completo }}">
                             {% else %}
-                            <i class="bi bi-person"></i>
+                            <span>{{ user.nome_completo|slice:":1"|upper }}</span>
                             {% endif %}
                         </div>
-                        <div class="dv-user-info" style="align-items: center; text-align: center;">
-                            <strong>{{ user.nome_completo }}</strong>
+                        <div class="dv-user-pill__text d-none d-sm-block">
+                            <span class="dv-user-pill__name">{{ user.nome_completo|truncatewords:2 }}</span>
                             {% if user.is_admin_or_professor %}
-                            <div class="dv-tag" style="margin-top:4px;">Admin</div>
-                            {% elif user.get_tipo_usuario_display %}
-                            <div class="dv-tag" style="margin-top:4px;">{{ user.get_tipo_usuario_display }}</div>
+                            <span class="dv-tag dv-tag--admin">Gestor</span>
+                            {% else %}
+                            <span class="dv-tag">{{ user.get_tipo_usuario_display|default:"Aluno" }}</span>
                             {% endif %}
                         </div>
-                        <div class="dv-user-menu-inline">
-                            <a href="{% url 'didacta:profile' %}" class="dv-user-menu-link">Meu perfil</a>
-                            <a href="{% url 'didacta:logout' %}" class="dv-user-menu-link danger">Sair</a>
-                        </div>
-                    </div>
-                    {% else %}
-                    {% with current_url_name=request.resolver_match.url_name %}
-                        {% if current_url_name == 'login' %}
-                            <span class="dv-btn ghost dv-btn--current" aria-current="page">Entrar</span>
-                        {% elif current_url_name == 'register' %}
-                            <span class="dv-btn primary dv-btn--current" aria-current="page">Criar conta</span>
-                        {% else %}
-                            <a href="{% url 'didacta:login' %}" class="dv-btn ghost">Entrar</a>
-                            <a href="{% url 'didacta:register' %}" class="dv-btn primary">Criar conta</a>
-                        {% endif %}
-                    {% endwith %}
-                    {% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end dv-dropdown-menu">
+                        <li class="px-3 py-2 border-bottom border-secondary border-opacity-25">
+                            <strong class="d-block text-white">{{ user.nome_completo }}</strong>
+                            <small class="text-muted text-break">{{ user.email }}</small>
+                        </li>
+                        <li><a class="dropdown-item dv-dropdown-item mt-2" href="{% url 'didacta:profile' %}"><i class="bi bi-person me-2"></i> Meu Perfil</a></li>
+                        <li><hr class="dropdown-divider border-secondary border-opacity-25"></li>
+                        <li><a class="dropdown-item dv-dropdown-item text-danger" href="{% url 'didacta:logout' %}"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+                    </ul>
                 </div>
+                {% else %}
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'didacta:login' %}" class="dv-btn ghost sm">Entrar</a>
+                    <a href="{% url 'didacta:register' %}" class="dv-btn primary sm">Criar conta</a>
+                </div>
+                {% endif %}
+
+                <!-- BOTÃO HAMBÚRGUER MOBILE -->
+                <button class="dv-menu-mobile-btn d-xl-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#dvMobileMenu" aria-controls="dvMobileMenu" aria-label="Abrir menu">
+                    <i class="bi bi-list"></i>
+                </button>
             </div>
         </div>
     </header>
 
-    <div class="dv-wrapper">
-        {% if messages %}
-        <section class="dv-alerts" role="region" aria-live="polite">
-            {% for message in messages %}
-            <div class="dv-alert {% if 'success' in message.tags %}success{% elif 'error' in message.tags or 'danger' in message.tags %}error{% endif %}">
-                <div>
-                    <strong>{% if 'success' in message.tags %}Sucesso{% elif 'error' in message.tags or 'danger' in message.tags %}Erro{% elif 'warning' in message.tags %}Aviso{% else %}Info{% endif %}</strong>
-                    <p>{{ message }}</p>
+    <!-- MENU OFFCANVAS MOBILE -->
+    <div class="offcanvas offcanvas-end dv-offcanvas" tabindex="-1" id="dvMobileMenu" aria-labelledby="dvMobileMenuLabel">
+        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+            <div class="d-flex align-items-center gap-2">
+                <span class="dv-logo__icon" style="width:32px;height:32px;font-size:1rem;"><i class="bi bi-film"></i></span>
+                <h5 class="offcanvas-title text-white fw-bold mb-0" id="dvMobileMenuLabel">Didacta Vision</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column justify-content-between p-3">
+            <div>
+                {% if user.is_authenticated %}
+                <!-- CARD DO USUÁRIO NO MENU MOBILE (O QUE TEM NO DESKTOP TEM NO MOBILE) -->
+                <div class="dv-mobile-user-card mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="dv-user-avatar" style="width:46px;height:46px;font-size:1.15rem;flex-shrink:0;">
+                            {% if user.foto_perfil %}
+                            <img src="{{ user.foto_perfil.url }}" alt="{{ user.nome_completo }}">
+                            {% else %}
+                            <span>{{ user.nome_completo|slice:":1"|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="overflow-hidden flex-grow-1">
+                            <strong class="d-block text-white text-truncate">{{ user.nome_completo }}</strong>
+                            <small class="text-muted text-truncate d-block">{{ user.email }}</small>
+                            <div class="mt-1 d-flex gap-1">
+                                {% if user.is_admin_or_professor %}
+                                <span class="dv-tag dv-tag--admin">Gestor</span>
+                                {% else %}
+                                <span class="dv-tag">{{ user.get_tipo_usuario_display|default:"Aluno" }}</span>
+                                {% endif %}
+                                <span class="dv-tag"><i class="bi bi-shield-check text-success me-1"></i>Verificado</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                {% endif %}
+
+                <div class="dv-mobile-links">
+                    <a href="{% url 'didacta:index' %}" class="dv-mobile-link {% if request.resolver_match.url_name == 'index' and not request.GET.genero and not request.GET.tema and not request.GET.q %}is-active{% endif %}">
+                        <i class="bi bi-house-door me-2"></i> Início
+                    </a>
+                    <a href="{% url 'didacta:index' %}#catalogo" class="dv-mobile-link">
+                        <i class="bi bi-collection-play me-2"></i> Catálogo de Filmes
+                    </a>
+                    {% if user.is_authenticated %}
+                        {% if not user.is_admin_or_professor %}
+                        <a href="{% url 'didacta:reservation_list' %}" class="dv-mobile-link {% if request.resolver_match.url_name == 'reservation_list' or request.resolver_match.url_name == 'reservation_create' or request.resolver_match.url_name == 'reservation_cancel' %}is-active{% endif %}">
+                            <i class="bi bi-calendar-check me-2"></i> Minhas Reservas
+                        </a>
+                        {% endif %}
+                        {% if user.is_admin_or_professor %}
+                        <div class="my-2 border-top border-bottom border-secondary border-opacity-25 py-2">
+                            <small class="text-uppercase text-muted fw-bold px-3 d-block mb-2" style="font-size:0.75rem;letter-spacing:0.06em;">Painel do Gestor</small>
+                            <a href="{% url 'didacta:film_list_admin' %}" class="dv-mobile-link ps-4 {% if request.resolver_match.url_name == 'film_list_admin' %}is-active{% endif %}"><i class="bi bi-film me-2"></i> Gerenciar Filmes</a>
+                            <a href="{% url 'didacta:session_list_admin' %}" class="dv-mobile-link ps-4 {% if request.resolver_match.url_name == 'session_list_admin' %}is-active{% endif %}"><i class="bi bi-calendar-event me-2"></i> Gerenciar Sessões</a>
+                        </div>
+                        {% endif %}
+                        <a href="{% url 'didacta:notification_list' %}" class="dv-mobile-link d-flex justify-content-between align-items-center {% if request.resolver_match.url_name == 'notification_list' %}is-active{% endif %}">
+                            <span><i class="bi bi-bell me-2"></i> Notificações</span>
+                            {% unread_notifications_count user as unread_count_mobile %}
+                            <span class="dv-notification-badge dv-notification-badge--notifications" {% if unread_count_mobile == 0 %}style="display:none;"{% endif %}>
+                                {{ unread_count_mobile }}
+                            </span>
+                        </a>
+                        <a href="{% url 'didacta:profile' %}" class="dv-mobile-link {% if request.resolver_match.url_name == 'profile' %}is-active{% endif %}">
+                            <i class="bi bi-person me-2"></i> Meu Perfil
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'didacta:help_ticket_list' %}" class="dv-mobile-link {% if request.resolver_match.url_name == 'help_ticket_list' or request.resolver_match.url_name == 'help_ticket_detail' or request.resolver_match.url_name == 'help_ticket_create' %}is-active{% endif %}">
+                        <i class="bi bi-question-circle me-2"></i> Suporte & Ajuda
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+                {% if user.is_authenticated %}
+                <a href="{% url 'didacta:logout' %}" class="dv-btn danger w-100 justify-content-center">
+                    <i class="bi bi-box-arrow-right me-2"></i> Sair da Conta
+                </a>
+                {% else %}
+                <div class="d-flex flex-column gap-2">
+                    <a href="{% url 'didacta:login' %}" class="dv-btn ghost w-100 justify-content-center">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Fazer Login
+                    </a>
+                    <a href="{% url 'didacta:register' %}" class="dv-btn primary w-100 justify-content-center">
+                        <i class="bi bi-person-plus me-2"></i> Criar Nova Conta
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="dv-wrapper">
+        <!-- ALERTAS FLASH DJANGO -->
+        {% if messages %}
+        <section class="dv-alerts container-xl px-3" role="region" aria-live="polite">
+            {% for message in messages %}
+            <div class="dv-alert {% if 'success' in message.tags %}success{% elif 'error' in message.tags or 'danger' in message.tags %}error{% elif 'warning' in message.tags %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                <div class="dv-alert__icon">
+                    {% if 'success' in message.tags %}
+                    <i class="bi bi-check-circle-fill"></i>
+                    {% elif 'error' in message.tags or 'danger' in message.tags %}
+                    <i class="bi bi-exclamation-octagon-fill"></i>
+                    {% elif 'warning' in message.tags %}
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    {% else %}
+                    <i class="bi bi-info-circle-fill"></i>
+                    {% endif %}
+                </div>
+                <div class="dv-alert__content">
+                    <strong>{% if 'success' in message.tags %}Sucesso!{% elif 'error' in message.tags or 'danger' in message.tags %}Atenção!{% elif 'warning' in message.tags %}Aviso!{% else %}Informação:{% endif %}</strong>
+                    <p class="mb-0">{{ message }}</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert" aria-label="Fechar"></button>
             </div>
             {% endfor %}
         </section>
         {% endif %}
 
+        <!-- CONTAINER PRINCIPAL -->
         <main class="dv-main">
+            <!-- BREADCRUMBS GLOBAL -->
+            {% block breadcrumb %}{% endblock %}
+
             {% block content %}{% endblock %}
         </main>
     </div>
 
-    <footer class="dv-footer">
-        <div class="dv-footer__inner">
-            <div>
-                <strong>Didacta Vision</strong>
-                <p class="text-muted mb-0">Aprendizado científico por meio do cinema.</p>
+    <!-- MODAIS GLOBAIS DE ADMINISTRAÇÃO (AJAX) -->
+    {% if user.is_authenticated and user.is_admin_or_professor %}
+    <!-- Modal de Sessão -->
+    <div class="modal fade" id="sessionModal" tabindex="-1" aria-labelledby="sessionModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content dv-modal-content">
+                <div class="modal-header dv-modal-header">
+                    <h5 class="modal-title dv-modal-title" id="sessionModalTitle">Gerenciar Sessão</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body dv-modal-body" id="sessionModalBody">
+                    <!-- Carregado via AJAX -->
+                </div>
             </div>
-            <small class="text-muted">© {% now "Y" %} Didacta Vision. Todos os direitos reservados.</small>
+        </div>
+    </div>
+
+    <!-- Modal de Filme -->
+    <div class="modal fade" id="filmModal" tabindex="-1" aria-labelledby="filmModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content dv-modal-content">
+                <div class="modal-header dv-modal-header">
+                    <h5 class="modal-title dv-modal-title" id="filmModalTitle">Gerenciar Filme</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body dv-modal-body" id="filmModalBody">
+                    <!-- Carregado via AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- RODAPÉ MODERNO -->
+    <footer class="dv-footer">
+        <div class="dv-footer__inner container-xl">
+            <div class="dv-footer__brand">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="dv-logo__icon" style="width:28px;height:28px;font-size:0.9rem;"><i class="bi bi-film"></i></span>
+                    <strong class="text-white fs-5">Didacta Vision</strong>
+                </div>
+                <p class="text-muted" style="max-width:380px;font-size:0.9rem;line-height:1.6;">
+                    Plataforma de sessões de cinema educativo e debates científicos. Uma iniciativa do projeto de extensão <em>Luz, Ciência e Ação</em> do IFRN.
+                </p>
+            </div>
+            <div class="dv-footer__links">
+                <div class="dv-footer__col">
+                    <h6>Plataforma</h6>
+                    <a href="{% url 'didacta:index' %}">Início</a>
+                    <a href="{% url 'didacta:index' %}#catalogo">Filmes em Cartaz</a>
+                    {% if user.is_authenticated and not user.is_admin_or_professor %}
+                    <a href="{% url 'didacta:reservation_list' %}">Minhas Reservas</a>
+                    {% endif %}
+                </div>
+                <div class="dv-footer__col">
+                    <h6>Comunidade & Ajuda</h6>
+                    <a href="{% url 'didacta:help_ticket_list' %}">Central de Suporte</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'didacta:notification_list' %}">Notificações</a>
+                    <a href="{% url 'didacta:profile' %}">Meu Perfil</a>
+                    {% else %}
+                    <a href="{% url 'didacta:login' %}">Entrar</a>
+                    <a href="{% url 'didacta:register' %}">Criar Conta</a>
+                    {% endif %}
+                </div>
+                {% if user.is_authenticated and user.is_admin_or_professor %}
+                <div class="dv-footer__col">
+                    <h6>Administração</h6>
+                    <a href="{% url 'didacta:film_list_admin' %}">Gerenciar Filmes</a>
+                    <a href="{% url 'didacta:session_list_admin' %}">Gerenciar Sessões</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="dv-footer__bottom container-xl">
+            <small class="text-muted">© {% now "Y" %} Didacta Vision • IFRN. Todos os direitos reservados.</small>
+            <div class="d-flex gap-3">
+                <small class="text-muted">Luz, Ciência e Ação</small>
+            </div>
         </div>
     </footer>
+
+    <!-- SCRIPTS ESSENCIAIS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/didacta.js' %}?v=20261120-5"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

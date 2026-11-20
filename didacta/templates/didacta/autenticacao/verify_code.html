@@ -1,104 +1,79 @@
 {% extends 'didacta/base.html' %}
+{% load static %}
 
-{% block title %}Verificar Código - Didacta Vision{% endblock %}
+{% block title %}Verificação de Segurança - Didacta Vision{% endblock %}
 
 {% block content %}
-<section class="dv-section">
-    <div class="dv-form-card">
-        <h2><i class="bi bi-shield-check"></i> Verificação de Email</h2>
-        
-        <!-- Informação sobre o e-mail enviado ou falha de entrega -->
+<div class="container-xl d-flex align-items-center justify-content-center py-5" style="min-height: calc(100vh - 180px);">
+    <div class="dv-auth-card p-4 p-md-5" style="max-width: 580px;">
+        <div class="text-center mb-4">
+            <span class="dv-logo__icon mx-auto mb-3" style="width:48px;height:48px;font-size:1.4rem;">
+                <i class="bi bi-shield-check"></i>
+            </span>
+            <h1 class="fs-3 text-white fw-bold mb-1">Verificação de Segurança</h1>
+            <p class="text-muted" style="font-size:0.9rem;">Confirme seu acesso para ativar sua conta</p>
+        </div>
+
         {% if email_entrega_falhou %}
-        <div class="dv-panel" style="background:rgba(251,191,36,0.12); border-color:rgba(251,191,36,0.35); margin-bottom:16px;">
-            <i class="bi bi-exclamation-triangle-fill"></i> 
-            <strong>E-mail pode não ter sido entregue</strong> (comum em redes institucionais como o IFRN).
-            <br><small>Use o <strong>código temporário</strong> abaixo para acessar agora. Você terá 1 hora para usar o sistema e poderá verificar o e-mail depois em outra rede.</small>
+        <div class="dv-alert warning mb-4">
+            <div class="dv-alert__icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="dv-alert__content">
+                <strong>Rede Institucional Detectada</strong>
+                <p class="mb-0 small">O envio de e-mails pode ser bloqueado na rede do IFRN. Utilize o <strong>código temporário</strong> abaixo para liberar seu acesso imediato.</p>
+            </div>
         </div>
         {% else %}
-        <div class="dv-panel" style="background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.25); margin-bottom:16px;">
-            <i class="bi bi-envelope-check"></i> 
-            <strong>E-mail enviado!</strong> Um código de verificação foi enviado para <strong>{{ user.email }}</strong>.
-            <br><small>Não recebeu em 2–3 minutos? <strong>Confira a pasta de spam e o lixo eletrônico.</strong> Você também pode usar o código temporário abaixo.</small>
+        <div class="dv-alert info mb-4">
+            <div class="dv-alert__icon"><i class="bi bi-envelope-check-fill"></i></div>
+            <div class="dv-alert__content">
+                <strong>Código Enviado</strong>
+                <p class="mb-0 small">Enviamos um código de 6 dígitos para <strong>{{ user.email }}</strong>. Confira sua caixa de entrada e a pasta de spam.</p>
+            </div>
         </div>
         {% endif %}
-        
-        <!-- Formulário de verificação por e-mail -->
-        <form method="post" class="dv-form">
+
+        <!-- FORMULÁRIO DO CÓDIGO POR EMAIL -->
+        <form method="post" class="dv-form mb-4">
             {% csrf_token %}
-            <div class="dv-form-group">
-                <label for="codigo"><i class="bi bi-envelope"></i> Código recebido por E-mail</label>
-                <input type="text" id="codigo" name="codigo" 
-                       maxlength="6" pattern="[0-9]{6}" required 
-                       placeholder="000000" style="font-size: 1.5rem; letter-spacing: 0.5rem; text-align:center;">
-                <small class="text-muted">Digite o código de 6 dígitos enviado para seu email</small>
+            <div class="dv-form-group mb-3">
+                <label for="codigo" class="form-label text-white fw-medium text-center d-block">
+                    Código de 6 dígitos recebido por e-mail:
+                </label>
+                <input type="text" id="codigo" name="codigo" maxlength="6" pattern="[0-9]{6}" required 
+                       placeholder="000000" class="form-control dv-form-control text-center py-2 fs-2 fw-bold" 
+                       style="letter-spacing: 0.6rem;" autofocus autocomplete="one-time-code">
             </div>
-            <div class="dv-form-actions">
-                <button type="submit" class="dv-btn primary">
-                    <i class="bi bi-check-circle"></i> Verificar E-mail
-                </button>
-            </div>
+
+            <button type="submit" class="dv-btn primary w-100 justify-content-center py-2 fs-6">
+                <i class="bi bi-check2-circle me-1"></i> Validar e Entrar
+            </button>
         </form>
-        
-        <!-- Separador -->
-        <div style="margin: 24px 0; text-align: center; position: relative;">
-            <hr style="border-color: rgba(255,255,255,0.1);">
-            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--dv-bg-secondary, #1a1a2e); padding: 0 16px; color: rgba(255,255,255,0.5);">ou</span>
-        </div>
-        
-        <!-- Código temporário: sempre disponível (rede do IF ou qualquer rede) -->
-        <div class="dv-panel" style="background:rgba(251,191,36,0.08); border-color:rgba(251,191,36,0.25); margin-bottom:16px;">
-            <h4 style="margin: 0 0 12px 0; color: #fbbf24;">
-                <i class="bi bi-clock-history"></i> Código temporário (sempre disponível)
-            </h4>
-            <p style="margin: 0 0 8px 0; font-size: 0.9rem;">
-                <strong>Você pode usar o código do e-mail ou o código temporário abaixo.</strong>
-                O código temporário é útil na rede do IFRN (onde o e-mail pode não chegar) ou em qualquer rede.
-            </p>
-            <p style="margin: 0 0 16px 0; font-size: 0.85rem; opacity: 0.8;">
-                Use o código temporário abaixo para acessar o sistema por <strong>aproximadamente 1 hora</strong>.
-                Depois você pode verificar o e-mail em outra rede para acesso permanente.
-            </p>
-            
-            <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; text-align: center; margin-bottom: 16px;">
-                <small style="display: block; margin-bottom: 8px; opacity: 0.7;">Código Temporário:</small>
-                <span style="font-size: 2rem; letter-spacing: 0.5rem; font-family: monospace; color: #fbbf24; font-weight: bold;">{{ codigo_temporario }}</span>
+
+        <!-- SEÇÃO DO CÓDIGO TEMPORÁRIO (REDE DO IF OU CONTINGÊNCIA) -->
+        <div class="border-top border-secondary border-opacity-25 pt-4 text-center">
+            <div class="p-3 rounded mb-3" style="background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.3);">
+                <span class="badge bg-warning text-dark mb-2"><i class="bi bi-clock-history me-1"></i> Acesso Provisório (1 hora)</span>
+                <p class="small text-muted mb-2">Está na rede do IFRN e não recebeu o e-mail? Use o código temporário gerado para você:</p>
+                <div class="py-2 px-3 rounded bg-black bg-opacity-50 d-inline-block my-1">
+                    <span class="fs-4 font-monospace fw-bold text-warning" style="letter-spacing: 0.4rem;">{{ codigo_temporario }}</span>
+                </div>
             </div>
-            
+
             <form method="post" class="dv-form">
                 {% csrf_token %}
                 <input type="hidden" name="acesso_provisorio" value="1">
-                <div class="dv-form-group">
-                    <label for="codigo_temp">Digite o código temporário acima:</label>
-                    <input type="text" id="codigo_temp" name="codigo" 
-                           maxlength="6" pattern="[0-9]{6}" required 
-                           placeholder="000000" style="font-size: 1.5rem; letter-spacing: 0.5rem; text-align:center;">
-                </div>
-                <div class="dv-form-actions">
-                    <button type="submit" class="dv-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                        <i class="bi bi-hourglass-split"></i> Usar código temporário (1 hora)
-                    </button>
-                </div>
+                <input type="hidden" name="codigo" value="{{ codigo_temporario }}">
+                <button type="submit" class="dv-btn ghost w-100 justify-content-center">
+                    <i class="bi bi-lightning-charge me-1"></i> Entrar com Código Temporário
+                </button>
             </form>
-            
-            <p style="margin: 12px 0 0 0; font-size: 0.8rem; opacity: 0.7; text-align: center;">
-                <i class="bi bi-info-circle"></i> 
-                Acesso com código temporário vale por 1 hora. Para acesso permanente, verifique o e-mail depois (em outra rede, se estiver no IFRN).
-            </p>
         </div>
-        
-        <div style="margin-top:24px; text-align:center;">
-            <a href="{% url 'didacta:cancel_verification' %}" class="dv-btn ghost">
-                <i class="bi bi-x-circle"></i> Cancelar Verificação
+
+        <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-25">
+            <a href="{% url 'didacta:cancel_verification' %}" class="text-danger small text-decoration-none">
+                <i class="bi bi-x-circle me-1"></i> Cancelar e refazer cadastro
             </a>
         </div>
-        
-        <div class="dv-panel" style="background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.25); margin-top:16px;">
-            <p style="margin:0; font-size:0.85rem; text-align:center;">
-                <i class="bi bi-exclamation-triangle"></i>
-                <strong>Atenção:</strong> Se você cancelar a verificação, sua conta será removida e você precisará se cadastrar novamente.
-            </p>
-        </div>
     </div>
-</section>
+</div>
 {% endblock %}
-

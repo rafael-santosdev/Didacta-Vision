@@ -1,76 +1,88 @@
 {% extends 'didacta/base.html' %}
+{% load static %}
 
-{% block title %}Tickets de Suporte - Didacta Vision{% endblock %}
+{% block title %}Central de Suporte & Atendimento - Didacta Vision{% endblock %}
 
 {% block content %}
-<section class="dv-section">
-    <div class="dv-section__header dv-section__header--centered">
-        <div style="width: 100%; text-align: left;">
-            <span class="dv-badge">Suporte</span>
-            <h1 class="dv-section__title">Solicitações de suporte</h1>
-            <p class="dv-section__subtitle">Acompanhe solicitações abertas e o histórico de atendimentos.</p>
-        </div>
-        {% if not user.is_admin_or_professor %}
-        <div class="dv-section__header-actions">
+<div class="container-xl">
+    <section class="dv-section">
+        <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div>
+                <span class="dv-badge dv-badge--primary"><i class="bi bi-headset me-1"></i> Central de Atendimento</span>
+                <h1 class="dv-section__title">Suporte e Chamados</h1>
+                <p class="dv-section__subtitle">
+                    {% if user.is_authenticated and user.is_admin_or_professor %}
+                    Gerencie dúvidas, solicitações e responda aos chamados da comunidade acadêmica.
+                    {% else %}
+                    Tire dúvidas, relate problemas ou envie sugestões para a equipe do projeto Luz, Ciência e Ação.
+                    {% endif %}
+                </p>
+            </div>
+            {% if not user.is_authenticated or not user.is_admin_or_professor %}
             <a href="{% url 'didacta:help_ticket_create' %}" class="dv-btn primary">
-                <i class="bi bi-plus-circle"></i> Nova solicitação
+                <i class="bi bi-plus-circle me-1"></i> Nova Solicitação
             </a>
+            {% endif %}
+        </div>
+
+        {% if page_obj.object_list %}
+        <div class="dv-table-wrapper">
+            <table class="dv-table dv-table-responsive">
+                <thead>
+                    <tr>
+                        <th>Protocolo / Assunto</th>
+                        <th>Autor</th>
+                        <th>Status</th>
+                        <th>Data de Envio</th>
+                        <th style="text-align:right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in page_obj.object_list %}
+                    <tr>
+                        <td data-label="Protocolo / Assunto" class="dv-table-col-title">
+                            <strong class="text-white">#{{ ticket.pk }} - {{ ticket.assunto }}</strong>
+                            {% if ticket.resposta %}
+                            <span class="badge bg-success bg-opacity-25 text-success ms-2"><i class="bi bi-reply-fill"></i> Respondido</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Autor">{{ ticket.usuario.nome_completo|default:"Visitante" }}</td>
+                        <td data-label="Status">
+                            <span class="dv-status {% if ticket.status == 'aberto' %}warning{% elif ticket.status == 'respondido' %}success{% else %}neutral{% endif %}">
+                                {{ ticket.get_status_display }}
+                            </span>
+                        </td>
+                        <td data-label="Data de Envio">{{ ticket.created_at|date:'d/m/Y H:i' }}</td>
+                        <td data-label="Ações" class="dv-table-col-actions" style="text-align:right;">
+                            <a href="{% url 'didacta:help_ticket_detail' ticket.pk %}" class="dv-btn ghost sm">
+                                <i class="bi bi-eye me-1"></i> Visualizar
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="dv-pagination" aria-label="Navegação de Tickets">
+            {% if page_obj.has_previous %}
+            <a class="dv-btn ghost sm" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left me-1"></i> Anterior</a>
+            {% endif %}
+            <span class="dv-pagination__info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a class="dv-btn ghost sm" href="?page={{ page_obj.next_page_number }}">Próxima <i class="bi bi-chevron-right ms-1"></i></a>
+            {% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="dv-empty">
+            <i class="bi bi-question-circle" style="font-size:3rem;color:rgba(255,255,255,0.25);"></i>
+            <h3 class="mt-3">Nenhum chamado de suporte registrado</h3>
+            <p class="text-muted">Precisa de ajuda ou deseja enviar um feedback sobre as sessões?</p>
         </div>
         {% endif %}
-    </div>
-
-    {% if page_obj %}
-    <div class="table-responsive">
-        <table class="dv-table">
-            <thead>
-                <tr>
-                    <th>Assunto</th>
-                    <th>Usuário</th>
-                    <th>Status</th>
-                    <th>Data</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for ticket in page_obj %}
-                <tr>
-                    <td><strong>{{ ticket.assunto }}</strong></td>
-                    <td>{{ ticket.usuario.nome_completo|default:"Visitante" }}</td>
-                    <td>
-                        <span class="dv-status {% if ticket.status == 'aberto' %}warning{% elif ticket.status == 'respondido' %}success{% else %}neutral{% endif %}">
-                            {{ ticket.get_status_display }}
-                        </span>
-                    </td>
-                    <td>{{ ticket.created_at|date:'d/m/Y H:i' }}</td>
-                    <td>
-                        <a href="{% url 'didacta:help_ticket_detail' ticket.pk %}" class="dv-btn ghost">
-                            <i class="bi bi-eye"></i> Detalhes
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    {% if page_obj.has_other_pages %}
-    <div class="dv-section" aria-label="Paginação">
-        <div class="dv-hero__actions" style="justify-content:center;">
-            {% if page_obj.has_previous %}
-            <a class="dv-btn ghost" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
-            {% endif %}
-            <span class="dv-btn ghost">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-            {% if page_obj.has_next %}
-            <a class="dv-btn ghost" href="?page={{ page_obj.next_page_number }}">Próxima</a>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-    {% else %}
-    <div class="dv-empty">
-        <h3>Nenhuma solicitação encontrada</h3>
-        <p class="text-muted">Abra uma solicitação para falar com nossa equipe.</p>
-    </div>
-    {% endif %}
-</section>
+    </section>
+</div>
 {% endblock %}

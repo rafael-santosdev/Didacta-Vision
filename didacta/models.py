@@ -101,7 +101,12 @@ class User(AbstractUser):
         return f"{self.nome_completo} ({email_str})"
 
     def is_admin_or_professor(self):
-        return self.is_admin or self.is_superuser
+        return bool(
+            self.is_admin or 
+            self.is_superuser or 
+            self.is_staff or 
+            getattr(self, 'tipo_usuario', None) in ('admin', 'professor')
+        )
 
 class Film(models.Model):
     CLASSIFICACAO_CHOICES = [
@@ -174,6 +179,15 @@ class Film(models.Model):
                     raise ValidationError('Não é possível desativar filme com sessões futuras.')
                 if self.forumcomment_set.filter(ativo=True).exists():
                     raise ValidationError('Não é possível desativar filme com comentários ativos no fórum.')
+
+    def save(self, *args, **kwargs):
+        if self.trailer_url:
+            qs = Film.objects.filter(trailer_url=self.trailer_url)
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError('Já existe um filme com esta URL de trailer.')
+        super().save(*args, **kwargs)
 
     def pode_ser_deletado(self):
         from django.utils import timezone

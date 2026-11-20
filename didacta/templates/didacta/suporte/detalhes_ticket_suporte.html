@@ -1,75 +1,114 @@
 {% extends 'didacta/base.html' %}
+{% load static %}
 
-{% block title %}Solicitação #{{ ticket.pk }} - Didacta Vision{% endblock %}
+{% block title %}Chamado #{{ ticket.pk }} - Suporte Didacta Vision{% endblock %}
 
-{% block content %}
-<section class="dv-section">
-    <div class="dv-detail-grid">
-        <div>
-            <article class="dv-card-wide">
-                <div class="dv-toolbar">
-                    <h2>{{ ticket.assunto }}</h2>
-                    <span class="dv-status {% if ticket.status == 'aberto' %}warning{% else %}neutral{% endif %}">
-                        {{ ticket.get_status_display }}
-                    </span>
-                </div>
-                <div class="dv-meta" style="margin-top:16px;">
-                    <span><strong>Usuário:</strong> {{ ticket.usuario.nome_completo|default:"Visitante" }}</span>
-                    <span><strong>Data:</strong> {{ ticket.created_at|date:'d/m/Y H:i' }}</span>
-                </div>
-                <div style="margin-top:20px;">
-                    <h3 style="margin-bottom:12px;">Mensagem:</h3>
-                    <p>{{ ticket.mensagem|linebreaks }}</p>
-                </div>
-            </article>
-            
-            {% if ticket.resposta %}
-            <article class="dv-card-wide" style="margin-top:24px; background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.25);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                    <h3 style="margin:0;">Resposta</h3>
-                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                        <strong>Didacta Vision</strong>
-                        <span class="text-muted">{{ ticket.updated_at|date:'d/m/Y H:i' }}</span>
-                    </div>
-                </div>
-                <p>{{ ticket.resposta|linebreaks }}</p>
-            </article>
-            {% endif %}
-        </div>
-        
-        {% if user.is_admin_or_professor %}
-        <article class="dv-panel">
-            <h3>Responder Solicitação</h3>
-            <form method="post" class="dv-form" style="margin-top:18px;">
-                {% csrf_token %}
-                <div class="dv-form-group">
-                    <label for="resposta">Resposta</label>
-                    <textarea name="resposta" id="resposta" rows="5">{{ ticket.resposta|default:'' }}</textarea>
-                </div>
-                <div class="dv-form-group">
-                    <label for="status">Status</label>
-                    <select name="status" id="status" style="background:#0a0a14; color:#fff; border:1px solid rgba(59,130,246,0.5);">
-                        <option value="aberto" {% if ticket.status == 'aberto' %}selected{% endif %} style="background:#0a0a14; color:#fff;">Aberto</option>
-                        <option value="fechado" {% if ticket.status == 'fechado' %}selected{% endif %} style="background:#0a0a14; color:#fff;">Fechado</option>
-                    </select>
-                </div>
-                <div class="dv-form-actions">
-                    <button type="submit" class="dv-btn primary">
-                        <i class="bi bi-check-circle"></i> Salvar
-                    </button>
-                </div>
-            </form>
-        </article>
-        {% endif %}
-    </div>
-
-    <div style="margin-top:32px;">
-        <a href="{% url 'didacta:help_ticket_list' %}" class="dv-btn ghost">
-            <i class="bi bi-arrow-left"></i> Voltar
-        </a>
-    </div>
-</section>
+{% block breadcrumb %}
+<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
+    <ol class="dv-breadcrumbs">
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:help_ticket_list' %}">Suporte</a></li>
+        <li class="dv-breadcrumbs__item is-active" aria-current="page">Chamado #{{ ticket.pk }}</li>
+    </ol>
+</nav>
 {% endblock %}
 
+{% block content %}
+<div class="container-xl">
+    <section class="dv-section">
+        <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div>
+                <span class="dv-badge dv-badge--primary"><i class="bi bi-ticket-detailed me-1"></i> Protocolo #{{ ticket.pk }}</span>
+                <h1 class="dv-section__title">{{ ticket.assunto }}</h1>
+            </div>
+            <a href="{% url 'didacta:help_ticket_list' %}" class="dv-btn ghost sm">
+                <i class="bi bi-arrow-left me-1"></i> Voltar à lista
+            </a>
+        </div>
 
+        <div class="row g-4">
+            <div class="col-lg-{% if user.is_authenticated and user.is_admin_or_professor %}7{% else %}12{% endif %}">
+                <!-- MENSAGEM DO USUÁRIO -->
+                <article class="dv-card-wide p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="dv-user-avatar-sm">
+                                {% if ticket.usuario and ticket.usuario.foto_perfil %}
+                                <img src="{{ ticket.usuario.foto_perfil.url }}" alt="{{ ticket.usuario.nome_completo }}">
+                                {% else %}
+                                <i class="bi bi-person"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <strong class="text-white">{{ ticket.usuario.nome_completo|default:"Visitante" }}</strong>
+                                <small class="text-muted d-block">{{ ticket.created_at|date:'d/m/Y às H:i' }}</small>
+                            </div>
+                        </div>
+                        <span class="dv-status {% if ticket.status == 'aberto' %}warning{% elif ticket.status == 'respondido' %}success{% else %}neutral{% endif %}">
+                            {{ ticket.get_status_display }}
+                        </span>
+                    </div>
 
+                    <h4 class="fs-6 text-muted text-uppercase mb-2">Mensagem do Solicitante</h4>
+                    <p class="fs-6 text-white mb-0" style="white-space:pre-wrap;line-height:1.7;">{{ ticket.mensagem }}</p>
+                </article>
+
+                <!-- RESPOSTA DA EQUIPE SE HOUVER -->
+                {% if ticket.resposta %}
+                <article class="dv-card-wide p-4" style="background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.3);">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="dv-logo__icon" style="width:28px;height:28px;font-size:0.85rem;"><i class="bi bi-film"></i></span>
+                            <strong class="text-white">Resposta Oficial • Didacta Vision</strong>
+                        </div>
+                        <small class="text-muted">{{ ticket.updated_at|date:'d/m/Y às H:i' }}</small>
+                    </div>
+                    <p class="fs-6 text-white mb-0" style="white-space:pre-wrap;line-height:1.7;">{{ ticket.resposta }}</p>
+                </article>
+                {% else %}
+                <div class="dv-notice-box">
+                    <i class="bi bi-hourglass-split me-2 text-warning fs-5"></i>
+                    <div>
+                        <strong>Aguardando Atendimento</strong>
+                        <p class="mb-0 text-muted">Sua solicitação está na fila e será respondida pelos responsáveis do projeto em breve.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- PAINEL DE RESPOSTA DO GESTOR -->
+            {% if user.is_authenticated and user.is_admin_or_professor %}
+            <div class="col-lg-5">
+                <article class="dv-panel p-4">
+                    <h3 class="fs-5 text-white mb-2"><i class="bi bi-reply-all me-2"></i> Responder ao Usuário</h3>
+                    <p class="text-muted mb-3" style="font-size:0.9rem;">Ao responder, o aluno receberá uma notificação automática no painel dele.</p>
+
+                    <form method="post" class="dv-form">
+                        {% csrf_token %}
+                        <div class="dv-form-group">
+                            <label for="resposta">Texto da Resposta:</label>
+                            <textarea name="resposta" id="resposta" class="dv-form-control" rows="6" placeholder="Digite as orientações para o usuário..." required>{{ ticket.resposta|default:'' }}</textarea>
+                        </div>
+
+                        <div class="dv-form-group">
+                            <label for="status">Atualizar Status do Chamado:</label>
+                            <select name="status" id="status" class="form-select dv-select-dark">
+                                <option value="aberto" {% if ticket.status == 'aberto' %}selected{% endif %}>Aberto (Em Análise)</option>
+                                <option value="respondido" {% if ticket.status == 'respondido' %}selected{% endif %}>Respondido</option>
+                                <option value="fechado" {% if ticket.status == 'fechado' %}selected{% endif %}>Fechado (Concluído)</option>
+                            </select>
+                        </div>
+
+                        <div class="dv-form-actions mt-3">
+                            <button type="submit" class="dv-btn primary w-100 justify-content-center">
+                                <i class="bi bi-send-check me-1"></i> Salvar e Enviar Resposta
+                            </button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

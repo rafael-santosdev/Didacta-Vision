@@ -1,179 +1,250 @@
 {% extends 'didacta/base.html' %}
 {% load static %}
 
-{% block title %}Início - Didacta Vision{% endblock %}
+{% block title %}Didacta Vision - Cinema Educativo & Ciência{% endblock %}
 
 {% block content %}
-{% if page_obj %}
-    {% with filmes=page_obj.object_list %}
-        {% if filmes %}
-            {% with destaque=filmes|first %}
-            <section class="dv-hero">
-                <div class="dv-hero__media">
-                    <img class="dv-hero__image" src="{% if destaque.cartaz %}{{ destaque.cartaz.url }}{% elif destaque.cartaz_url %}{{ destaque.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ destaque.titulo }}">
-                    <div class="dv-hero__overlay"></div>
-                </div>
-                <div class="dv-hero__content" style="align-items:center;text-align:center;padding-top:clamp(96px,22vh,160px);padding-bottom:clamp(48px,14vh,96px);">
-                    <span class="dv-badge"><i class="bi bi-stars"></i> Em destaque</span>
-                    <h1 class="dv-hero__title">{{ destaque.titulo }}</h1>
-                    <p class="dv-hero__lead">{{ destaque.sinopse|truncatewords:34 }}</p>
-                    <div class="dv-meta">
-                        <span>{{ destaque.get_classificacao_display }}</span>
-                        <span>{{ destaque.duracao }} min</span>
-                        {% if destaque.genero %}<span>{{ destaque.genero }}</span>{% endif %}
-                    </div>
-                    <div class="dv-hero__actions" style="justify-content:center;flex-wrap:wrap;">
-                        <a class="dv-btn primary" href="{% url 'didacta:film_detail' destaque.pk %}">
-                            <i class="bi bi-play-circle"></i> Ver detalhes
-                        </a>
-                        {% if user.is_authenticated and not user.is_admin_or_professor %}
-                        <a class="dv-btn ghost" href="{% url 'didacta:reservation_list' %}">
-                            <i class="bi bi-calendar-check"></i> Minhas reservas
-                        </a>
-                        {% elif not user.is_authenticated %}
-                        <a class="dv-btn ghost" href="{% url 'didacta:login' %}">
-                            <i class="bi bi-box-arrow-in-right"></i> Entrar
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </section>
-            {% endwith %}
-
-            <section class="dv-section">
-                <div class="dv-section__header">
-                    <div>
-                        <span class="dv-badge">Seleção Didacta</span>
-                        <h2 class="dv-section__title">Filmes em cartaz</h2>
-                        <p class="dv-section__subtitle">Escolha um filme, veja sessões e reserve em poucos cliques.</p>
-                    </div>
-                    {% if page_obj.paginator.num_pages > 1 %}
-                    <a href="?page={{ page_obj.paginator.num_pages }}" class="dv-btn ghost sm">Ver todos</a>
-                    {% endif %}
-                </div>
-                <div class="dv-carousel">
-                    <div class="dv-carousel__track">
-                        {% for filme in filmes %}
-                        <article class="dv-card">
-                            <a href="{% url 'didacta:film_detail' filme.pk %}">
-                                <div class="dv-card__poster">
-                                    {% if filme.cartaz %}
-                                        <img src="{{ filme.cartaz.url }}" alt="{{ filme.titulo }}">
-                                    {% elif filme.cartaz_url %}
-                                        <img src="{{ filme.cartaz_url }}" alt="{{ filme.titulo }}">
-                                    {% else %}
-                                        <img src="{% static 'css/img/Oppenheimer_poster.jpg' %}" alt="Cartaz genérico">
-                                    {% endif %}
-                                </div>
-                                <div class="dv-card__body">
-                                    <strong>{{ filme.titulo }}</strong>
-                                    <p>{{ filme.sinopse|truncatewords:18 }}</p>
-                                </div>
-                            </a>
-                        </article>
-                        {% endfor %}
-                    </div>
-                </div>
-            </section>
-
-            <section class="dv-section">
-                <div class="dv-section__header">
-                    <div>
-                        <span class="dv-badge">Experiência Didacta</span>
-                        <h2 class="dv-section__title">O que você pode fazer</h2>
-                        <p class="dv-section__subtitle">Reservar sessões, acompanhar presença e participar das discussões.</p>
-                    </div>
-                </div>
-                <div class="dv-grid">
-                    <article class="dv-card-wide dv-card-wide--soft">
-                        <h3>Reservar e confirmar presença</h3>
-                        <p class="text-muted">Escolha um filme, garanta sua vaga e acompanhe o status em tempo real.</p>
-                        {% if not user.is_admin_or_professor %}
-                        <div class="dv-hero__actions" style="margin-top:20px;">
-                            <a class="dv-btn primary" href="{% url 'didacta:reservation_list' %}">Minhas reservas</a>
-                        </div>
-                        {% endif %}
-                    </article>
-                    <article class="dv-card-wide dv-card-wide--soft">
-                        <h3>Participar dos debates</h3>
-                        <p class="text-muted">Após assistir, entre no fórum do filme para discutir ciência e cinema.</p>
-                    </article>
-                    <article class="dv-card-wide dv-card-wide--soft">
-                        <h3>Receber notificações</h3>
-                        <p class="text-muted">Avisos de novas sessões, confirmações e suporte diretamente no painel.</p>
-                        <div class="dv-hero__actions" style="margin-top:20px;">
-                            <a class="dv-btn ghost" href="{% url 'didacta:notification_list' %}">Ver notificações</a>
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="dv-section">
-                <div class="dv-section__header">
-                    <div>
-                        <span class="dv-badge">Descubra</span>
-                        <h2 class="dv-section__title">Explorar por temas</h2>
-                    </div>
-                </div>
-                <div class="dv-carousel">
-                    <div class="dv-carousel__track">
-                        {% for filme in filmes|slice:":6" %}
-                        <article class="dv-card">
-                            <a href="{% url 'didacta:film_detail' filme.pk %}">
-                                <div class="dv-card__poster">
-                                    {% if filme.cartaz %}
-                                        <img src="{{ filme.cartaz.url }}" alt="{{ filme.titulo }}">
-                                    {% elif filme.cartaz_url %}
-                                        <img src="{{ filme.cartaz_url }}" alt="{{ filme.titulo }}">
-                                    {% else %}
-                                        <img src="{% static 'css/img/Oppenheimer_poster.jpg' %}" alt="Cartaz genérico">
-                                    {% endif %}
-                                    {% if filme.tema %}
-                                    <span class="dv-card__tag" style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,0.7); padding:6px 12px; border-radius:6px; font-size:0.85rem;">{{ filme.tema }}</span>
-                                    {% endif %}
-                                </div>
-                                <div class="dv-card__body">
-                                    <strong>{{ filme.titulo }}</strong>
-                                    <p class="dv-card__excerpt">{{ filme.sinopse|truncatewords:18 }}</p>
-                                </div>
-                            </a>
-                        </article>
-                        {% endfor %}
-                    </div>
-                </div>
-            </section>
-
-            {% if page_obj.has_other_pages %}
-            <section class="dv-section" aria-label="Paginação">
-                <div class="dv-hero__actions" style="justify-content:center;">
-                    {% if page_obj.has_previous %}
-                    <a class="dv-btn ghost" href="?page=1">Primeira</a>
-                    <a class="dv-btn ghost" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
-                    {% endif %}
-                    <span class="dv-btn ghost">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-                    {% if page_obj.has_next %}
-                    <a class="dv-btn ghost" href="?page={{ page_obj.next_page_number }}">Próxima</a>
-                    <a class="dv-btn ghost" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
-                    {% endif %}
-                </div>
-            </section>
+<!-- HERO PRINCIPAL -->
+{% if destaque %}
+<section class="dv-hero">
+    <div class="dv-hero__media">
+        <img class="dv-hero__image" src="{% if destaque.cartaz %}{{ destaque.cartaz.url }}{% elif destaque.cartaz_url %}{{ destaque.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ destaque.titulo }}">
+        <div class="dv-hero__overlay"></div>
+    </div>
+    <div class="dv-hero__content container-xl">
+        <div class="dv-hero__badge-row">
+            <span class="dv-badge dv-badge--primary"><i class="bi bi-stars me-1"></i> Filme em Destaque</span>
+            {% if destaque.tema %}<span class="dv-badge">{{ destaque.tema }}</span>{% endif %}
+        </div>
+        <h1 class="dv-hero__title">{{ destaque.titulo }}</h1>
+        <p class="dv-hero__lead">{{ destaque.sinopse|truncatewords:32 }}</p>
+        <div class="dv-meta">
+            <span class="dv-tag dv-tag--rating">{{ destaque.get_classificacao_display }}</span>
+            <span><i class="bi bi-clock me-1"></i> {{ destaque.duracao }} min</span>
+            {% if destaque.genero %}<span><i class="bi bi-tag me-1"></i> {{ destaque.genero }}</span>{% endif %}
+            {% if destaque.session_set.first %}
+            <span class="text-success"><i class="bi bi-calendar3 me-1"></i> Próxima sessão: {{ destaque.session_set.first.data_hora|date:'d/m/Y às H:i' }}</span>
             {% endif %}
-        {% else %}
-            <div class="dv-empty">
-                <h3>Nenhum filme disponível</h3>
-                <p>Cadastre um novo título no painel administrativo para iniciar a programação.</p>
-                {% if user.is_admin_or_professor %}
-                <a class="dv-btn primary" href="{% url 'didacta:film_create' %}">Cadastrar filme</a>
+        </div>
+        <div class="dv-hero__actions">
+            <a class="dv-btn primary" href="{% url 'didacta:film_detail' destaque.pk %}">
+                <i class="bi bi-play-circle me-1"></i> Ver detalhes e sessões
+            </a>
+            {% if destaque.trailer_url %}
+            <button type="button" class="dv-btn ghost js-open-trailer" data-trailer-url="{{ destaque.trailer_url }}" data-film-title="{{ destaque.titulo }}">
+                <i class="bi bi-film me-1"></i> Assistir Trailer
+            </button>
+            {% endif %}
+            {% if user.is_authenticated and not user.is_admin_or_professor %}
+            <a class="dv-btn ghost" href="{% url 'didacta:reservation_list' %}">
+                <i class="bi bi-calendar-check me-1"></i> Minhas reservas
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% else %}
+<!-- HERO INSTITUCIONAL (QUANDO NÃO HÁ DESTAQUE OU PARA NOVOS VISITANTES) -->
+<section class="dv-hero dv-hero--welcome">
+    <div class="dv-hero__media">
+        <img class="dv-hero__image" src="{% static 'css/img/fundo.jpg' %}" alt="Didacta Vision Cinema">
+        <div class="dv-hero__overlay"></div>
+    </div>
+    <div class="dv-hero__content container-xl text-center" style="max-width:850px;margin:0 auto;">
+        <span class="dv-badge dv-badge--primary mb-3"><i class="bi bi-lightbulb me-1"></i> Luz, Ciência e Ação • IFRN</span>
+        <h1 class="dv-hero__title">Cinema e Ciência em uma única experiência imersiva</h1>
+        <p class="dv-hero__lead">
+            Participe das exibições audiovisuais do projeto Didacta Vision. Consulte filmes, garanta sua reserva em sessões gratuitas e participe de debates enriquecedores com a comunidade acadêmica.
+        </p>
+        <div class="dv-hero__actions justify-content-center">
+            <a href="#catalogo" class="dv-btn primary">
+                <i class="bi bi-collection-play me-1"></i> Explorar Catálogo
+            </a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'didacta:register' %}" class="dv-btn ghost">
+                <i class="bi bi-person-plus me-1"></i> Criar Conta Gratuita
+            </a>
+            {% elif user.is_admin_or_professor %}
+            <button type="button" class="dv-btn ghost js-film-modal-trigger" data-url="{% url 'didacta:ajax_film_create' %}">
+                <i class="bi bi-plus-circle me-1"></i> Cadastrar Primeiro Filme
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- SEÇÃO DE CATÁLOGO / FILMES EM CARTAZ -->
+<section class="dv-section container-xl" id="catalogo">
+    <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div>
+            <span class="dv-badge"><i class="bi bi-film me-1"></i> Programação Oficial</span>
+            <h2 class="dv-section__title">Filmes em Cartaz</h2>
+            <p class="dv-section__subtitle">Escolha um título, veja as datas disponíveis e garanta seu lugar com um clique.</p>
+        </div>
+        {% if user.is_authenticated and user.is_admin_or_professor %}
+        <div class="d-flex gap-2">
+            <button type="button" class="dv-btn primary sm js-film-modal-trigger" data-url="{% url 'didacta:ajax_film_create' %}">
+                <i class="bi bi-plus-circle me-1"></i> Novo Filme
+            </button>
+            <button type="button" class="dv-btn ghost sm js-session-create" data-url="{% url 'didacta:ajax_session_create' %}">
+                <i class="bi bi-calendar-plus me-1"></i> Nova Sessão
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- BUSCA RÁPIDA E FILTROS -->
+    <div class="dv-filter-bar">
+        <div class="dv-search-box">
+            <i class="bi bi-search dv-search-icon"></i>
+            <input type="text" id="dvCatalogSearch" class="dv-search-input" placeholder="Buscar filmes por título, tema ou gênero..." autocomplete="off">
+        </div>
+        {% if todos_generos or todos_temas %}
+        <div class="dv-filter-pills" role="group" aria-label="Filtrar filmes por gênero ou tema">
+            <a href="{% url 'didacta:index' %}#catalogo" class="dv-filter-pill{% if not genero_selecionado and not tema_selecionado %} is-active{% endif %}"{% if not genero_selecionado and not tema_selecionado %} aria-current="page"{% endif %}>Todos</a>
+            {% for genero in todos_generos %}
+            <a href="?genero={{ genero|urlencode }}#catalogo" class="dv-filter-pill{% if genero_selecionado|lower == genero|lower %} is-active{% endif %}"{% if genero_selecionado|lower == genero|lower %} aria-current="page"{% endif %}>{{ genero }}</a>
+            {% endfor %}
+            {% for tema in todos_temas %}
+            {% if tema not in todos_generos %}
+            <a href="?tema={{ tema|urlencode }}#catalogo" class="dv-filter-pill{% if tema_selecionado|lower == tema|lower %} is-active{% endif %}"{% if tema_selecionado|lower == tema|lower %} aria-current="page"{% endif %}>{{ tema }}</a>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- GRADE DE FILMES -->
+    {% if page_obj.object_list %}
+    <div class="dv-film-grid" id="dvFilmGrid">
+        {% for filme in page_obj.object_list %}
+        <article class="dv-card js-film-card" data-title="{{ filme.titulo }}" data-genre="{{ filme.genero }}" data-tema="{{ filme.tema }}">
+            <div class="dv-card__media">
+                <a href="{% url 'didacta:film_detail' filme.pk %}">
+                    <img src="{% if filme.cartaz %}{{ filme.cartaz.url }}{% elif filme.cartaz_url %}{{ filme.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ filme.titulo }}" loading="lazy">
+                </a>
+                <div class="dv-card__badges">
+                    <span class="dv-tag dv-tag--rating">{{ filme.get_classificacao_display }}</span>
+                    {% if filme.tema %}
+                    <span class="dv-tag">{{ filme.tema }}</span>
+                    {% endif %}
+                </div>
+                {% if filme.trailer_url %}
+                <button type="button" class="dv-card__trailer-btn js-open-trailer" data-trailer-url="{{ filme.trailer_url }}" data-film-title="{{ filme.titulo }}" title="Assistir Trailer">
+                    <i class="bi bi-play-fill"></i>
+                </button>
                 {% endif %}
             </div>
-        {% endif %}
-    {% endwith %}
-{% else %}
-    <div class="dv-empty dv-empty--page-center">
-        <h3>Nenhum filme encontrado</h3>
-        <p>Assim que houver novos títulos cadastrados, eles aparecerão aqui.</p>
+            <div class="dv-card__content">
+                <h3 class="dv-card__title">
+                    <a href="{% url 'didacta:film_detail' filme.pk %}">{{ filme.titulo }}</a>
+                </h3>
+                <div class="dv-card__meta">
+                    <span><i class="bi bi-clock me-1"></i> {{ filme.duracao }} min</span>
+                    {% if filme.genero %}<span><i class="bi bi-tag me-1"></i> {{ filme.genero }}</span>{% endif %}
+                </div>
+                <p class="dv-card__excerpt">{{ filme.sinopse|truncatewords:16 }}</p>
+
+                <div class="dv-card__footer">
+                    {% with proxima=filme.session_set.first %}
+                        {% if proxima and proxima.tem_vagas %}
+                        <div class="dv-card__session-info">
+                            <span class="dv-status success sm"><i class="bi bi-calendar-event me-1"></i> {{ proxima.data_hora|date:'d/m • H:i' }}</span>
+                            <small class="text-muted d-block mt-1">{{ proxima.vagas_disponiveis }} vagas em {{ proxima.local|truncatechars:18 }}</small>
+                        </div>
+                        {% elif proxima %}
+                        <div class="dv-card__session-info">
+                            <span class="dv-status danger sm">Sessão Esgotada</span>
+                        </div>
+                        {% else %}
+                        <div class="dv-card__session-info">
+                            <span class="dv-status neutral sm">Em breve</span>
+                        </div>
+                        {% endif %}
+                    {% endwith %}
+                    <a href="{% url 'didacta:film_detail' filme.pk %}" class="dv-btn ghost sm">
+                        Detalhes <i class="bi bi-chevron-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
     </div>
-{% endif %}
+
+    <!-- ESTADO VAZIO FILTRAGEM -->
+    <div id="dvCatalogNoResults" class="dv-empty" style="display:none;margin-top:24px;">
+        <i class="bi bi-film" style="font-size:2.2rem;color:rgba(255,255,255,0.3);"></i>
+        <h4 class="mt-2">Nenhum filme nesta categoria</h4>
+        <p class="text-muted">Selecione outra categoria.</p>
+    </div>
+
+    <!-- PAGINAÇÃO -->
+    {% if page_obj.has_other_pages %}
+    <nav class="dv-pagination" aria-label="Navegação do Catálogo">
+        {% if page_obj.has_previous %}
+        <a class="dv-btn ghost sm" href="?page={{ page_obj.previous_page_number }}{% if genero_selecionado %}&amp;genero={{ genero_selecionado|urlencode }}{% endif %}{% if tema_selecionado %}&amp;tema={{ tema_selecionado|urlencode }}{% endif %}#catalogo"><i class="bi bi-chevron-left me-1"></i> Anterior</a>
+        {% endif %}
+        <span class="dv-pagination__info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a class="dv-btn ghost sm" href="?page={{ page_obj.next_page_number }}{% if genero_selecionado %}&amp;genero={{ genero_selecionado|urlencode }}{% endif %}{% if tema_selecionado %}&amp;tema={{ tema_selecionado|urlencode }}{% endif %}#catalogo">Próxima <i class="bi bi-chevron-right ms-1"></i></a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="dv-empty">
+        <i class="bi bi-film" style="font-size:3rem;color:rgba(255,255,255,0.25);"></i>
+        {% if genero_selecionado or tema_selecionado %}
+        <h3 class="mt-3">Nenhum filme encontrado nesta categoria</h3>
+        <p class="text-muted">Tente outra categoria ou veja todos os filmes.</p>
+        <a href="{% url 'didacta:index' %}#catalogo" class="dv-btn ghost sm mt-2">Ver todos os filmes</a>
+        {% else %}
+        <h3 class="mt-3">Nenhum filme cadastrado no momento</h3>
+        <p class="text-muted">A programação das próximas sessões está sendo preparada pela equipe do projeto.</p>
+        {% if user.is_authenticated and user.is_admin_or_professor %}
+        <button type="button" class="dv-btn primary mt-2 js-film-modal-trigger" data-url="{% url 'didacta:ajax_film_create' %}">
+            <i class="bi bi-plus-circle me-1"></i> Cadastrar Filme
+        </button>
+        {% endif %}
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+
+<!-- SEÇÃO DIDÁTICA: COMO FUNCIONA O PROJETO -->
+<section class="dv-section dv-section--alt container-xl my-5">
+    <div class="text-center mb-5" style="max-width:700px;margin:0 auto;">
+        <span class="dv-badge dv-badge--primary"><i class="bi bi-compass me-1"></i> Experiência Didacta</span>
+        <h2 class="dv-section__title mt-2">Como funciona a plataforma</h2>
+        <p class="dv-section__subtitle">Três passos simples para transformar o cinema em uma ferramenta ativa de aprendizado.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="dv-step-card">
+                <div class="dv-step-card__icon"><i class="bi bi-ticket-perforated"></i></div>
+                <div class="dv-step-card__number">Passo 01</div>
+                <h4>Escolha e Reserve</h4>
+                <p class="text-muted">Consulte a programação, confira a sinopse e garanta sua vaga nas sessões gratuitas com apenas um clique.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dv-step-card">
+                <div class="dv-step-card__icon"><i class="bi bi-film"></i></div>
+                <div class="dv-step-card__number">Passo 02</div>
+                <h4>Assista à Sessão</h4>
+                <p class="text-muted">Compareça à sala de exibição no IFRN no horário marcado. A presença é confirmada pelos professores ou organizadores.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dv-step-card">
+                <div class="dv-step-card__icon"><i class="bi bi-chat-quote"></i></div>
+                <div class="dv-step-card__number">Passo 03</div>
+                <h4>Debata no Fórum</h4>
+                <p class="text-muted">Após a confirmação de presença, participe do fórum exclusivo de cada filme para trocar ideias científicas e acadêmicas.</p>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
-
-

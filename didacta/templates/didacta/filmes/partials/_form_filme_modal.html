@@ -1,0 +1,76 @@
+<form id="ajax-film-form" method="post" enctype="multipart/form-data" data-action-url="{{ action_url }}">
+    {% csrf_token %}
+    <div class="dv-form-group">
+        <label for="{{ form.titulo.id_for_label }}">Título *</label>
+        {{ form.titulo }}
+    </div>
+
+    <div class="dv-form-group">
+        <label for="{{ form.sinopse.id_for_label }}">Sinopse *</label>
+        {{ form.sinopse }}
+    </div>
+
+    <div class="dv-form-grid two">
+        <div class="dv-form-group">
+            <label for="{{ form.duracao.id_for_label }}">Duração (minutos) *</label>
+            {{ form.duracao }}
+        </div>
+        <div class="dv-form-group">
+            <label for="{{ form.classificacao.id_for_label }}">Classificação Indicativa *</label>
+            {{ form.classificacao }}
+        </div>
+    </div>
+
+    <div class="dv-form-grid two">
+        <div class="dv-form-group">
+            <label for="{{ form.genero.id_for_label }}">Gênero *</label>
+            {{ form.genero }}
+        </div>
+        <div class="dv-form-group">
+            <label for="{{ form.tema.id_for_label }}">Tema Educativo / Científico *</label>
+            {{ form.tema }}
+        </div>
+    </div>
+
+    <div class="dv-form-group">
+        <label for="{{ form.trailer_url.id_for_label }}">URL do Trailer (YouTube) *</label>
+        {{ form.trailer_url }}
+        <small class="text-muted" style="font-size:0.8rem;">Ex: https://www.youtube.com/watch?v=... ou https://youtu.be/...</small>
+    </div>
+
+    <div class="dv-form-grid two">
+        <div class="dv-form-group">
+            <label for="{{ form.cartaz.id_for_label }}">Arquivo de Cartaz (Upload)</label>
+            {{ form.cartaz }}
+        </div>
+        <div class="dv-form-group">
+            <label for="{{ form.cartaz_url.id_for_label }}">Ou URL do Cartaz</label>
+            {{ form.cartaz_url }}
+        </div>
+    </div>
+
+    <div class="dv-form-group">
+        <label class="text-muted" for="{{ form.ativo.id_for_label }}">Disponibilidade no Catálogo</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+            {{ form.ativo }}
+            <span>Ativo (visível para os alunos)</span>
+        </div>
+    </div>
+
+    {% if form.errors %}
+    <div class="dv-status danger" style="flex-direction:column;display:flex;gap:4px;margin-top:12px;padding:10px 14px;border-radius:8px;">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <span><strong>{{ field|title }}:</strong> {{ error }}</span>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="dv-form-actions" style="margin-top:20px;justify-content:flex-end;gap:10px;">
+        <button type="button" class="dv-btn ghost" data-bs-dismiss="modal" id="filmModalCancelBtn">Cancelar</button>
+        <button type="submit" class="dv-btn primary">
+            <i class="bi bi-check-circle"></i> {% if filme %}Salvar alterações{% else %}Cadastrar filme{% endif %}
+        </button>
+    </div>
+</form>

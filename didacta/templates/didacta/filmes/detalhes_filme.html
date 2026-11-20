@@ -3,253 +3,271 @@
 
 {% block title %}{{ filme.titulo }} - Didacta Vision{% endblock %}
 
-{% block content %}
-<section class="dv-detail-hero">
-    <img src="{% if filme.cartaz %}{{ filme.cartaz.url }}{% elif filme.cartaz_url %}{{ filme.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ filme.titulo }}">
-    <div class="dv-detail-hero__content">
-        <span class="dv-badge">Filme</span>
-        <h1 class="dv-hero__title">{{ filme.titulo }}</h1>
-        <div class="dv-hero__actions">
-            {% if filme.trailer_url %}
-            <a class="dv-btn primary" href="{{ filme.trailer_url }}" target="_blank" rel="noreferrer">
-                <i class="bi bi-play-circle"></i> Assistir Trailer
-            </a>
-            {% endif %}
-        </div>
-    </div>
-</section>
-
-<section class="dv-panel dv-detail-meta">
-    <div class="dv-detail-meta__header">
-        <div>
-            <span class="dv-badge">Ficha do filme</span>
-            <h2 class="dv-section__title">Informações principais</h2>
-            <p class="text-muted dv-section__subtitle">Resumo rápido com os dados essenciais para decidir sua sessão.</p>
-            <div class="dv-sinopse">
-                <p class="dv-sinopse__text">{{ filme.sinopse }}</p>
-            </div>
-        </div>
-        <div class="dv-detail-meta__actions">
-            {% if sessoes_futuras %}
-            <a class="dv-btn primary" href="#sessoes">
-                <i class="bi bi-calendar-event"></i> Ver sessões
-            </a>
-            {% elif user.is_admin_or_professor %}
-            <a class="dv-btn primary" href="{% url 'didacta:session_create' %}">
-                <i class="bi bi-plus-circle"></i> Cadastrar sessão
-            </a>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="dv-detail-meta__grid">
-        <div class="dv-stat">
-            <span class="dv-stat__label">Classificação</span>
-            <strong class="dv-stat__value">{{ filme.get_classificacao_display }}</strong>
-        </div>
-        <div class="dv-stat">
-            <span class="dv-stat__label">Duração</span>
-            <strong class="dv-stat__value">{{ filme.duracao }} min</strong>
-        </div>
-        {% if filme.genero %}
-        <div class="dv-stat">
-            <span class="dv-stat__label">Gênero</span>
-            <strong class="dv-stat__value">{{ filme.genero }}</strong>
-        </div>
-        {% endif %}
-        <div class="dv-stat">
-            <span class="dv-stat__label">Status</span>
-            <strong class="dv-stat__value">{% if filme.ativo %}Em cartaz{% else %}Indisponível{% endif %}</strong>
-        </div>
-    </div>
-
-    {% if sessoes_futuras %}
-    <div class="dv-next-session">
-        <div>
-            <p class="text-muted" style="margin-bottom:6px;">Próxima sessão</p>
-            <h3 class="dv-next-session__title">{{ sessoes_futuras.0.data_hora|date:'d \\d\\e F, H:i' }}</h3>
-            <p class="text-muted" style="margin-top:4px;">{{ sessoes_futuras.0.local }}</p>
-        </div>
-        <div class="dv-detail-meta__actions">
-            {% if sessoes_futuras.0.tem_vagas %}
-                <span class="dv-status success">Com vagas</span>
-            {% else %}
-                <span class="dv-status danger">Sem vagas</span>
-            {% endif %}
-            {% if user.is_authenticated %}
-                {% with reserva=reservas_por_sessao|dict_get:sessoes_futuras.0.id %}
-                    {% if reserva %}
-                    <a class="dv-btn ghost" href="{% url 'didacta:reservation_cancel' reserva.pk %}">
-                        <i class="bi bi-x-circle"></i> Cancelar
-                    </a>
-                    {% elif sessoes_futuras.0.tem_vagas and sessoes_futuras.0.ativo and not user.is_admin_or_professor %}
-                    <a class="dv-btn primary" href="{% url 'didacta:reservation_create' sessoes_futuras.0.pk %}">
-                        <i class="bi bi-calendar-plus"></i> Reservar
-                    </a>
-                    {% endif %}
-                {% endwith %}
-            {% else %}
-            <a class="dv-btn ghost" href="{% url 'didacta:login' %}">
-                <i class="bi bi-box-arrow-in-right"></i> Entrar para reservar
-            </a>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-</section>
-
-<section id="sessoes" class="dv-section">
-    <div class="dv-section__header">
-        <div>
-            <span class="dv-badge">Programação</span>
-            <h2 class="dv-section__title">Sessões disponíveis</h2>
-        </div>
-        {% if user.is_admin_or_professor %}
-        <a class="dv-btn ghost" href="{% url 'didacta:session_create' %}">
-            <i class="bi bi-plus-circle"></i> Nova sessão
-        </a>
-        {% endif %}
-    </div>
-
-    {% if sessoes_futuras %}
-    <div class="dv-session-list">
-        {% for sessao in sessoes_futuras %}
-        <div class="dv-session-card">
-            <div class="dv-session-card__info">
-                <div class="dv-session-card__title">
-                    <a href="{% url 'didacta:session_detail' sessao.pk %}" class="dv-session-card__link">
-                        <strong>{{ sessao.data_hora|date:'d/m/Y H:i' }}</strong>
-                    </a>
-                    <span class="dv-tag">{% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}</span>
-                </div>
-                <div class="dv-session-card__meta">
-                    <span><i class="bi bi-geo-alt"></i> {{ sessao.local }}</span>
-                    <span><i class="bi bi-people"></i> {{ sessao.capacidade_total }} lugares</span>
-                    <span>
-                        {% if sessao.vagas_disponiveis > 0 %}
-                            <i class="bi bi-check-circle"></i> {{ sessao.vagas_disponiveis }} vagas
-                        {% else %}
-                            <i class="bi bi-x-circle"></i> Sem vagas
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
-            <div class="dv-hero__actions dv-session-card__actions">
-                {% if user.is_admin_or_professor %}
-                <a class="dv-btn ghost" href="{% url 'didacta:session_update' sessao.pk %}" title="Editar sessão">
-                    <i class="bi bi-pencil"></i>
-                </a>
-                <a class="dv-btn ghost" href="{% url 'didacta:session_delete' sessao.pk %}" onclick="return confirm('Tem certeza?')" title="Excluir sessão">
-                    <i class="bi bi-trash"></i>
-                </a>
-                {% elif user.is_authenticated and not user.is_admin_or_professor %}
-                    {% with reserva=reservas_por_sessao|dict_get:sessao.id %}
-                        {% if reserva %}
-                        <a class="dv-btn ghost" href="{% url 'didacta:reservation_cancel' reserva.pk %}"><i class="bi bi-x-circle"></i> Cancelar</a>
-                        {% elif sessao.tem_vagas and sessao.ativo %}
-                        <a class="dv-btn primary" href="{% url 'didacta:reservation_create' sessao.pk %}">
-                            <i class="bi bi-calendar-plus"></i> Reservar
-                        </a>
-                        {% else %}
-                        <span class="dv-status danger">Indisponível</span>
-                        {% endif %}
-                    {% endwith %}
-                {% else %}
-                <a class="dv-btn ghost" href="{% url 'didacta:login' %}">
-                    <i class="bi bi-box-arrow-in-right"></i> Entrar para reservar
-                </a>
-                {% endif %}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="dv-empty">
-        <p>Nenhuma sessão agendada neste momento.</p>
-    </div>
-    {% endif %}
-</section>
-
-<section class="dv-section">
-    <div class="dv-section__header">
-        <div>
-            <span class="dv-badge">Fórum</span>
-            <h2 class="dv-section__title">Discussões</h2>
-        </div>
-        {% if user.is_authenticated and pode_comentar %}
-        <a class="dv-btn primary" href="{% url 'didacta:forum_comment_create' filme.pk %}">
-            <i class="bi bi-plus-circle"></i> Novo comentário
-        </a>
-        {% endif %}
-    </div>
-
-    {% if not user.is_authenticated %}
-        <div class="dv-empty">
-            <p><a href="{% url 'didacta:login' %}">Faça login</a> para participar das discussões.</p>
-        </div>
-    {% elif not pode_comentar %}
-        <div class="dv-empty">
-            <p>É necessário ter presença confirmada em uma sessão deste filme para comentar.</p>
-        </div>
-    {% endif %}
-
-    {% if comentarios %}
-    <div class="dv-stack">
-        {% for comentario in comentarios %}
-        <article class="dv-comment">
-            <div class="dv-comment__header">
-                <div class="dv-comment__meta">
-                    <strong>{{ comentario.usuario.nome_completo }}</strong>
-                    <span class="dv-tag">{{ comentario.usuario.get_tipo_usuario_display }}</span>
-                    <small class="text-muted">{{ comentario.created_at|date:'d/m/Y H:i' }}</small>
-                </div>
-                <div class="dv-hero__actions">
-                    {% if user.is_authenticated and pode_comentar %}
-                    <a class="dv-btn ghost" href="{% url 'didacta:forum_comment_create' filme.pk %}?parent={{ comentario.pk }}">
-                        <i class="bi bi-reply"></i> Responder
-                    </a>
-                    {% endif %}
-                    {% if user.is_admin_or_professor or comentario.usuario == user %}
-                    <a class="dv-btn ghost" href="{% url 'didacta:forum_comment_delete' comentario.pk %}" onclick="return confirm('Excluir comentário?')">
-                        <i class="bi bi-trash"></i>
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-            <p>{{ comentario.texto }}</p>
-
-            {% if comentario.replies.all %}
-            <div class="dv-comment__replies">
-                {% for resposta in comentario.replies.all %}
-                <div class="dv-comment">
-                    <div class="dv-comment__header">
-                        <div class="dv-comment__meta">
-                            <strong>{{ resposta.usuario.nome_completo }}</strong>
-                            <span class="dv-tag">{{ resposta.usuario.get_tipo_usuario_display }}</span>
-                            <small class="text-muted">{{ resposta.created_at|date:'d/m/Y H:i' }}</small>
-                        </div>
-                        {% if user.is_admin_or_professor or resposta.usuario == user %}
-                        <a class="dv-btn ghost" href="{% url 'didacta:forum_comment_delete' resposta.pk %}" onclick="return confirm('Excluir resposta?')">
-                            <i class="bi bi-trash"></i>
-                        </a>
-                        {% endif %}
-                    </div>
-                    <p>{{ resposta.texto }}</p>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-        </article>
-        {% endfor %}
-    </div>
-    {% else %}
-    {% if user.is_admin_or_professor %}
-    <div class="dv-empty">
-        <p>Seja o primeiro a comentar sobre este filme.</p>
-    </div>
-    {% endif %}
-    {% endif %}
-</section>
+{% block breadcrumb %}
+<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
+    <ol class="dv-breadcrumbs">
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}#catalogo">Catálogo de Filmes</a></li>
+        <li class="dv-breadcrumbs__item is-active" aria-current="page">{{ filme.titulo }}</li>
+    </ol>
+</nav>
 {% endblock %}
 
+{% block content %}
+<div class="container-xl">
+    <!-- HERO COMPACTO DO FILME -->
+    <section class="dv-detail-hero">
+        <div class="dv-detail-hero__backdrop">
+            <img src="{% if filme.cartaz %}{{ filme.cartaz.url }}{% elif filme.cartaz_url %}{{ filme.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ filme.titulo }}">
+            <div class="dv-detail-hero__overlay"></div>
+        </div>
+        <div class="dv-detail-hero__content">
+            <div class="row align-items-center g-4">
+                <div class="col-md-3 col-sm-4 text-center text-sm-start">
+                    <div class="dv-detail-poster">
+                        <img src="{% if filme.cartaz %}{{ filme.cartaz.url }}{% elif filme.cartaz_url %}{{ filme.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ filme.titulo }}" class="img-fluid rounded shadow-lg">
+                    </div>
+                </div>
+                <div class="col-md-9 col-sm-8">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="dv-badge dv-badge--primary"><i class="bi bi-film me-1"></i> Filme Didacta</span>
+                        {% if filme.tema %}<span class="dv-badge">{{ filme.tema }}</span>{% endif %}
+                        <span class="dv-tag dv-tag--rating">{{ filme.get_classificacao_display }}</span>
+                    </div>
 
+                    <h1 class="dv-detail-title">{{ filme.titulo }}</h1>
+
+                    <div class="dv-meta my-3">
+                        <span><i class="bi bi-clock me-1"></i> {{ filme.duracao }} minutos</span>
+                        {% if filme.genero %}<span><i class="bi bi-tag me-1"></i> {{ filme.genero }}</span>{% endif %}
+                        <span><i class="bi bi-check-circle me-1"></i> {% if filme.ativo %}Disponível no catálogo{% else %}Indisponível{% endif %}</span>
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap mt-3">
+                        {% if filme.trailer_url %}
+                        <button type="button" class="dv-btn primary js-open-trailer" data-trailer-url="{{ filme.trailer_url }}" data-film-title="{{ filme.titulo }}">
+                            <i class="bi bi-play-circle-fill me-1"></i> Assistir Trailer
+                        </button>
+                        {% endif %}
+                        <a href="#sessoes" class="dv-btn ghost">
+                            <i class="bi bi-calendar-event me-1"></i> Ver Sessões Disponíveis
+                        </a>
+                        {% if user.is_authenticated and user.is_admin_or_professor %}
+                        <button type="button" class="dv-btn ghost js-session-create" data-url="{% url 'didacta:ajax_session_create' %}?filme_id={{ filme.pk }}">
+                            <i class="bi bi-calendar-plus me-1"></i> Nova Sessão
+                        </button>
+                        <button type="button" class="dv-btn ghost js-film-modal-trigger js-film-edit" data-url="{% url 'didacta:ajax_film_edit' filme.pk %}">
+                            <i class="bi bi-pencil me-1"></i> Editar Filme
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SINOPSE E DETALHES -->
+    <section class="dv-panel my-4">
+        <h3 class="dv-panel__title"><i class="bi bi-card-text me-2"></i> Sinopse & Contexto Educativo</h3>
+        <p class="dv-sinopse-text">{{ filme.sinopse|linebreaks }}</p>
+    </section>
+
+    <!-- SEÇÃO UNIFICADA DE SESSÕES (SEM DUPLICAÇÕES) -->
+    <section id="sessoes" class="dv-section">
+        <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div>
+                <span class="dv-badge"><i class="bi bi-calendar3 me-1"></i> Agenda do Filme</span>
+                <h2 class="dv-section__title">Sessões Programadas</h2>
+                <p class="dv-section__subtitle">Consulte as sessões disponíveis e escolha onde deseja participar.</p>
+            </div>
+            {% if user.is_authenticated and user.is_admin_or_professor %}
+            <button type="button" class="dv-btn primary sm js-session-create" data-url="{% url 'didacta:ajax_session_create' %}?filme_id={{ filme.pk }}">
+                <i class="bi bi-plus-circle me-1"></i> Adicionar Sessão
+            </button>
+            {% endif %}
+        </div>
+
+        {% if sessoes_futuras %}
+        <div class="dv-session-cards-grid">
+            {% for sessao in sessoes_futuras %}
+            <div class="dv-session-box" id="session-box-{{ sessao.pk }}">
+                <div class="dv-session-box__date">
+                    <span class="dv-session-box__day">{{ sessao.data_hora|date:'d' }}</span>
+                    <span class="dv-session-box__month">{{ sessao.data_hora|date:'M'|upper }}</span>
+                    <span class="dv-session-box__time">{{ sessao.data_hora|date:'H:i' }}</span>
+                </div>
+                <div class="dv-session-box__info">
+                    <h4 class="mb-1">Sessão Presencial</h4>
+                    <div class="dv-meta">
+                        <span><i class="bi bi-geo-alt me-1"></i> {{ sessao.local }}</span>
+                        <span><i class="bi bi-people me-1"></i> {{ sessao.capacidade_total }} lugares no total</span>
+                    </div>
+                    <div class="mt-2">
+                        {% if sessao.vagas_disponiveis > 0 %}
+                        <span class="dv-status success sm js-vagas-count-{{ sessao.pk }}"><i class="bi bi-check-circle me-1"></i> {{ sessao.vagas_disponiveis }} vagas disponíveis</span>
+                        {% else %}
+                        <span class="dv-status danger sm"><i class="bi bi-x-circle me-1"></i> Esgotada</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="dv-session-box__actions">
+                    {% if user.is_authenticated %}
+                        {% if user.is_admin_or_professor %}
+                            <a href="{% url 'didacta:session_detail_admin' sessao.pk %}" class="dv-btn ghost sm" title="Lista de presença">
+                                <i class="bi bi-people-fill me-1"></i> Presença
+                            </a>
+                            <button type="button" class="dv-btn ghost sm js-session-edit" data-edit-url="{% url 'didacta:ajax_session_edit' sessao.pk %}" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="dv-btn ghost sm js-session-delete" data-delete-url="{% url 'didacta:ajax_session_delete' sessao.pk %}" title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        {% else %}
+                            {% with reserva=reservas_por_sessao|dict_get:sessao.id %}
+                                {% if reserva %}
+                                    <a href="{% url 'didacta:reservation_list' %}" class="dv-btn ghost">
+                                        <i class="bi bi-calendar-check me-1"></i> Ver minha reserva
+                                    </a>
+                                {% elif sessao.tem_vagas and sessao.ativo %}
+                                    <a href="{% url 'didacta:reservation_create' sessao.pk %}" class="dv-btn primary">
+                                        <i class="bi bi-calendar-plus me-1"></i> Reservar esta sessão
+                                    </a>
+                                {% else %}
+                                    <span class="dv-status danger">Sem Vagas</span>
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    {% else %}
+                    <a href="{% url 'didacta:login' %}" class="dv-btn ghost sm">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Entrar para Reservar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="dv-empty">
+            <i class="bi bi-calendar-x" style="font-size:2.5rem;color:rgba(255,255,255,0.25);"></i>
+            <h4 class="mt-2">Nenhuma sessão agendada para este filme no momento</h4>
+            <p class="text-muted">Novas datas e horários de exibição serão divulgados em breve.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- FÓRUM DE DISCUSSÃO CIENTÍFICA INTEGRADO -->
+    <section class="dv-section my-5" id="forum">
+        <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div>
+                <span class="dv-badge dv-badge--primary"><i class="bi bi-chat-dots me-1"></i> Fórum Científico</span>
+                <h2 class="dv-section__title">Discussões e Reflexões</h2>
+                <p class="dv-section__subtitle">Espaço exclusivo para alunos e professores debaterem as temáticas científicas abordadas no filme.</p>
+            </div>
+        </div>
+
+        <!-- FORMULÁRIO DE NOVO COMENTÁRIO (EMBUTIDO COM AJAX) -->
+        {% if user.is_authenticated and pode_comentar %}
+        <div class="dv-forum-form-card mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="dv-user-avatar-sm">
+                    {% if user.foto_perfil %}<img src="{{ user.foto_perfil.url }}" alt="{{ user.nome_completo }}">{% else %}<i class="bi bi-person"></i>{% endif %}
+                </div>
+                <div>
+                    <strong class="text-white">{{ user.nome_completo }}</strong>
+                    <small class="text-muted d-block">Compartilhe sua reflexão com a turma</small>
+                </div>
+            </div>
+            <form id="dvForumCommentForm" method="post" action="{% url 'didacta:forum_comment_create' filme.pk %}">
+                {% csrf_token %}
+                <div class="dv-form-group">
+                    <textarea name="texto" class="dv-form-control" rows="3" minlength="10" maxlength="500" placeholder="Escreva sua reflexão, dúvida ou análise sobre os aspectos científicos do filme (mínimo 10 caracteres)..." required></textarea>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <small class="text-muted">Máximo 500 caracteres • Seja construtivo e respeitoso</small>
+                    <button type="submit" class="dv-btn primary">
+                        <i class="bi bi-send me-1"></i> Publicar comentário
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% elif not user.is_authenticated %}
+        <div class="dv-notice-box mb-4">
+            <i class="bi bi-lock me-2 fs-5"></i>
+            <div>
+                <strong>Acesso exclusivo para participantes</strong>
+                <p class="mb-0 text-muted">Faça <a href="{% url 'didacta:login' %}" class="text-white text-decoration-underline">login</a> ou <a href="{% url 'didacta:register' %}" class="text-white text-decoration-underline">cadastre-se</a> para participar das discussões.</p>
+            </div>
+        </div>
+        {% elif not pode_comentar %}
+        <div class="dv-notice-box mb-4">
+            <i class="bi bi-info-circle me-2 fs-5 text-warning"></i>
+            <div>
+                <strong>Debate liberado após a sessão</strong>
+                <p class="mb-0 text-muted">Para garantir discussões aprofundadas, o fórum é liberado após a confirmação de presença na sessão do filme pelo professor ou gestor.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- LISTA DE COMENTÁRIOS -->
+        <div class="dv-stack" id="dvForumCommentsList">
+            {% for comentario in comentarios %}
+            <article class="dv-comment" id="comment-{{ comentario.pk }}">
+                <div class="dv-comment__header">
+                    <div class="dv-comment__meta">
+                        <div class="dv-user-avatar-sm">
+                            {% if comentario.usuario.foto_perfil %}
+                            <img src="{{ comentario.usuario.foto_perfil.url }}" alt="{{ comentario.usuario.nome_completo }}">
+                            {% else %}
+                            <i class="bi bi-person"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>{{ comentario.usuario.nome_completo }}</strong>
+                            <span class="dv-tag ms-1">{{ comentario.usuario.get_tipo_usuario_display|default:"Aluno" }}</span>
+                            <small class="text-muted ms-2">{{ comentario.created_at|date:'d/m/Y às H:i' }}</small>
+                        </div>
+                    </div>
+                    {% if user.is_authenticated and user.is_admin_or_professor or comentario.usuario == user %}
+                    <div class="dv-comment__actions">
+                        <button type="button" class="dv-btn ghost sm js-btn-delete-comment" data-url="{% url 'didacta:forum_comment_delete' comentario.pk %}" title="Excluir">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                <p class="dv-comment__text">{{ comentario.texto|linebreaksbr }}</p>
+
+                <!-- RESPOSTAS -->
+                {% if comentario.replies.all %}
+                <div class="dv-comment__replies ps-4 mt-3 border-start border-secondary border-opacity-25">
+                    {% for resposta in comentario.replies.all %}
+                    <div class="dv-comment dv-comment--reply mb-2" id="comment-{{ resposta.pk }}">
+                        <div class="dv-comment__header">
+                            <div class="dv-comment__meta">
+                                <strong class="fs-6">{{ resposta.usuario.nome_completo }}</strong>
+                                <span class="dv-tag ms-1">{{ resposta.usuario.get_tipo_usuario_display }}</span>
+                                <small class="text-muted ms-2">{{ resposta.created_at|date:'d/m/Y às H:i' }}</small>
+                            </div>
+                            {% if user.is_authenticated and user.is_admin_or_professor or resposta.usuario == user %}
+                            <button type="button" class="dv-btn ghost sm js-btn-delete-comment" data-url="{% url 'didacta:forum_comment_delete' resposta.pk %}" title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        <p class="dv-comment__text mb-0">{{ resposta.texto|linebreaksbr }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </article>
+            {% empty %}
+            <div id="dvForumEmptyState" class="dv-empty">
+                <i class="bi bi-chat-square-text" style="font-size:2.5rem;color:rgba(255,255,255,0.25);"></i>
+                <h4 class="mt-2">Nenhum comentário publicado ainda</h4>
+                <p class="text-muted">Participe da sessão e seja o primeiro a iniciar a discussão acadêmica!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

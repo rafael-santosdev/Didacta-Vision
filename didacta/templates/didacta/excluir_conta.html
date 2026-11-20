@@ -1,31 +1,39 @@
 {% extends 'didacta/base.html' %}
+{% load static %}
 
 {% block title %}Excluir Conta - Didacta Vision{% endblock %}
 
-{% block content %}
-<section class="dv-section">
-    <div class="dv-dialog">
-        <div class="dv-dialog__icon" style="background:rgba(239,68,68,0.2);color:#f87171;">
-            <i class="bi bi-person-dash"></i>
-        </div>
-        <h2>Deseja excluir sua conta?</h2>
-        <p class="text-muted">Sua conta será desativada e você perderá o acesso às reservas, histórico e ao fórum.</p>
-
-        <div class="dv-card-wide" style="margin-top:18px;">
-            <h4>Atenção</h4>
-            <p class="text-muted">Esta ação não pode ser desfeita. Caso queira utilizar o Didacta Vision novamente, será necessário criar um novo cadastro.</p>
-        </div>
-
-        <form method="post" class="dv-dialog__actions">
-            {% csrf_token %}
-            <a href="{% url 'didacta:profile' %}" class="dv-btn ghost">Manter conta</a>
-            <button type="submit" class="dv-btn primary">
-                <i class="bi bi-trash"></i> Sim, excluir
-            </button>
-        </form>
-    </div>
-</section>
+{% block breadcrumb %}
+<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
+    <ol class="dv-breadcrumbs">
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:profile' %}">Meu Perfil</a></li>
+        <li class="dv-breadcrumbs__item is-active" aria-current="page">Excluir Conta</li>
+    </ol>
+</nav>
 {% endblock %}
 
+{% block content %}
+<div class="container-xl d-flex align-items-center justify-content-center py-5">
+    <div class="dv-auth-card p-4 p-md-5 text-center" style="max-width:540px; border-color:rgba(239, 68, 68, 0.4);">
+        <div class="dv-dialog__icon mx-auto mb-3" style="width:64px;height:64px;background:rgba(239,68,68,0.15);color:#ef4444;font-size:2rem;display:grid;place-items:center;border-radius:50%;">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
 
+        <h1 class="fs-4 text-white fw-bold mb-2">Deseja realmente excluir sua conta?</h1>
+        <p class="text-muted mb-4" style="line-height:1.6;">
+            Ao confirmar, sua conta será desativada permanentemente. Seu histórico de presença e participações no fórum serão desvinculados.
+        </p>
 
+        <form method="post" class="d-flex flex-column gap-2">
+            {% csrf_token %}
+            <button type="submit" class="dv-btn danger w-100 justify-content-center py-2">
+                <i class="bi bi-trash me-1"></i> Sim, tenho certeza e quero excluir
+            </button>
+            <a href="{% url 'didacta:profile' %}" class="dv-btn ghost w-100 justify-content-center py-2">
+                Cancelar e voltar ao meu perfil
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

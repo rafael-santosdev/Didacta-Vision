@@ -1,37 +1,49 @@
 {% extends 'didacta/base.html' %}
+{% load static %}
 
-{% block title %}Login - Didacta Vision{% endblock %}
+{% block title %}Entrar na Conta - Didacta Vision{% endblock %}
 
 {% block content %}
-<section class="dv-login-layout">
-    <div>
-        <span class="dv-badge">Acesso seguro</span>
-        <h1 class="dv-hero__title">Entre para acompanhar sessões e debates</h1>
-        <p class="dv-hero__lead">
-            Centralize suas reservas, notificações e suporte em um painel inspirado no visual da Netflix,
-            feito para a comunidade Didacta.
-        </p>
-    </div>
+<div class="container-xl d-flex align-items-center justify-content-center py-5" style="min-height: calc(100vh - 180px);">
+    <div class="dv-auth-card p-4 p-md-5">
+        <div class="text-center mb-4">
+            <span class="dv-logo__icon mx-auto mb-3" style="width:48px;height:48px;font-size:1.4rem;">
+                <i class="bi bi-film"></i>
+            </span>
+            <h1 class="fs-3 text-white fw-bold mb-1">Acessar Didacta Vision</h1>
+            <p class="text-muted" style="font-size:0.9rem;">Entre com seu e-mail ou nome de usuário</p>
+        </div>
 
-    <div class="dv-form-card">
-        <h2>Fazer login</h2>
         <form method="post" class="dv-form">
             {% csrf_token %}
-            <div class="dv-form-group">
-                <label for="email">Nome de usuário ou email</label>
-                <input type="text" id="email" name="email" placeholder="ex: Ana Beatriz ou ana@email.com" required autocomplete="off">
+            <div class="dv-form-group mb-3">
+                <label for="email" class="form-label text-white fw-medium">Nome de usuário ou e-mail</label>
+                <div class="input-group">
+                    <span class="input-group-text dv-input-group-text"><i class="bi bi-person"></i></span>
+                    <input type="text" id="email" name="email" class="form-control dv-form-control" placeholder="ex: seu.nome ou seu@email.com" required autofocus autocomplete="username">
+                </div>
             </div>
-            <div class="dv-form-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" name="password" required autocomplete="new-password">
-                <a class="text-muted" href="{% url 'didacta:password_reset_request' %}" style="text-decoration:none; transition:text-decoration 0.2s;">Esqueci a senha</a>
+
+            <div class="dv-form-group mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="password" class="form-label text-white fw-medium mb-0">Senha</label>
+                    <a href="{% url 'didacta:password_reset_request' %}" class="text-primary text-decoration-none" style="font-size:0.85rem;">Esqueceu a senha?</a>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text dv-input-group-text"><i class="bi bi-lock"></i></span>
+                    <input type="password" id="password" name="password" class="form-control dv-form-control" placeholder="••••••••" required autocomplete="current-password">
+                </div>
             </div>
-            <button type="submit" class="dv-btn primary">
-                <i class="bi bi-box-arrow-in-right"></i> Entrar
+
+            <button type="submit" class="dv-btn primary w-100 justify-content-center py-2 mt-4 fs-6">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Entrar na Plataforma
             </button>
         </form>
+
+        <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-25">
+            <span class="text-muted" style="font-size:0.9rem;">Ainda não tem uma conta?</span>
+            <a href="{% url 'didacta:register' %}" class="text-white fw-semibold ms-1 text-decoration-underline">Criar conta</a>
+        </div>
     </div>
-</section>
+</div>
 {% endblock %}
-
-

@@ -2,20 +2,31 @@
 
 {% block title %}{% if object %}Editar{% else %}Novo{% endif %} Filme - Didacta Vision{% endblock %}
 
+{% block breadcrumb %}
+<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
+    <ol class="dv-breadcrumbs">
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:film_list_admin' %}">Painel de Filmes</a></li>
+        <li class="dv-breadcrumbs__item is-active" aria-current="page">{% if object %}Editar: {{ object.titulo }}{% else %}Novo Filme{% endif %}</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
+<div class="container-xl">
 <section class="dv-section">
-    <div class="dv-section__header">
+    <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
         <div>
-            <span class="dv-badge">Administração</span>
-            <h1 class="dv-section__title">{% if object %}Editar{% else %}Novo{% endif %} filme</h1>
-            <p class="text-muted" style="margin-top:6px;">Preencha os dados abaixo para disponibilizar o conteúdo na plataforma.</p>
+            <span class="dv-badge dv-badge--primary"><i class="bi bi-shield-lock me-1"></i> Administração</span>
+            <h1 class="dv-section__title">{% if object %}Editar{% else %}Novo{% endif %} Filme</h1>
+            <p class="dv-section__subtitle">Preencha os dados abaixo para disponibilizar o conteúdo na plataforma.</p>
         </div>
-        <a href="{% url 'didacta:film_list_admin' %}" class="dv-btn ghost">
-            <i class="bi bi-arrow-left"></i> Voltar
+        <a href="{% url 'didacta:film_list_admin' %}" class="dv-btn ghost sm">
+            <i class="bi bi-arrow-left me-1"></i> Voltar à lista
         </a>
     </div>
 
-    <div class="dv-form-card">
+    <div class="dv-form-card dv-form-card--wide">
         <form method="post" enctype="multipart/form-data" class="dv-form">
             {% csrf_token %}
             <div class="dv-form-grid two">
@@ -115,7 +126,7 @@
 
         {% if sessoes %}
         <div class="dv-table-wrapper">
-            <table class="dv-table">
+            <table class="dv-table dv-table-responsive">
                 <thead>
                     <tr>
                         <th>Data e hora</th>
@@ -129,29 +140,29 @@
                 <tbody>
                     {% for sessao in sessoes %}
                     <tr>
-                        <td>{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
-                        <td>{{ sessao.local }}</td>
-                        <td>{{ sessao.capacidade_total }}</td>
-                        <td>
+                        <td data-label="Data e hora">{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
+                        <td data-label="Local"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ sessao.local }}</td>
+                        <td data-label="Capacidade">{{ sessao.capacidade_total }} lugares</td>
+                        <td data-label="Vagas">
                             <span class="dv-status {% if sessao.vagas_disponiveis > 0 %}success{% else %}danger{% endif %}">
                                 {{ sessao.vagas_disponiveis }}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <span class="dv-status {% if sessao.ativo %}success{% else %}neutral{% endif %}">
                                 {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
                             </span>
                         </td>
-                        <td style="text-align:right;">
-                            <div class="dv-form-actions" style="justify-content:flex-end;">
+                        <td data-label="Ações" class="dv-table-col-actions" style="text-align:right;">
+                            <div class="d-inline-flex gap-1 justify-content-end flex-wrap">
                                 <a class="dv-btn ghost sm" href="{% url 'didacta:session_detail_admin' sessao.pk %}">
-                                    <i class="bi bi-eye"></i> Ver
+                                    <i class="bi bi-eye me-1"></i> Presença
                                 </a>
                                 <a class="dv-btn ghost sm" href="{% url 'didacta:session_update' sessao.pk %}">
-                                    <i class="bi bi-pencil"></i> Editar
+                                    <i class="bi bi-pencil me-1"></i> Editar
                                 </a>
-                                <a class="dv-btn ghost sm" href="{% url 'didacta:session_delete' sessao.pk %}">
-                                    <i class="bi bi-trash"></i> Excluir
+                                <a class="dv-btn ghost sm text-danger" href="{% url 'didacta:session_delete' sessao.pk %}">
+                                    <i class="bi bi-trash me-1"></i> Excluir
                                 </a>
                             </div>
                         </td>
@@ -162,12 +173,14 @@
         </div>
         {% else %}
         <div class="dv-empty">
-            <h3>Nenhuma sessão cadastrada para este filme</h3>
-            <p class="text-muted">Crie uma nova sessão para liberar reservas.</p>
-            <a href="{% url 'didacta:session_create' %}?filme={{ object.pk }}" class="dv-btn primary">Criar sessão</a>
+            <i class="bi bi-calendar-x" style="font-size:2.5rem;color:rgba(255,255,255,0.25);"></i>
+            <h3 class="mt-2">Nenhuma sessão cadastrada para este filme</h3>
+            <p class="text-muted">Crie uma nova sessão para liberar reservas aos alunos.</p>
+            <a href="{% url 'didacta:session_create' %}?filme={{ object.pk }}" class="dv-btn primary mt-2">Criar sessão</a>
         </div>
         {% endif %}
     </div>
     {% endif %}
 </section>
+</div>
 {% endblock %}

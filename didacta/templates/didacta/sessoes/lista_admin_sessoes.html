@@ -1,347 +1,111 @@
 {% extends 'didacta/base.html' %}
+{% load static %}
 
-{% block title %}Administração - Sessões{% endblock %}
+{% block title %}Gerenciar Sessões - Administração Didacta Vision{% endblock %}
+
+{% block breadcrumb %}
+<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
+    <ol class="dv-breadcrumbs">
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
+        <li class="dv-breadcrumbs__item">Administração</li>
+        <li class="dv-breadcrumbs__item is-active" aria-current="page">Gerenciar Sessões</li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-<section class="dv-section">
-    <div class="dv-toolbar">
-        <div>
-            <span class="dv-badge">Administração</span>
-            <h1 class="dv-section__title">Gerenciar sessões</h1>
-            <p class="text-muted" style="margin-top:8px;">Controle reservas, locais e status das próximas exibições.</p>
-        </div>
-        <a href="{% url 'didacta:session_create' %}" class="dv-btn primary">
-            <i class="bi bi-plus-circle"></i> Nova sessão
-        </a>
-    </div>
-
-    {% if page_obj %}
-    <div class="dv-table-wrapper">
-        <table class="dv-table" id="adminSessionsTable">
-            <thead>
-                <tr>
-                    <th>Filme</th>
-                    <th>Data e hora</th>
-                    <th>Local</th>
-                    <th>Capacidade</th>
-                    <th>Vagas</th>
-                    <th>Status</th>
-                    <th style="text-align:right;">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for sessao in page_obj %}
-                <tr data-session-id="{{ sessao.pk }}">
-                    <td class="dv-session-filme"><strong>{{ sessao.filme.titulo }}</strong></td>
-                    <td class="dv-session-data-hora">{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
-                    <td class="dv-session-local">{{ sessao.local }}</td>
-                    <td class="dv-session-capacidade">{{ sessao.capacidade_total }}</td>
-                    <td>
-                        <span class="dv-status {% if sessao.vagas_disponiveis > 0 %}success{% else %}danger{% endif %}">
-                            {{ sessao.vagas_disponiveis }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="dv-status dv-session-status {% if sessao.ativo %}success{% else %}neutral{% endif %}">
-                            {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
-                        </span>
-                    </td>
-                    <td style="text-align:right;">
-                        <div class="dv-form-actions" style="justify-content:flex-end;">
-                            <a href="{% url 'didacta:session_detail_admin' sessao.pk %}" class="dv-btn ghost sm">
-                                <i class="bi bi-eye"></i> Ver
-                            </a>
-                            <button type="button"
-                                    class="dv-btn ghost sm js-session-edit"
-                                    data-edit-url="{% url 'didacta:ajax_session_edit' sessao.pk %}">
-                                <i class="bi bi-pencil"></i> Editar
-                            </button>
-                            <button type="button"
-                                    class="dv-btn ghost sm js-session-delete"
-                                    data-delete-url="{% url 'didacta:ajax_session_delete' sessao.pk %}">
-                                <i class="bi bi-trash"></i> Excluir
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    {% if page_obj.has_other_pages %}
-    <div class="dv-section" aria-label="Paginação">
-        <div class="dv-hero__actions" style="justify-content:center;">
-            {% if page_obj.has_previous %}
-            <a class="dv-btn ghost" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
-            {% endif %}
-            <span class="dv-btn ghost">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-            {% if page_obj.has_next %}
-            <a class="dv-btn ghost" href="?page={{ page_obj.next_page_number }}">Próxima</a>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-    {% else %}
-    <div class="dv-empty">
-        <h3>Nenhuma sessão cadastrada</h3>
-        <p class="text-muted">Adicione uma nova exibição para liberar reservas.</p>
-        <a href="{% url 'didacta:session_create' %}" class="dv-btn primary">Criar sessão</a>
-    </div>
-    {% endif %}
-
-    <!-- CSRF "holder" para POSTs AJAX (delete) -->
-    <form id="csrfTokenHolder" style="display:none;">
-        {% csrf_token %}
-    </form>
-
-    <!-- Modal de edição de sessão (AJAX) -->
-    <div id="sessionModal" class="dv-modal" aria-hidden="true">
-        <div class="dv-modal__backdrop"></div>
-        <div class="dv-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="sessionModalTitle">
-            <div class="dv-modal__header">
-                <h2 id="sessionModalTitle" class="dv-section__title" style="font-size:1.2rem;">Editar sessão</h2>
-                <button type="button" class="dv-modal__close" id="sessionModalCloseBtn" aria-label="Fechar modal">
-                    &times;
+<div class="container-xl">
+    <section class="dv-section">
+        <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div>
+                <span class="dv-badge dv-badge--primary"><i class="bi bi-calendar-event me-1"></i> Programação de Exibições</span>
+                <h1 class="dv-section__title">Gerenciar Sessões</h1>
+                <p class="dv-section__subtitle">Agende horários, defina locais de exibição e controle as vagas disponíveis.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="dv-btn primary js-session-create" data-url="{% url 'didacta:ajax_session_create' %}">
+                    <i class="bi bi-plus-circle me-1"></i> Nova Sessão
                 </button>
-            </div>
-            <div class="dv-modal__body" id="sessionModalBody">
-                <!-- Formulário será carregado via AJAX -->
+                <a href="{% url 'didacta:film_list_admin' %}" class="dv-btn ghost">
+                    <i class="bi bi-film me-1"></i> Ver Filmes
+                </a>
             </div>
         </div>
-    </div>
-</section>
+
+        {% if page_obj %}
+        <div class="dv-table-wrapper">
+            <table class="dv-table dv-table-responsive" id="adminSessionsTable">
+                <thead>
+                    <tr>
+                        <th>Filme</th>
+                        <th>Data e Hora</th>
+                        <th>Local / Sala</th>
+                        <th>Capacidade</th>
+                        <th>Vagas Restantes</th>
+                        <th>Status</th>
+                        <th style="text-align:right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sessao in page_obj %}
+                    <tr id="session-row-{{ sessao.pk }}">
+                        <td data-label="Filme" class="dv-table-col-title">
+                            <strong class="text-white">{{ sessao.filme.titulo }}</strong>
+                        </td>
+                        <td data-label="Data e Hora">{{ sessao.data_hora|date:'d/m/Y H:i' }}</td>
+                        <td data-label="Local / Sala"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ sessao.local }}</td>
+                        <td data-label="Capacidade">{{ sessao.capacidade_total }} lugares</td>
+                        <td data-label="Vagas Restantes">
+                            <span class="dv-status {% if sessao.vagas_disponiveis > 0 %}success{% else %}danger{% endif %}">
+                                {{ sessao.vagas_disponiveis }} vagas
+                            </span>
+                        </td>
+                        <td data-label="Status">
+                            <span class="dv-status {% if sessao.ativo %}success{% else %}neutral{% endif %}">
+                                {% if sessao.ativo %}Ativa{% else %}Inativa{% endif %}
+                            </span>
+                        </td>
+                        <td data-label="Ações" class="dv-table-col-actions" style="text-align:right;">
+                            <div class="d-inline-flex gap-1 justify-content-end flex-wrap">
+                                <a href="{% url 'didacta:session_detail_admin' sessao.pk %}" class="dv-btn ghost sm" title="Lista de Presença dos Alunos">
+                                    <i class="bi bi-people-fill me-1"></i> Presença
+                                </a>
+                                <button type="button" class="dv-btn ghost sm js-session-edit" data-edit-url="{% url 'didacta:ajax_session_edit' sessao.pk %}" title="Editar Sessão">
+                                    <i class="bi bi-pencil"></i> <span class="d-md-none ms-1">Editar</span>
+                                </button>
+                                <button type="button" class="dv-btn ghost sm text-danger js-session-delete" data-delete-url="{% url 'didacta:ajax_session_delete' sessao.pk %}" title="Excluir Sessão">
+                                    <i class="bi bi-trash"></i> <span class="d-md-none ms-1">Excluir</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="dv-pagination" aria-label="Navegação de Sessões">
+            {% if page_obj.has_previous %}
+            <a class="dv-btn ghost sm" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left me-1"></i> Anterior</a>
+            {% endif %}
+            <span class="dv-pagination__info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a class="dv-btn ghost sm" href="?page={{ page_obj.next_page_number }}">Próxima <i class="bi bi-chevron-right ms-1"></i></a>
+            {% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="dv-empty">
+            <i class="bi bi-calendar-x" style="font-size:3rem;color:rgba(255,255,255,0.25);"></i>
+            <h3 class="mt-3">Nenhuma sessão cadastrada</h3>
+            <p class="text-muted">Adicione datas e locais de exibição para liberar reservas para os alunos.</p>
+            <button type="button" class="dv-btn primary mt-2 js-session-create" data-url="{% url 'didacta:ajax_session_create' %}">
+                <i class="bi bi-plus-circle me-1"></i> Criar Nova Sessão
+            </button>
+        </div>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-<style>
-    .dv-modal {
-        position: fixed;
-        inset: 0;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 300;
-    }
-
-    .dv-modal.is-open {
-        display: flex;
-    }
-
-    .dv-modal__backdrop {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-    }
-
-    .dv-modal__dialog {
-        position: relative;
-        max-width: 640px;
-        width: 100%;
-        margin: 16px;
-        background: hsl(var(--panel));
-        border-radius: var(--radius-lg);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: var(--glow-card);
-        padding: 20px clamp(18px, 3vw, 24px);
-        z-index: 1;
-    }
-
-    .dv-modal__header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-
-    .dv-modal__close {
-        border: none;
-        background: transparent;
-        color: hsl(var(--foreground-muted));
-        font-size: 1.6rem;
-        cursor: pointer;
-        line-height: 1;
-    }
-
-    .dv-modal__body {
-        max-height: min(70vh, 520px);
-        overflow-y: auto;
-    }
-</style>
-{% endblock %}
-
-{% block extra_js %}
-{{ block.super }}
-<script>
-    (function() {
-        const table = document.getElementById('adminSessionsTable');
-        const modal = document.getElementById('sessionModal');
-        const modalBody = document.getElementById('sessionModalBody');
-        const modalCloseBtn = document.getElementById('sessionModalCloseBtn');
-        const csrfHolder = document.querySelector('#csrfTokenHolder input[name=csrfmiddlewaretoken]');
-
-        if (!table || !modal || !modalBody) return;
-
-        function openModal() {
-            modal.classList.add('is-open');
-            modal.setAttribute('aria-hidden', 'false');
-        }
-
-        function closeModal() {
-            modal.classList.remove('is-open');
-            modal.setAttribute('aria-hidden', 'true');
-            modalBody.innerHTML = '';
-        }
-
-        function getCSRFToken() {
-            // Preferir token do form do modal
-            const formToken = modalBody.querySelector('[name=csrfmiddlewaretoken]');
-            if (formToken) return formToken.value;
-            if (csrfHolder) return csrfHolder.value;
-            return '';
-        }
-
-        function attachModalFormHandlers(row) {
-            const form = modalBody.querySelector('#ajax-session-form');
-            if (!form) return;
-
-            const cancelBtn = modalBody.querySelector('#sessionModalCancelBtn');
-            if (cancelBtn) cancelBtn.onclick = closeModal;
-
-            form.onsubmit = function(e) {
-                e.preventDefault();
-
-                const actionUrl = form.getAttribute('data-action-url');
-                if (!actionUrl) {
-                    alert('Erro: URL de ação não encontrada.');
-                    return;
-                }
-
-                const formData = new FormData(form);
-                fetch(actionUrl, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': getCSRFToken(),
-                    }
-                })
-                .then(async (resp) => {
-                    const contentType = resp.headers.get('content-type') || '';
-                    if (contentType.includes('application/json')) return resp.json();
-                    const text = await resp.text();
-                    try { return JSON.parse(text); } catch { throw new Error(text); }
-                })
-                .then((data) => {
-                    if (!data.success) {
-                        if (data.form_html) {
-                            modalBody.innerHTML = data.form_html;
-                            attachModalFormHandlers(row);
-                        }
-                        alert(data.message || 'Erro ao salvar sessão.');
-                        return;
-                    }
-
-                    const sessao = data.session;
-                    if (row) {
-                        const dataHoraCell = row.querySelector('.dv-session-data-hora');
-                        const localCell = row.querySelector('.dv-session-local');
-                        const capacidadeCell = row.querySelector('.dv-session-capacidade');
-                        const statusBadge = row.querySelector('.dv-session-status');
-
-                        if (dataHoraCell) dataHoraCell.textContent = sessao.data_hora;
-                        if (localCell) localCell.textContent = sessao.local;
-                        if (capacidadeCell) capacidadeCell.textContent = sessao.capacidade_total;
-
-                        // Status badge (texto + classe)
-                        if (statusBadge) {
-                            statusBadge.textContent = sessao.ativo ? 'Ativa' : 'Inativa';
-                            statusBadge.classList.toggle('success', !!sessao.ativo);
-                            statusBadge.classList.toggle('neutral', !sessao.ativo);
-                        }
-                    }
-
-                    closeModal();
-                })
-                .catch((err) => {
-                    console.error(err);
-                    alert('Erro ao salvar sessão. Veja o console.');
-                });
-            };
-        }
-
-        table.addEventListener('click', function(event) {
-            const editBtn = event.target.closest('.js-session-edit');
-            const deleteBtn = event.target.closest('.js-session-delete');
-            const row = event.target.closest('tr[data-session-id]');
-
-            if (editBtn) {
-                event.preventDefault();
-                const url = editBtn.getAttribute('data-edit-url');
-                if (!url) return;
-
-                fetch(url, {
-                    method: 'GET',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(resp => resp.text())
-                .then(html => {
-                    modalBody.innerHTML = html;
-                    // garante actionUrl (caso venha sem)
-                    const form = modalBody.querySelector('#ajax-session-form');
-                    if (form && !form.getAttribute('data-action-url')) {
-                        form.setAttribute('data-action-url', url);
-                    }
-                    attachModalFormHandlers(row);
-                    openModal();
-                })
-                .catch((err) => {
-                    console.error(err);
-                    alert('Erro ao carregar formulário.');
-                });
-            }
-
-            if (deleteBtn) {
-                event.preventDefault();
-                const url = deleteBtn.getAttribute('data-delete-url');
-                if (!url) return;
-
-                const ok = confirm('Tem certeza de que deseja excluir esta sessão?');
-                if (!ok) return;
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': getCSRFToken(),
-                    },
-                    body: new URLSearchParams(),
-                })
-                .then(resp => resp.json())
-                .then(data => {
-                    if (!data.success) {
-                        alert(data.message || 'Erro ao excluir sessão.');
-                        return;
-                    }
-                    if (row && row.parentNode) row.parentNode.removeChild(row);
-                })
-                .catch((err) => {
-                    console.error(err);
-                    alert('Erro ao excluir sessão. Veja o console.');
-                });
-            }
-        });
-
-        if (modalCloseBtn) modalCloseBtn.onclick = closeModal;
-        modal.addEventListener('click', function(event) {
-            if (event.target === modal || event.target.classList.contains('dv-modal__backdrop')) {
-                closeModal();
-            }
-        });
-    })();
-</script>
-{% endblock %}
-

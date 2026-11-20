@@ -3,27 +3,27 @@
 {% block title %}Deletar Comentário - Didacta Vision{% endblock %}
 
 {% block content %}
-<section class="dv-section">
-    <div class="dv-dialog">
-        <div class="dv-dialog__icon" style="background:rgba(239,68,68,0.2);color:#f87171;">
+<div class="container-xl d-flex justify-content-center py-5">
+    <div class="dv-dialog" style="max-width:540px;width:100%;">
+        <div class="dv-dialog__icon" style="background:rgba(239,68,68,0.15);color:#ef4444;font-size:2rem;width:64px;height:64px;display:grid;place-items:center;border-radius:50%;margin:0 auto 16px;">
             <i class="bi bi-chat-x"></i>
         </div>
-        <h2>Excluir comentário?</h2>
-        <p class="text-muted">Esta resposta será removida imediatamente para todos os usuários.</p>
+        <h2 class="fs-4 text-white text-center fw-bold mb-2">Excluir Comentário?</h2>
+        <p class="text-muted text-center mb-3" style="line-height:1.6;">Esta resposta será removida permanentemente para todos os participantes do fórum.</p>
 
-        <div class="dv-card-wide" style="margin-top:18px;">
-            <p class="text-muted" style="margin:0;">{{ comentario.texto|truncatewords:20 }}</p>
+        <div class="dv-card-wide p-3 mb-4">
+            <p class="text-white text-opacity-80 mb-0 font-monospace small" style="white-space:pre-wrap;">{{ comentario.texto|truncatewords:24 }}</p>
         </div>
 
-        <form method="post" class="dv-dialog__actions">
+        <form method="post" class="d-flex flex-column flex-sm-row justify-content-end gap-2">
             {% csrf_token %}
-            <a href="{% url 'didacta:film_detail' comentario.filme.pk %}" class="dv-btn ghost">Cancelar</a>
-            <button type="submit" class="dv-btn primary">
-                <i class="bi bi-trash"></i> Sim, deletar
+            <a href="{% url 'didacta:film_detail' comentario.filme.pk %}#forum" class="dv-btn ghost justify-content-center">Cancelar</a>
+            <button type="submit" class="dv-btn danger justify-content-center">
+                <i class="bi bi-trash me-1"></i> Sim, Excluir Comentário
             </button>
         </form>
     </div>
-</section>
+</div>
 {% endblock %}
 
 

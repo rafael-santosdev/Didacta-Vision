@@ -2,20 +2,31 @@
 
 {% block title %}{% if object %}Editar{% else %}Nova{% endif %} Sessão - Didacta Vision{% endblock %}
 
+{% block breadcrumb %}
+<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
+    <ol class="dv-breadcrumbs">
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:session_list_admin' %}">Painel de Sessões</a></li>
+        <li class="dv-breadcrumbs__item is-active" aria-current="page">{% if object %}Editar Sessão #{{ object.pk }}{% else %}Nova Sessão{% endif %}</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
+<div class="container-xl">
 <section class="dv-section">
-    <div class="dv-section__header">
+    <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
         <div>
-            <span class="dv-badge">Administração</span>
-            <h1 class="dv-section__title">{% if object %}Editar{% else %}Nova{% endif %} sessão</h1>
-            <p class="text-muted" style="margin-top:6px;">Cadastre horários, locais e capacidade para liberar reservas.</p>
+            <span class="dv-badge dv-badge--primary"><i class="bi bi-shield-lock me-1"></i> Administração</span>
+            <h1 class="dv-section__title">{% if object %}Editar{% else %}Nova{% endif %} Sessão</h1>
+            <p class="dv-section__subtitle">Cadastre horários, locais e capacidade para liberar reservas.</p>
         </div>
-        <a href="{% url 'didacta:session_list_admin' %}" class="dv-btn ghost">
-            <i class="bi bi-arrow-left"></i> Voltar
+        <a href="{% url 'didacta:session_list_admin' %}" class="dv-btn ghost sm">
+            <i class="bi bi-arrow-left me-1"></i> Voltar à lista
         </a>
     </div>
 
-    <div class="dv-form-card">
+    <div class="dv-form-card dv-form-card--wide">
         <form method="post" class="dv-form">
             {% csrf_token %}
             <div class="dv-form-group">
@@ -28,7 +39,7 @@
             </div>
             <div class="dv-form-grid two">
                 <div class="dv-form-group">
-                    <label for="{{ form.local.id_for_label }}">Local *</label>
+                    <label for="{{ form.local.id_for_label }}">Local / Sala *</label>
                     {{ form.local }}
                 </div>
                 <div class="dv-form-group">
@@ -39,7 +50,7 @@
                     <label class="text-muted" for="{{ form.ativo.id_for_label }}">Disponibilidade</label>
                     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                         {{ form.ativo }}
-                        <span>Ativa</span>
+                        <span>Ativa (disponível para reservas)</span>
                     </div>
                 </div>
             </div>
@@ -48,21 +59,22 @@
             <div class="dv-status danger" style="flex-direction:column;display:flex;gap:4px;">
                 {% for field, errors in form.errors.items %}
                     {% for error in errors %}
-                    <span>{{ error }}</span>
+                    <span><strong>{{ field|title }}:</strong> {{ error }}</span>
                     {% endfor %}
                 {% endfor %}
             </div>
             {% endif %}
 
-            <div class="dv-form-actions">
+            <div class="dv-form-actions justify-content-end gap-2 mt-3">
                 <a href="{% url 'didacta:session_list_admin' %}" class="dv-btn ghost">Cancelar</a>
                 <button type="submit" class="dv-btn primary">
-                    <i class="bi bi-check-circle"></i> Salvar
+                    <i class="bi bi-check-circle me-1"></i> Salvar Sessão
                 </button>
             </div>
         </form>
     </div>
 </section>
+</div>
 {% endblock %}
 
 

@@ -1,103 +1,159 @@
 {% extends 'didacta/base.html' %}
+{% load static %}
 
 {% block title %}Minhas Reservas - Didacta Vision{% endblock %}
 
-{% block content %}
-<section class="dv-section">
-    <div class="dv-section__header">
-        <div>
-            <span class="dv-badge">Agenda</span>
-            <h1 class="dv-section__title">Minhas reservas</h1>
-            <p class="dv-section__subtitle">Acompanhe sessões confirmadas, históricos e cancele quando necessário.</p>
-        </div>
-        {% if reservas_futuras or reservas_passadas %}
-        <a class="dv-btn ghost" href="{% url 'didacta:index' %}">
-            <i class="bi bi-film"></i> Ver filmes
-        </a>
-        {% endif %}
-    </div>
-
-    {% if reservas_futuras %}
-    <article class="dv-card-wide dv-card-wide--soft" style="margin-bottom:32px;">
-        <h2 style="margin-bottom:18px;">Próximas sessões</h2>
-        <div class="table-responsive">
-            <table class="dv-table">
-                <thead>
-                    <tr>
-                        <th>Filme</th>
-                        <th>Data e hora</th>
-                        <th>Local</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for reserva in reservas_futuras %}
-                    <tr>
-                        <td><strong>{{ reserva.sessao.filme.titulo }}</strong></td>
-                        <td>{{ reserva.sessao.data_hora|date:'d/m/Y H:i' }}</td>
-                        <td>{{ reserva.sessao.local }}</td>
-                        <td>
-                            <span class="dv-status {% if reserva.status == 'reservado' %}neutral{% elif reserva.status == 'presente' %}success{% else %}warning{% endif %}">
-                                {{ reserva.get_status_display }}
-                            </span>
-                        </td>
-                        <td>
-                            {% if reserva.status == 'reservado' or reserva.status == 'presente' %}
-                            <a class="dv-btn ghost" href="{% url 'didacta:reservation_cancel' reserva.pk %}">
-                                <i class="bi bi-x-circle"></i> Cancelar
-                            </a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </article>
-    {% endif %}
-
-    {% if reservas_passadas %}
-    <article class="dv-card-wide dv-card-wide--soft">
-        <h2 style="margin-bottom:18px;">Histórico</h2>
-        <div class="table-responsive">
-            <table class="dv-table">
-                <thead>
-                    <tr>
-                        <th>Filme</th>
-                        <th>Data e hora</th>
-                        <th>Local</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for reserva in reservas_passadas %}
-                    <tr>
-                        <td><strong>{{ reserva.sessao.filme.titulo }}</strong></td>
-                        <td>{{ reserva.sessao.data_hora|date:'d/m/Y H:i' }}</td>
-                        <td>{{ reserva.sessao.local }}</td>
-                        <td>
-                            <span class="dv-status {% if reserva.status == 'presente' %}success{% elif reserva.status == 'falta_justificada' %}warning{% else %}danger{% endif %}">
-                                {{ reserva.get_status_display }}
-                            </span>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </article>
-    {% endif %}
-
-    {% if not reservas_futuras and not reservas_passadas %}
-    <div class="dv-empty">
-        <h3>Você ainda não possui reservas</h3>
-        <p class="text-muted">Escolha um filme em cartaz e garanta sua presença.</p>
-        <a class="dv-btn primary" href="{% url 'didacta:index' %}">Explorar filmes</a>
-    </div>
-    {% endif %}
-</section>
+{% block breadcrumb %}
+<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
+    <ol class="dv-breadcrumbs">
+        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
+        <li class="dv-breadcrumbs__item is-active" aria-current="page">Minhas Reservas</li>
+    </ol>
+</nav>
 {% endblock %}
 
+{% block content %}
+<div class="container-xl">
+    <section class="dv-section">
+        <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div>
+                <span class="dv-badge dv-badge--primary"><i class="bi bi-calendar-check me-1"></i> Minha Agenda</span>
+                <h1 class="dv-section__title">Minhas Reservas</h1>
+                <p class="dv-section__subtitle">Acompanhe suas sessões confirmadas, presença e histórico de participações.</p>
+            </div>
+            <a class="dv-btn ghost" href="{% url 'didacta:index' %}#catalogo">
+                <i class="bi bi-plus-circle me-1"></i> Reservar Outro Filme
+            </a>
+        </div>
 
+        {% if reservas_futuras or reservas_passadas %}
+        <!-- ABAS DE NAVEGAÇÃO -->
+        <ul class="nav nav-pills dv-nav-pills mb-4" id="reservasTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="proximas-tab" data-bs-toggle="pill" data-bs-target="#proximas" type="button" role="tab" aria-selected="true">
+                    <i class="bi bi-clock-history me-1"></i> Próximas Sessões
+                    <span class="badge rounded-pill bg-primary ms-1">{{ reservas_futuras|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="historico-tab" data-bs-toggle="pill" data-bs-target="#historico" type="button" role="tab" aria-selected="false">
+                    <i class="bi bi-archive me-1"></i> Histórico Concluído
+                    <span class="badge rounded-pill bg-secondary ms-1">{{ reservas_passadas|length }}</span>
+                </button>
+            </li>
+        </ul>
 
+        <div class="tab-content" id="reservasTabContent">
+            <!-- ABA: PRÓXIMAS SESSÕES -->
+            <div class="tab-pane fade show active" id="proximas" role="tabpanel" aria-labelledby="proximas-tab">
+                {% if reservas_futuras %}
+                <div class="row g-3">
+                    {% for reserva in reservas_futuras %}
+                    <div class="col-lg-6 dv-reservation-card-wrapper" id="reserva-card-{{ reserva.pk }}">
+                        <div class="dv-card-wide dv-reservation-card p-3 p-sm-4">
+                            <div class="d-flex flex-column flex-sm-row gap-3 align-items-start align-items-sm-center">
+                                <div class="dv-reservation-card__poster">
+                                    <img src="{% if reserva.sessao.filme.cartaz %}{{ reserva.sessao.filme.cartaz.url }}{% elif reserva.sessao.filme.cartaz_url %}{{ reserva.sessao.filme.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ reserva.sessao.filme.titulo }}">
+                                </div>
+                                <div class="flex-grow-1 w-100">
+                                    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                                        <h4 class="mb-1 fs-5">
+                                            <a href="{% url 'didacta:film_detail' reserva.sessao.filme.pk %}" class="text-white text-decoration-none">
+                                                {{ reserva.sessao.filme.titulo }}
+                                            </a>
+                                        </h4>
+                                        <span class="dv-status {% if reserva.status == 'reservado' %}neutral{% elif reserva.status == 'presente' %}success{% else %}warning{% endif %}">
+                                            {{ reserva.get_status_display }}
+                                        </span>
+                                    </div>
+                                    <div class="dv-meta my-2">
+                                        <span><i class="bi bi-calendar3 me-1"></i> {{ reserva.sessao.data_hora|date:'d/m/Y às H:i' }}</span>
+                                        <span><i class="bi bi-geo-alt me-1"></i> {{ reserva.sessao.local }}</span>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-3 justify-content-between align-items-center flex-wrap">
+                                        <a href="{% url 'didacta:film_detail' reserva.sessao.filme.pk %}" class="dv-btn ghost sm flex-grow-1 flex-sm-grow-0 justify-content-center">
+                                            <i class="bi bi-film me-1"></i> Detalhes do Filme
+                                        </a>
+                                        {% if reserva.status == 'reservado' or reserva.status == 'presente' %}
+                                        <button type="button" class="dv-btn danger sm js-btn-cancelar-reserva flex-grow-1 flex-sm-grow-0 justify-content-center"
+                                                data-url="{% url 'didacta:reservation_cancel' reserva.pk %}"
+                                                data-film-title="{{ reserva.sessao.filme.titulo }}">
+                                            <i class="bi bi-x-circle me-1"></i> Cancelar Reserva
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="dv-empty">
+                    <i class="bi bi-calendar-check" style="font-size:2.5rem;color:rgba(255,255,255,0.25);"></i>
+                    <h4 class="mt-2">Você não possui sessões futuras agendadas</h4>
+                    <p class="text-muted">Acesse o catálogo para encontrar filmes em cartaz e garantir sua vaga.</p>
+                    <a href="{% url 'didacta:index' %}#catalogo" class="dv-btn primary mt-2">Explorar Catálogo</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ABA: HISTÓRICO -->
+            <div class="tab-pane fade" id="historico" role="tabpanel" aria-labelledby="historico-tab">
+                {% if reservas_passadas %}
+                <div class="dv-table-wrapper">
+                    <table class="dv-table dv-table-responsive">
+                        <thead>
+                            <tr>
+                                <th>Filme</th>
+                                <th>Data e Hora</th>
+                                <th>Local</th>
+                                <th>Situação de Presença</th>
+                                <th style="text-align:right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reserva in reservas_passadas %}
+                            <tr>
+                                <td data-label="Filme" class="dv-table-col-title">
+                                    <strong class="text-white">{{ reserva.sessao.filme.titulo }}</strong>
+                                </td>
+                                <td data-label="Data e Hora">{{ reserva.sessao.data_hora|date:'d/m/Y H:i' }}</td>
+                                <td data-label="Local"><i class="bi bi-geo-alt me-1 text-danger"></i>{{ reserva.sessao.local }}</td>
+                                <td data-label="Situação de Presença">
+                                    <span class="dv-status {% if reserva.status == 'presente' %}success{% elif reserva.status == 'falta_justificada' %}warning{% else %}danger{% endif %}">
+                                        {{ reserva.get_status_display }}
+                                    </span>
+                                </td>
+                                <td data-label="Ações" class="dv-table-col-actions" style="text-align:right;">
+                                    <a href="{% url 'didacta:film_detail' reserva.sessao.filme.pk %}#forum" class="dv-btn ghost sm">
+                                        <i class="bi bi-chat-dots me-1"></i> Fórum do Filme
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="dv-empty">
+                    <i class="bi bi-archive" style="font-size:2.5rem;color:rgba(255,255,255,0.25);"></i>
+                    <h4 class="mt-2">Seu histórico de sessões anteriores está vazio</h4>
+                    <p class="text-muted">Assim que você participar das exibições, o registro de presenças ficará disponível aqui.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="dv-empty">
+            <i class="bi bi-ticket-perforated" style="font-size:3rem;color:rgba(255,255,255,0.25);"></i>
+            <h3 class="mt-3">Você ainda não realizou nenhuma reserva</h3>
+            <p class="text-muted">Escolha um filme em cartaz, reserve sua vaga gratuitamente e participe dos debates científicos.</p>
+            <a class="dv-btn primary mt-2" href="{% url 'didacta:index' %}#catalogo">
+                <i class="bi bi-collection-play me-1"></i> Explorar Filmes em Cartaz
+            </a>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
