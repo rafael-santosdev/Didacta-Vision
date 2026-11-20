@@ -101,7 +101,7 @@ def send_verification_email(recipient_list, subject, body):
             return True, None
         # Se Mailgun falhou e está configurado como único, não tenta SMTP
         if getattr(settings, 'EMAIL_MAILGUN_ONLY', False):
-            return False, 'Envio por e-mail temporariamente indisponível. Use o código temporário na próxima tela.'
+            return False, 'Envio por e-mail temporariamente indisponível. Tente novamente mais tarde.'
 
     # 2) Tentar SMTP (com timeout para não travar em redes que bloqueiam a porta)
     if getattr(settings, 'EMAIL_HOST_USER', None) and getattr(settings, 'EMAIL_HOST_PASSWORD', None):
@@ -112,7 +112,7 @@ def send_verification_email(recipient_list, subject, body):
             logger.warning('Falha ao enviar via SMTP: %s', e)
             # Se Mailgun não foi tentado antes, tentar como fallback
             if not getattr(settings, 'EMAIL_MAILGUN_API_KEY', None):
-                return False, str(e) or 'Falha no envio. Use o código temporário na próxima tela.'
-            return False, str(e) or 'Falha no envio. Use o código temporário na próxima tela.'
+                return False, str(e) or 'Falha no envio. Tente novamente mais tarde.'
+            return False, str(e) or 'Falha no envio. Tente novamente mais tarde.'
 
-    return False, 'Envio de e-mail não configurado. Use o código temporário na próxima tela.'
+    return False, 'Envio de e-mail não configurado. Configure o serviço e tente novamente.'

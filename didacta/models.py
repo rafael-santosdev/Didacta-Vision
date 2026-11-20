@@ -41,6 +41,7 @@ class UserManager(BaseUserManager):
         if not username:
             username = email if email else 'admin'
 
+        extra_fields.setdefault('nome_completo', username)
         return self.create_user(username=username, email=email, password=password, **extra_fields)
 
 class User(AbstractUser):
@@ -87,7 +88,7 @@ class User(AbstractUser):
     updated_at = models.DateTimeField('Atualizado em', auto_now=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['nome_completo']
+    REQUIRED_FIELDS = ['username']
 
     objects = UserManager()
 

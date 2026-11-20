@@ -1,10 +1,17 @@
+from unittest.mock import patch
+
+from django.core.management import call_command
 from django.test import TestCase, Client
+from django.test import override_settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.urls import reverse
 from datetime import timedelta
 
-from .models import Film, Session, Reservation, ForumComment, Notification, HelpTicket
+from .models import (
+    Film, Session, Reservation, ForumComment, Notification, HelpTicket,
+    EmailVerificationCode,
+)
 
 User = get_user_model()
 
@@ -467,6 +474,127 @@ class AjaxInteractionsTest(TestCase):
         res = self.client.get(reverse('didacta:index'), {'q': 'Interstellar'})
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, 'Interstellar')
+
+
+class RegistrationWithoutEmailVerificationTest(TestCase):
+    @patch('didacta.views.send_verification_email')
+    def test_registration_activates_account_without_email_code(self, send_email):
+        response = self.client.post(reverse('didacta:register'), {
+            'nome_completo': 'Nova Pessoa',
+            'email': 'nova@example.com',
+            'telefone': '',
+            'tipo_usuario': 'aluno',
+            'password1': 'NovaSenha123',
+            'password2': 'NovaSenha123',
+        })
+
+        self.assertRedirects(response, reverse('didacta:login'))
+        user = User.objects.get(email='nova@example.com')
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.email_verificado)
+        self.assertFalse(EmailVerificationCode.objects.filter(usuario=user).exists())
+        send_email.assert_not_called()
+        self.assertEqual(self.client.get('/verify-code/').status_code, 404)
+        self.assertTrue(self.client.login(email=user.email, password='NovaSenha123'))
+        self.assertEqual(self.client.get(reverse('didacta:profile')).status_code, 200)
+
+    def test_unverified_email_no_longer_blocks_active_account(self):
+        user = User.objects.create_user(
+            username='legacyuser',
+            email='legacy@example.com',
+            password='LegacySenha123',
+            nome_completo='Conta Pendente',
+            is_active=True,
+            email_verificado=False,
+        )
+
+        self.assertTrue(self.client.login(email=user.email, password='LegacySenha123'))
+        self.assertEqual(self.client.get(reverse('didacta:profile')).status_code, 200)
+
+    @override_settings(DEBUG=False)
+    @patch('didacta.views.send_verification_email', return_value=(False, 'SMTP indisponível'))
+    def test_password_reset_does_not_expose_code_when_email_fails(self, send_email):
+        user = User.objects.create_user(
+            username='resetuser',
+            email='reset@example.com',
+            password='ResetSenha123',
+            nome_completo='Conta de Recuperação',
+        )
+
+        response = self.client.post(reverse('didacta:password_reset_request'), {
+            'email': user.email,
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Use o código abaixo')
+        self.assertNotIn('password_reset_user_id', response.wsgi_request.session)
+        self.assertFalse(EmailVerificationCode.objects.filter(usuario=user).exists())
+        send_email.assert_called_once()
+
+
+class AdminEmailOrUsernameLoginTest(TestCase):
+    def setUp(self):
+        self.username = 'root-admin'
+        self.email = 'root-admin@example.com'
+        self.password = 'AdminSenha123'
+        self.admin = User.objects.create_superuser(
+            username=self.username,
+            email=self.email,
+            password=self.password,
+            nome_completo='Administrador de Teste',
+        )
+
+    def test_admin_login_displays_email_or_username(self):
+        response = Client().get(reverse('admin:login'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'E-mail ou usuário')
+
+    def test_admin_login_accepts_email_and_username(self):
+        for identificador in (self.email, self.username):
+            client = Client()
+            response = client.post(reverse('admin:login'), {
+                'username': identificador,
+                'password': self.password,
+            })
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(
+                client.get(reverse('admin:index')).status_code,
+                200,
+            )
+
+    def test_admin_creation_form_explains_both_login_identifiers(self):
+        client = Client()
+        client.force_login(self.admin)
+        response = client.get(reverse('admin:didacta_user_add'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'Informe o e-mail e o nome de usuário. Ambos podem ser usados no login.',
+        )
+
+    def test_createsuperuser_accepts_email_and_username_separately(self):
+        email = 'cli-admin@example.com'
+        username = 'cli-admin'
+        password = 'CreateAdminSenha123'
+
+        with patch.dict('os.environ', {
+            'DJANGO_SUPERUSER_PASSWORD': password,
+        }):
+            call_command(
+                'createsuperuser',
+                interactive=False,
+                email=email,
+                username=username,
+            )
+
+        created = User.objects.get(email=email)
+        self.assertEqual(created.username, username)
+        self.assertEqual(created.nome_completo, username)
+        self.assertTrue(created.is_superuser)
+        self.assertTrue(created.check_password(password))
 
 
 

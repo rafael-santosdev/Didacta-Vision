@@ -1,9 +1,20 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.admin.forms import AdminAuthenticationForm
 from .models import (
     User, Film, Session, Reservation, ForumComment, Notification, HelpTicket,
     EmailVerificationCode
 )
+
+
+class EmailOuUsuarioAdminAuthenticationForm(AdminAuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = 'E-mail ou usuário'
+
+
+admin.site.login_form = EmailOuUsuarioAdminAuthenticationForm
+
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -31,6 +42,7 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('nome_completo', 'password1', 'password2'),
         }),
         ('Informações Adicionais', {
+            'description': 'Informe o e-mail e o nome de usuário. Ambos podem ser usados no login.',
             'fields': ('username', 'email', 'telefone', 'data_nascimento', 'tipo_usuario', 'is_admin', 'token_acesso', 'foto_perfil')
         }),
     )

@@ -19,9 +19,9 @@ O **Didacta-Vision** é um sistema web desenvolvido para apoiar o projeto de ext
 
 Link do Projeto no Figma: https://www.figma.com/design/x5HZ5erW9YcUf0RG3AK78u/Didacta-Vision?node-id=0-1&p=f&t=c4CgvDEdQZ8LHJxc-0
 
-## Envio de e-mail (código de verificação)
+## Envio de e-mail (recuperação de senha)
 
-O sistema envia o código de verificação por e-mail no cadastro e na recuperação de senha. Em redes que bloqueiam SMTP (por exemplo, rede do IFRN), o envio pode falhar; nesses casos, o usuário pode usar o **código temporário** exibido na tela de verificação (acesso provisório por 1 hora).
+O cadastro de usuário não exige confirmação por e-mail. O sistema envia um código por e-mail somente na recuperação de senha; esse código confirma o acesso à conta antes de permitir a troca da senha.
 
 ### Configuração recomendada
 
@@ -47,7 +47,7 @@ Variáveis no `.env` (e-mail):
 ### E-mail não chega (nem na rede de casa)
 
 1. **Confirme o `.env`**  
-   O envio só acontece se `EMAIL_HOST_USER` e `EMAIL_HOST_PASSWORD` estiverem definidos (ou Mailgun configurado). Sem isso, o sistema não envia e você deve usar o **código temporário** na tela de verificação.
+   O envio só acontece se `EMAIL_HOST_USER` e `EMAIL_HOST_PASSWORD` estiverem definidos (ou Mailgun configurado). Sem isso, a recuperação de senha por e-mail não estará disponível.
 
 2. **Gmail**  
    - Se a conta tem **verificação em duas etapas**: use uma **Senha de app** em vez da senha normal.  

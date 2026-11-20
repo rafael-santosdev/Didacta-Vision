@@ -35,50 +35,11 @@ def register_view(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False
+            user.is_active = True
+            user.email_verificado = True
             user.save()
-            user.refresh_from_db()
-            
-            import random
-            codigo = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-
-            EmailVerificationCode.objects.create(
-                usuario=user,
-                codigo=codigo
-            )
-
-            subject = 'Código de Verificação - Didacta Vision'
-            body = (
-                f'Olá {user.nome_completo},\n\nBem-vindo ao Didacta Vision!\n\n'
-                f'Seu código de verificação é: {codigo}\n\n'
-                f'Este código é válido por 10 minutos.\n\n'
-                'Use este código para verificar sua conta e fazer login.'
-            )
-            recipient_list = [user.email] if user.email else []
-            enviado, erro = send_verification_email(recipient_list, subject, body)
-
-            if enviado:
-                messages.success(
-                    request,
-                    f'Conta criada com sucesso! Código de verificação enviado para {user.email}. '
-                    'Se não receber em 2–3 minutos, confira a pasta de spam ou use o código temporário na próxima tela.'
-                )
-                request.session.pop('email_entrega_falhou', None)
-            else:
-                request.session['email_entrega_falhou'] = True
-                if user.email:
-                    msg = (
-                        'Conta criada! O e-mail pode não ter sido entregue. '
-                        'Use o código temporário na próxima tela para acessar.'
-                    )
-                    if settings.DEBUG and erro:
-                        msg += f' (Detalhe: {erro})'
-                    messages.warning(request, msg)
-                else:
-                    messages.success(request, f'Conta criada com sucesso! Seu código de verificação é: {codigo}')
-
-            request.session['verification_user_id'] = user.id
-            return redirect('didacta:verify_code')
+            messages.success(request, 'Conta criada com sucesso! Faça login com suas credenciais.')
+            return redirect('didacta:login')
     else:
         form = CustomUserCreationForm()
 
@@ -104,7 +65,7 @@ def login_view(request):
         
         if user_found and user_found.check_password(password):
             if not user_found.is_active:
-                messages.error(request, 'Sua conta ainda não foi verificada. Complete o processo de verificação para fazer login.')
+                messages.error(request, 'Esta conta está inativa. Entre em contato com o suporte.')
                 return render(request, 'didacta/autenticacao/login.html')
             
             login(request, user_found, backend='didacta.autenticacao_backend.NomeOrEmailBackend')
@@ -117,105 +78,6 @@ def login_view(request):
             messages.error(request, 'Dados de conta de usuário não encontrados.')
 
     return render(request, 'didacta/autenticacao/login.html')
-
-def verify_code_view(request):
-    user_id = request.session.get('verification_user_id')
-
-    if not user_id:
-        messages.error(request, 'Sessão expirada. Por favor, faça login novamente.')
-        return redirect('didacta:login')
-
-    try:
-        user = User.objects.get(pk=user_id)
-    except User.DoesNotExist:
-        messages.error(request, 'Usuário não encontrado.')
-        del request.session['verification_user_id']
-        return redirect('didacta:login')
-
-    import random
-    codigo_temporario = request.session.get('codigo_temporario')
-    if not codigo_temporario:
-        codigo_temporario = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-        request.session['codigo_temporario'] = codigo_temporario
-
-    if request.method == 'POST':
-        codigo = request.POST.get('codigo', '').strip()
-        usar_acesso_provisorio = request.POST.get('acesso_provisorio') == '1'
-
-        if not codigo:
-            messages.error(request, 'Por favor, informe o código de verificação.')
-            return render(request, 'didacta/autenticacao/verify_code.html', {
-                'user': user,
-                'codigo_temporario': codigo_temporario
-            })
-
-        if usar_acesso_provisorio and codigo == codigo_temporario:
-            from datetime import timedelta
-            user.is_active = True
-            user.acesso_provisorio_expira = timezone.now() + timedelta(hours=1)
-            user.save()
-            
-            del request.session['verification_user_id']
-            if 'codigo_temporario' in request.session:
-                del request.session['codigo_temporario']
-            
-            login(request, user, backend='didacta.autenticacao_backend.NomeOrEmailBackend')
-            messages.warning(request, 
-                'Acesso provisório ativado! Você tem aproximadamente 1 hora para usar o sistema. '
-                'Para continuar usando após esse período, verifique seu e-mail.'
-            )
-            return redirect('didacta:index')
-
-        codigo_obj = EmailVerificationCode.objects.filter(
-            usuario=user,
-            codigo=codigo,
-            usado=False
-        ).order_by('-created_at').first()
-
-        if codigo_obj and codigo_obj.is_valid():
-            codigo_obj.usado = True
-            codigo_obj.save()
-            
-            user.is_active = True
-            user.email_verificado = True
-            user.acesso_provisorio_expira = None
-            user.save()
-
-            del request.session['verification_user_id']
-            if 'codigo_temporario' in request.session:
-                del request.session['codigo_temporario']
-
-            messages.success(request, 'E-mail verificado com sucesso! Faça login com suas credenciais.')
-            return redirect('didacta:login')
-        else:
-            messages.error(request, 'Código inválido ou expirado. Por favor, tente novamente.')
-
-    email_entrega_falhou = request.session.pop('email_entrega_falhou', False)
-
-    return render(request, 'didacta/autenticacao/verify_code.html', {
-        'user': user,
-        'codigo_temporario': codigo_temporario,
-        'email_entrega_falhou': email_entrega_falhou,
-    })
-
-def cancel_verification_view(request):
-    user_id = request.session.get('verification_user_id')
-    
-    if user_id:
-        try:
-            user = User.objects.get(pk=user_id)
-            if not user.is_active:
-                user.delete()
-        except User.DoesNotExist:
-            pass
-        
-        if 'verification_user_id' in request.session:
-            del request.session['verification_user_id']
-        if 'codigo_temporario' in request.session:
-            del request.session['codigo_temporario']
-    
-    messages.warning(request, 'Processo de cadastro cancelado. A verificação não foi concluída.')
-    return redirect('didacta:login')
 
 def logout_view(request):
     if request.user.is_authenticated:
@@ -244,7 +106,7 @@ def password_reset_request(request):
             import random
             codigo = ''.join([str(random.randint(0, 9)) for _ in range(6)])
 
-            EmailVerificationCode.objects.create(
+            codigo_obj = EmailVerificationCode.objects.create(
                 usuario=user,
                 codigo=codigo
             )
@@ -266,10 +128,12 @@ def password_reset_request(request):
                     'Se não receber em 2–3 minutos, confira a pasta de spam.'
                 )
             else:
-                msg = f'O e-mail pode não ter sido entregue. Use o código abaixo para continuar: {codigo}'
+                codigo_obj.delete()
+                msg = 'Não foi possível enviar o código de recuperação. Tente novamente mais tarde.'
                 if settings.DEBUG and erro:
                     msg += f' (Detalhe: {erro})'
-                messages.warning(request, msg)
+                messages.error(request, msg)
+                return render(request, 'didacta/autenticacao/password_reset_request.html')
 
             request.session['password_reset_user_id'] = user.id
             return redirect('didacta:password_reset_verify')
