@@ -789,9 +789,27 @@
     function initTrailerModal() {
         function getYouTubeId(url) {
             if (!url) return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+
+            try {
+                const parsedUrl = new URL(url, window.location.origin);
+                const hostname = parsedUrl.hostname.toLowerCase().replace(/^www\./, '');
+                let videoId = null;
+
+                if (hostname === 'youtu.be') {
+                    videoId = parsedUrl.pathname.split('/').filter(Boolean)[0];
+                } else if (['youtube.com', 'm.youtube.com', 'music.youtube.com'].includes(hostname)) {
+                    if (parsedUrl.pathname === '/watch') {
+                        videoId = parsedUrl.searchParams.get('v');
+                    } else {
+                        const match = parsedUrl.pathname.match(/^\/(?:embed|shorts|live|v)\/([^/]+)/);
+                        videoId = match && match[1];
+                    }
+                }
+
+                return videoId && /^[\w-]{11}$/.test(videoId) ? videoId : null;
+            } catch (error) {
+                return null;
+            }
         }
 
         addDocumentListener('trailer-click', 'click', (e) => {
@@ -839,14 +857,14 @@
 
             trailerModalEl.querySelector('#dvTrailerModalTitle').textContent = filmTitle;
             const container = trailerModalEl.querySelector('#dvTrailerPlayerContainer');
-            container.innerHTML = `
-                <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
-                        title="${filmTitle}" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                </iframe>
-            `;
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0`;
+            iframe.title = filmTitle;
+            iframe.setAttribute('frameborder', '0');
+            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+            iframe.setAttribute('allowfullscreen', '');
+            iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+            container.replaceChildren(iframe);
 
             const bsTrailerModal = bootstrap.Modal.getOrCreateInstance(trailerModalEl);
             bsTrailerModal.show();

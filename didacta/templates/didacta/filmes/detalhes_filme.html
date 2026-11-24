@@ -3,22 +3,18 @@
 
 {% block title %}{{ filme.titulo }} - Didacta Vision{% endblock %}
 
-{% block breadcrumb %}
-<nav class="dv-breadcrumb-nav container-xl" aria-label="Você está em:">
-    <ol class="dv-breadcrumbs">
-        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}"><i class="bi bi-house-door me-1"></i> Início</a></li>
-        <li class="dv-breadcrumbs__item"><a href="{% url 'didacta:index' %}#catalogo">Catálogo de Filmes</a></li>
-        <li class="dv-breadcrumbs__item is-active" aria-current="page">{{ filme.titulo }}</li>
-    </ol>
-</nav>
-{% endblock %}
-
 {% block content %}
 <div class="container-xl">
+    {% if user.is_authenticated and user.is_admin_or_professor and request.GET.from_admin == '1' %}
+    <a href="{% url 'didacta:film_list_admin' %}?page={{ request.GET.page }}" class="dv-btn ghost sm mb-3" aria-label="Voltar para Gerenciar Filmes">
+        <i class="bi bi-arrow-left me-1"></i> Voltar
+    </a>
+    {% endif %}
+
     <!-- HERO COMPACTO DO FILME -->
     <section class="dv-detail-hero">
         <div class="dv-detail-hero__backdrop">
-            <img src="{% if filme.cartaz %}{{ filme.cartaz.url }}{% elif filme.cartaz_url %}{{ filme.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ filme.titulo }}">
+            <img src="{% if filme.cartaz_horizontal %}{{ filme.cartaz_horizontal.url }}{% else %}{% static 'css/img/fundo.jpg' %}{% endif %}" alt="{{ filme.titulo }}">
             <div class="dv-detail-hero__overlay"></div>
         </div>
         <div class="dv-detail-hero__content">
@@ -53,9 +49,6 @@
                             <i class="bi bi-calendar-event me-1"></i> Ver Sessões Disponíveis
                         </a>
                         {% if user.is_authenticated and user.is_admin_or_professor %}
-                        <button type="button" class="dv-btn ghost js-session-create" data-url="{% url 'didacta:ajax_session_create' %}?filme_id={{ filme.pk }}">
-                            <i class="bi bi-calendar-plus me-1"></i> Nova Sessão
-                        </button>
                         <button type="button" class="dv-btn ghost js-film-modal-trigger js-film-edit" data-url="{% url 'didacta:ajax_film_edit' filme.pk %}">
                             <i class="bi bi-pencil me-1"></i> Editar Filme
                         </button>
@@ -73,11 +66,11 @@
     </section>
 
     <!-- SEÇÃO UNIFICADA DE SESSÕES (SEM DUPLICAÇÕES) -->
-    <section id="sessoes" class="dv-section">
+    <section id="sessoes" class="dv-section dv-film-detail-section">
         <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
             <div>
                 <span class="dv-badge"><i class="bi bi-calendar3 me-1"></i> Agenda do Filme</span>
-                <h2 class="dv-section__title">Sessões Programadas</h2>
+                <h2 class="dv-section__title mt-2">Sessões Programadas</h2>
                 <p class="dv-section__subtitle">Consulte as sessões disponíveis e escolha onde deseja participar.</p>
             </div>
             {% if user.is_authenticated and user.is_admin_or_professor %}
@@ -156,11 +149,11 @@
     </section>
 
     <!-- FÓRUM DE DISCUSSÃO CIENTÍFICA INTEGRADO -->
-    <section class="dv-section my-5" id="forum">
+    <section class="dv-section my-5 dv-film-detail-section" id="forum">
         <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
             <div>
                 <span class="dv-badge dv-badge--primary"><i class="bi bi-chat-dots me-1"></i> Fórum Científico</span>
-                <h2 class="dv-section__title">Discussões e Reflexões</h2>
+                <h2 class="dv-section__title mt-2">Discussões e Reflexões</h2>
                 <p class="dv-section__subtitle">Espaço exclusivo para alunos e professores debaterem as temáticas científicas abordadas no filme.</p>
             </div>
         </div>

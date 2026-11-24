@@ -493,6 +493,10 @@ main, section, header, footer {
     background: rgba(255,255,255,0.08);
 }
 
+.dv-navbar__actions .dv-btn.is-current-page {
+    border: 1px solid #fff;
+}
+
 .dv-btn-icon {
     background: transparent;
     border: 1px solid rgba(255,255,255,0.12);
@@ -698,6 +702,26 @@ main, section, header, footer {
     display: none;
 }
 
+.dv-hero__next-session {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -10px 0 0;
+    color: #22c55e;
+}
+
+.dv-hero--featured .dv-hero__overlay {
+    background: linear-gradient(125deg, rgba(0,0,0,0.9) 20%, rgba(0,0,0,0.52) 60%, rgba(0,0,0,0.22) 100%);
+}
+
+.dv-hero#destaque {
+    scroll-margin-top: 100px;
+}
+
+.dv-hero--featured .dv-hero__actions {
+    margin-top: 8px;
+}
+
 .dv-hero__actions {
     display: flex;
     flex-wrap: wrap;
@@ -722,6 +746,15 @@ main, section, header, footer {
     margin-bottom: 18px;
     flex-wrap: wrap;
     gap: 14px;
+}
+
+.dv-admin-sessions .dv-section__header,
+.dv-admin-films .dv-section__header,
+.dv-admin-session-detail .dv-section__header,
+.dv-support-tickets .dv-section__header,
+.dv-notifications .dv-section__header,
+.dv-film-detail-section .dv-section__header {
+    margin-bottom: 32px;
 }
 
 .dv-section__header--centered {
@@ -903,14 +936,6 @@ main, section, header, footer {
     max-height: 600px;
     margin-bottom: clamp(28px, 5vw, 44px);
     width: 100%;
-}
-
-.dv-detail-hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(125deg, rgba(0,0,0,0.95), rgba(0,0,0,0.4));
-    z-index: 1;
 }
 
 .dv-detail-hero img {
@@ -1307,6 +1332,16 @@ main, section, header, footer {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.dv-session-modal-form .dv-form-group {
+    gap: 10px;
+}
+
+.dv-session-modal-form > .dv-form-group + .dv-form-group,
+.dv-session-modal-form > .dv-form-group + .dv-form-grid,
+.dv-session-modal-form > .dv-form-grid + .dv-form-group {
+    margin-top: 4px;
 }
 
 .dv-form .dv-status {
@@ -1781,10 +1816,6 @@ main, section, header, footer {
 
     .dv-detail-hero img {
         filter: brightness(0.6);
-    }
-
-    .dv-detail-hero::before {
-        background: linear-gradient(125deg, rgba(0,0,0,0.92), rgba(0,0,0,0.5));
     }
 
     .dv-detail-hero__content {
@@ -2275,6 +2306,22 @@ main, section, header, footer {
     color: #fff;
     font-size: 1.2rem;
     box-shadow: 0 4px 14px rgba(229, 9, 20, 0.35);
+}
+
+.dv-logo__image {
+    display: block;
+    width: clamp(40px, 8vw, 48px);
+    height: auto;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.dv-logo__image--medium {
+    width: 32px;
+}
+
+.dv-logo__image--small {
+    width: 28px;
 }
 
 .dv-logo__text {
@@ -2782,14 +2829,14 @@ main, section, header, footer {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: blur(28px) brightness(0.25);
-    transform: scale(1.1);
+    filter: blur(4px) brightness(0.65);
+    transform: scale(1.03);
 }
 
 .dv-detail-hero__overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(7,7,18,0.7) 0%, rgba(7,7,18,0.95) 100%);
+    background: linear-gradient(180deg, rgba(7,7,18,0.38) 0%, rgba(7,7,18,0.68) 100%);
 }
 
 .dv-detail-hero__content {
@@ -3545,12 +3592,34 @@ main, section, header, footer {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 14px 18px;
+    position: relative;
+    padding: 14px 58px 14px 18px;
     border-radius: var(--radius-md);
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: #0d0d1f;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     margin-bottom: 12px;
+}
+
+.dv-alert.alert-dismissible .dv-alert__dismiss {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    box-sizing: border-box;
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+    transform: translateY(-50%);
+}
+
+.dv-alert.alert-dismissible .dv-alert__dismiss:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.dv-alert.alert-dismissible .dv-alert__dismiss:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.7);
+    outline-offset: 2px;
 }
 
 .dv-alert__icon {
@@ -3871,5 +3940,106 @@ main, section, header, footer {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+    }
+}
+
+.dv-hero__actions .dv-welcome-login,
+.dv-welcome-signup-label--mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .dv-navbar__actions > .d-flex .dv-btn.ghost {
+        display: none;
+    }
+
+    .dv-navbar__actions .dv-navbar__register {
+        display: none;
+    }
+
+    .dv-hero--welcome-guest {
+        min-height: 0;
+    }
+
+    .dv-hero--welcome .dv-hero__actions--guest {
+        width: 100%;
+        max-width: 360px;
+        margin: 16px auto 0;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .dv-hero--welcome .dv-hero__actions--guest .dv-btn {
+        box-sizing: border-box;
+        flex: 0 0 auto;
+        width: 100%;
+        height: 48px;
+        min-height: 48px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+
+    .dv-hero__actions .dv-welcome-login,
+    .dv-welcome-signup-label--mobile {
+        display: inline-flex;
+    }
+
+    .dv-welcome-signup-label--desktop {
+        display: none;
+    }
+
+    .dv-hero--welcome .dv-btn--login-outline {
+        background: transparent;
+        border: 1px solid hsl(var(--primary));
+        color: #fff;
+        box-shadow: none;
+    }
+
+    .dv-hero--welcome .dv-btn--login-outline:hover {
+        background: rgba(229, 9, 20, 0.12);
+    }
+}
+
+@media (max-width: 768px) {
+    .dv-footer__brand {
+        width: 100%;
+        text-align: center;
+    }
+
+    .dv-footer__brand > div {
+        justify-content: center;
+    }
+
+    .dv-footer__brand > p {
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .dv-footer__links {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .dv-footer__col {
+        align-items: center;
+    }
+
+    .dv-footer__bottom {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .dv-hero--featured .dv-hero__actions {
+        margin-top: auto;
+    }
+
+    .dv-hero#destaque {
+        scroll-margin-top: 80px;
     }
 }

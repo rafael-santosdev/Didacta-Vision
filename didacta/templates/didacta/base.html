@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20261120-7">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20261124-21">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="dv-body">
@@ -23,9 +23,7 @@
         <div class="dv-navbar__inner">
             <!-- LOGO DA PLATAFORMA -->
             <a href="{% url 'didacta:index' %}" class="dv-logo" title="Didacta Vision - Início">
-                <span class="dv-logo__icon">
-                    <i class="bi bi-film"></i>
-                </span>
+                <img class="dv-logo__image" src="{% static 'css/img/didacta-vision-logo.png' %}" alt="">
                 <div class="dv-logo__text">
                     <span class="dv-logo__brand">Didacta Vision</span>
                     <span class="dv-logo__badge">IFRN</span>
@@ -72,7 +70,7 @@
                     </a>
                 {% endif %}
 
-                <a href="{% url 'didacta:help_ticket_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'help_ticket_list' or request.resolver_match.url_name == 'help_ticket_detail' or request.resolver_match.url_name == 'help_ticket_create' %}is-active{% endif %}">
+                <a href="{% url 'didacta:help_ticket_list' %}" class="dv-nav__item {% if request.resolver_match.url_name == 'help_ticket_list' or request.resolver_match.url_name == 'help_ticket_detail' or request.resolver_match.url_name == 'help_ticket_create' or not user.is_authenticated and request.resolver_match.url_name == 'login' and request.GET.next|slice:':9' == '/support/' %}is-active{% endif %}">
                     <i class="bi bi-question-circle me-1"></i> Suporte
                 </a>
             </nav>
@@ -111,8 +109,8 @@
                 </div>
                 {% else %}
                 <div class="d-flex align-items-center gap-2">
-                    <a href="{% url 'didacta:login' %}" class="dv-btn ghost sm">Entrar</a>
-                    <a href="{% url 'didacta:register' %}" class="dv-btn primary sm">Criar conta</a>
+                    <a href="{% url 'didacta:login' %}" class="dv-btn ghost sm{% if request.resolver_match.url_name == 'login' and request.GET.next|slice:':9' != '/support/' %} is-current-page{% endif %}"{% if request.resolver_match.url_name == 'login' and request.GET.next|slice:':9' != '/support/' %} aria-current="page"{% endif %}>Entrar</a>
+                    <a href="{% url 'didacta:register' %}" class="dv-btn primary sm dv-navbar__register{% if request.resolver_match.url_name == 'register' %} is-current-page{% endif %}"{% if request.resolver_match.url_name == 'register' %} aria-current="page"{% endif %}>Criar conta</a>
                 </div>
                 {% endif %}
 
@@ -128,7 +126,7 @@
     <div class="offcanvas offcanvas-end dv-offcanvas" tabindex="-1" id="dvMobileMenu" aria-labelledby="dvMobileMenuLabel">
         <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
             <div class="d-flex align-items-center gap-2">
-                <span class="dv-logo__icon" style="width:32px;height:32px;font-size:1rem;"><i class="bi bi-film"></i></span>
+                <img class="dv-logo__image dv-logo__image--medium" src="{% static 'css/img/didacta-vision-logo.png' %}" alt="">
                 <h5 class="offcanvas-title text-white fw-bold mb-0" id="dvMobileMenuLabel">Didacta Vision</h5>
             </div>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
@@ -193,7 +191,7 @@
                             <i class="bi bi-person me-2"></i> Meu Perfil
                         </a>
                     {% endif %}
-                    <a href="{% url 'didacta:help_ticket_list' %}" class="dv-mobile-link {% if request.resolver_match.url_name == 'help_ticket_list' or request.resolver_match.url_name == 'help_ticket_detail' or request.resolver_match.url_name == 'help_ticket_create' %}is-active{% endif %}">
+                    <a href="{% url 'didacta:help_ticket_list' %}" class="dv-mobile-link {% if request.resolver_match.url_name == 'help_ticket_list' or request.resolver_match.url_name == 'help_ticket_detail' or request.resolver_match.url_name == 'help_ticket_create' or not user.is_authenticated and request.resolver_match.url_name == 'login' and request.GET.next|slice:':9' == '/support/' %}is-active{% endif %}">
                         <i class="bi bi-question-circle me-2"></i> Suporte & Ajuda
                     </a>
                 </div>
@@ -224,7 +222,7 @@
         {% if messages %}
         <section class="dv-alerts container-xl px-3" role="region" aria-live="polite">
             {% for message in messages %}
-            <div class="dv-alert {% if 'success' in message.tags %}success{% elif 'error' in message.tags or 'danger' in message.tags %}error{% elif 'warning' in message.tags %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+            <div id="dv-alert-{{ forloop.counter }}" class="dv-alert {% if 'success' in message.tags %}success{% elif 'error' in message.tags or 'danger' in message.tags %}error{% elif 'warning' in message.tags %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
                 <div class="dv-alert__icon">
                     {% if 'success' in message.tags %}
                     <i class="bi bi-check-circle-fill"></i>
@@ -240,7 +238,7 @@
                     <strong>{% if 'success' in message.tags %}Sucesso!{% elif 'error' in message.tags or 'danger' in message.tags %}Atenção!{% elif 'warning' in message.tags %}Aviso!{% else %}Informação:{% endif %}</strong>
                     <p class="mb-0">{{ message }}</p>
                 </div>
-                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                <button type="button" class="btn-close btn-close-white dv-alert__dismiss" data-bs-dismiss="alert" data-bs-target="#dv-alert-{{ forloop.counter }}" aria-label="Fechar"></button>
             </div>
             {% endfor %}
         </section>
@@ -248,9 +246,6 @@
 
         <!-- CONTAINER PRINCIPAL -->
         <main class="dv-main">
-            <!-- BREADCRUMBS GLOBAL -->
-            {% block breadcrumb %}{% endblock %}
-
             {% block content %}{% endblock %}
         </main>
     </div>
@@ -293,7 +288,7 @@
         <div class="dv-footer__inner container-xl">
             <div class="dv-footer__brand">
                 <div class="d-flex align-items-center gap-2 mb-2">
-                    <span class="dv-logo__icon" style="width:28px;height:28px;font-size:0.9rem;"><i class="bi bi-film"></i></span>
+                    <img class="dv-logo__image dv-logo__image--small" src="{% static 'css/img/didacta-vision-logo.png' %}" alt="">
                     <strong class="text-white fs-5">Didacta Vision</strong>
                 </div>
                 <p class="text-muted" style="max-width:380px;font-size:0.9rem;line-height:1.6;">
@@ -339,7 +334,7 @@
 
     <!-- SCRIPTS ESSENCIAIS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/didacta.js' %}?v=20261120-5"></script>
+    <script src="{% static 'js/didacta.js' %}?v=20261124-1"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

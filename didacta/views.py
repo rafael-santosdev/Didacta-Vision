@@ -270,15 +270,7 @@ def index(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    destaque = None
-    if page_obj.object_list and (not page_number or str(page_number) == '1') and not genero and not tema:
-        # Prioriza filme que tenha sessão futura como destaque; senão, o mais recente
-        for f in page_obj.object_list:
-            if f.session_set.exists():
-                destaque = f
-                break
-        if not destaque and page_obj.object_list:
-            destaque = page_obj.object_list[0]
+    destaque = filmes_qs.order_by('-created_at', '-pk').first()
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest' and request.GET.get('format') == 'json':
         filmes_data = []

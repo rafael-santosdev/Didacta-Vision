@@ -6,9 +6,9 @@
 {% block content %}
 <!-- HERO PRINCIPAL -->
 {% if destaque %}
-<section class="dv-hero">
+<section class="dv-hero dv-hero--featured" id="destaque">
     <div class="dv-hero__media">
-        <img class="dv-hero__image" src="{% if destaque.cartaz %}{{ destaque.cartaz.url }}{% elif destaque.cartaz_url %}{{ destaque.cartaz_url }}{% else %}{% static 'css/img/Oppenheimer_poster.jpg' %}{% endif %}" alt="{{ destaque.titulo }}">
+        <img class="dv-hero__image" src="{% if destaque.cartaz_horizontal %}{{ destaque.cartaz_horizontal.url }}{% else %}{% static 'css/img/fundo.jpg' %}{% endif %}" alt="{{ destaque.titulo }}">
         <div class="dv-hero__overlay"></div>
     </div>
     <div class="dv-hero__content container-xl">
@@ -22,10 +22,13 @@
             <span class="dv-tag dv-tag--rating">{{ destaque.get_classificacao_display }}</span>
             <span><i class="bi bi-clock me-1"></i> {{ destaque.duracao }} min</span>
             {% if destaque.genero %}<span><i class="bi bi-tag me-1"></i> {{ destaque.genero }}</span>{% endif %}
-            {% if destaque.session_set.first %}
-            <span class="text-success"><i class="bi bi-calendar3 me-1"></i> Próxima sessão: {{ destaque.session_set.first.data_hora|date:'d/m/Y às H:i' }}</span>
-            {% endif %}
         </div>
+        {% if destaque.session_set.first %}
+        <p class="dv-hero__next-session">
+            <i class="bi bi-calendar3" aria-hidden="true"></i>
+            <span>Próxima sessão: {{ destaque.session_set.first.data_hora|date:'d/m/Y' }} às {{ destaque.session_set.first.data_hora|date:'H:i' }} PM.</span>
+        </p>
+        {% endif %}
         <div class="dv-hero__actions">
             <a class="dv-btn primary" href="{% url 'didacta:film_detail' destaque.pk %}">
                 <i class="bi bi-play-circle me-1"></i> Ver detalhes e sessões
@@ -45,7 +48,7 @@
 </section>
 {% else %}
 <!-- HERO INSTITUCIONAL (QUANDO NÃO HÁ DESTAQUE OU PARA NOVOS VISITANTES) -->
-<section class="dv-hero dv-hero--welcome">
+<section class="dv-hero dv-hero--welcome{% if not user.is_authenticated %} dv-hero--welcome-guest{% endif %}" id="destaque">
     <div class="dv-hero__media">
         <img class="dv-hero__image" src="{% static 'css/img/fundo.jpg' %}" alt="Didacta Vision Cinema">
         <div class="dv-hero__overlay"></div>
@@ -56,13 +59,18 @@
         <p class="dv-hero__lead">
             Participe das exibições audiovisuais do projeto Didacta Vision. Consulte filmes, garanta sua reserva em sessões gratuitas e participe de debates enriquecedores com a comunidade acadêmica.
         </p>
-        <div class="dv-hero__actions justify-content-center">
+        <div class="dv-hero__actions justify-content-center{% if not user.is_authenticated %} dv-hero__actions--guest{% endif %}">
             <a href="#catalogo" class="dv-btn primary">
                 <i class="bi bi-collection-play me-1"></i> Explorar Catálogo
             </a>
             {% if not user.is_authenticated %}
+            <a href="{% url 'didacta:login' %}" class="dv-btn ghost dv-btn--login-outline dv-welcome-login">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+            </a>
             <a href="{% url 'didacta:register' %}" class="dv-btn ghost">
-                <i class="bi bi-person-plus me-1"></i> Criar Conta Gratuita
+                <i class="bi bi-person-plus me-1"></i>
+                <span class="dv-welcome-signup-label--desktop">Criar Conta Gratuita</span>
+                <span class="dv-welcome-signup-label--mobile">Criar Conta</span>
             </a>
             {% elif user.is_admin_or_professor %}
             <button type="button" class="dv-btn ghost js-film-modal-trigger" data-url="{% url 'didacta:ajax_film_create' %}">
@@ -79,7 +87,7 @@
     <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
         <div>
             <span class="dv-badge"><i class="bi bi-film me-1"></i> Programação Oficial</span>
-            <h2 class="dv-section__title">Filmes em Cartaz</h2>
+            <h2 class="dv-section__title mt-2">Filmes em Cartaz</h2>
             <p class="dv-section__subtitle">Escolha um título, veja as datas disponíveis e garanta seu lugar com um clique.</p>
         </div>
         {% if user.is_authenticated and user.is_admin_or_professor %}
@@ -102,13 +110,13 @@
         </div>
         {% if todos_generos or todos_temas %}
         <div class="dv-filter-pills" role="group" aria-label="Filtrar filmes por gênero ou tema">
-            <a href="{% url 'didacta:index' %}#catalogo" class="dv-filter-pill{% if not genero_selecionado and not tema_selecionado %} is-active{% endif %}"{% if not genero_selecionado and not tema_selecionado %} aria-current="page"{% endif %}>Todos</a>
+            <a href="{% url 'didacta:index' %}#destaque" class="dv-filter-pill{% if not genero_selecionado and not tema_selecionado %} is-active{% endif %}"{% if not genero_selecionado and not tema_selecionado %} aria-current="page"{% endif %}>Todos</a>
             {% for genero in todos_generos %}
-            <a href="?genero={{ genero|urlencode }}#catalogo" class="dv-filter-pill{% if genero_selecionado|lower == genero|lower %} is-active{% endif %}"{% if genero_selecionado|lower == genero|lower %} aria-current="page"{% endif %}>{{ genero }}</a>
+            <a href="?genero={{ genero|urlencode }}#destaque" class="dv-filter-pill{% if genero_selecionado|lower == genero|lower %} is-active{% endif %}"{% if genero_selecionado|lower == genero|lower %} aria-current="page"{% endif %}>{{ genero }}</a>
             {% endfor %}
             {% for tema in todos_temas %}
             {% if tema not in todos_generos %}
-            <a href="?tema={{ tema|urlencode }}#catalogo" class="dv-filter-pill{% if tema_selecionado|lower == tema|lower %} is-active{% endif %}"{% if tema_selecionado|lower == tema|lower %} aria-current="page"{% endif %}>{{ tema }}</a>
+            <a href="?tema={{ tema|urlencode }}#destaque" class="dv-filter-pill{% if tema_selecionado|lower == tema|lower %} is-active{% endif %}"{% if tema_selecionado|lower == tema|lower %} aria-current="page"{% endif %}>{{ tema }}</a>
             {% endif %}
             {% endfor %}
         </div>

@@ -134,14 +134,14 @@ class PasswordChangeForm(forms.Form):
 class FilmForm(forms.ModelForm):
     class Meta:
         model = Film
-        fields = ('titulo', 'sinopse', 'duracao', 'classificacao', 'cartaz', 'cartaz_url', 'trailer_url', 'genero', 'tema', 'ativo')
+        fields = ('titulo', 'sinopse', 'duracao', 'classificacao', 'cartaz', 'cartaz_horizontal', 'trailer_url', 'genero', 'tema', 'ativo')
         widgets = {
             'titulo': forms.TextInput(attrs={'class': 'form-control'}),
             'sinopse': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
             'duracao': forms.NumberInput(attrs={'class': 'form-control'}),
             'classificacao': forms.Select(attrs={'class': 'form-control'}),
             'cartaz': forms.FileInput(attrs={'class': 'form-control'}),
-            'cartaz_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'cartaz_horizontal': forms.FileInput(attrs={'class': 'form-control'}),
             'trailer_url': forms.URLInput(attrs={'class': 'form-control'}),
             'genero': forms.TextInput(attrs={'class': 'form-control'}),
             'tema': forms.TextInput(attrs={'class': 'form-control'}),
@@ -153,18 +153,19 @@ class FilmForm(forms.ModelForm):
         self.fields['genero'].required = True
         self.fields['trailer_url'].required = True
         self.fields['tema'].required = True
-        if not self.instance or not self.instance.pk:
-            self.fields['cartaz'].required = True
-        else:
-            self.fields['cartaz'].required = False
+        for field_name in ('cartaz', 'cartaz_horizontal'):
+            self.fields[field_name].required = not (
+                self.instance.pk and getattr(self.instance, field_name)
+            )
 
     def save(self, commit=True):
         filme = super().save(commit=False)
-        if self.instance and self.instance.pk:
-            if 'cartaz' in self.files:
-                filme.cartaz = self.files['cartaz']
-            elif self.instance.cartaz:
-                filme.cartaz = self.instance.cartaz
+        if self.instance.pk:
+            for field_name in ('cartaz', 'cartaz_horizontal'):
+                if field_name in self.files:
+                    setattr(filme, field_name, self.files[field_name])
+                else:
+                    setattr(filme, field_name, getattr(self.instance, field_name))
         if commit:
             filme.save()
         return filme

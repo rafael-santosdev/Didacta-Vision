@@ -73,7 +73,7 @@
 
             <div class="dv-form-grid two">
                 <div class="dv-form-group">
-                    <label for="{{ form.cartaz.id_for_label }}">Cartaz (imagem) {% if not object %}*{% endif %}</label>
+                    <label for="{{ form.cartaz.id_for_label }}">Cartaz Vertical *</label>
                     {% if object and object.cartaz %}
                     <div style="margin-bottom:12px;">
                         <img src="{{ object.cartaz.url }}" alt="{{ object.titulo }}" style="max-width:200px;max-height:300px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);">
@@ -83,8 +83,14 @@
                     {{ form.cartaz }}
                 </div>
                 <div class="dv-form-group">
-                    <label for="{{ form.cartaz_url.id_for_label }}">URL do cartaz</label>
-                    {{ form.cartaz_url }}
+                    <label for="{{ form.cartaz_horizontal.id_for_label }}">Cartaz Horizontal *</label>
+                    {% if object and object.cartaz_horizontal %}
+                    <div style="margin-bottom:12px;">
+                        <img src="{{ object.cartaz_horizontal.url }}" alt="Cartaz horizontal de {{ object.titulo }}" style="max-width:240px;max-height:135px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);">
+                        <p class="text-muted" style="margin-top:8px;font-size:0.85rem;">Imagem atual. Deixe em branco para manter ou selecione uma nova para substituir.</p>
+                    </div>
+                    {% endif %}
+                    {{ form.cartaz_horizontal }}
                 </div>
             </div>
 

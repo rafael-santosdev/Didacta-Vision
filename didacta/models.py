@@ -129,11 +129,16 @@ class Film(models.Model):
         default='L'
     )
     cartaz = models.ImageField(
-        'Cartaz',
+        'Cartaz Vertical',
         upload_to='filmes/cartazes/',
-        blank=True,
         null=True,
-        help_text='Imagem do cartaz do filme'
+        help_text='Imagem vertical do cartaz do filme'
+    )
+    cartaz_horizontal = models.ImageField(
+        'Cartaz Horizontal',
+        upload_to='filmes/cartazes/horizontais/',
+        null=True,
+        help_text='Imagem horizontal usada como fundo nas páginas do filme'
     )
     cartaz_url = models.URLField(
         'URL do Cartaz',

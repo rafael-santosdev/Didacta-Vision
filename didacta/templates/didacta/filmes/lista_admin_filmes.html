@@ -15,11 +15,11 @@
 
 {% block content %}
 <div class="container-xl">
-    <section class="dv-section">
+    <section class="dv-section dv-admin-films">
         <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
             <div>
                 <span class="dv-badge dv-badge--primary"><i class="bi bi-shield-lock me-1"></i> Gestão do Catálogo</span>
-                <h1 class="dv-section__title">Gerenciar Filmes</h1>
+                <h1 class="dv-section__title mt-2">Gerenciar Filmes</h1>
                 <p class="dv-section__subtitle">Cadastre novos títulos, atualize fichas técnicas e gerencie a visibilidade no catálogo.</p>
             </div>
             <div class="d-flex gap-2">
@@ -73,7 +73,7 @@
                         </td>
                         <td data-label="Ações" class="dv-table-col-actions" style="text-align:right;">
                             <div class="d-inline-flex gap-1 justify-content-end flex-wrap">
-                                <a href="{% url 'didacta:film_detail' filme.pk %}" class="dv-btn ghost sm" title="Visualizar página">
+                                <a href="{% url 'didacta:film_detail' filme.pk %}?from_admin=1&amp;page={{ page_obj.number }}" class="dv-btn ghost sm" title="Visualizar página">
                                     <i class="bi bi-eye"></i> <span class="d-md-none ms-1">Ver</span>
                                 </a>
                                 <button type="button" class="dv-btn ghost sm js-film-modal-trigger js-film-edit" data-url="{% url 'didacta:ajax_film_edit' filme.pk %}" title="Editar filme">

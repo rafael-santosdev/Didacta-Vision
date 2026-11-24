@@ -5,11 +5,11 @@
 
 {% block content %}
 <div class="container-xl">
-    <section class="dv-section">
+    <section class="dv-section dv-support-tickets">
         <div class="dv-section__header flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
             <div>
                 <span class="dv-badge dv-badge--primary"><i class="bi bi-headset me-1"></i> Central de Atendimento</span>
-                <h1 class="dv-section__title">Suporte e Chamados</h1>
+                <h1 class="dv-section__title mt-2">Suporte e Chamados</h1>
                 <p class="dv-section__subtitle">
                     {% if user.is_authenticated and user.is_admin_or_professor %}
                     Gerencie dúvidas, solicitações e responda aos chamados da comunidade acadêmica.
