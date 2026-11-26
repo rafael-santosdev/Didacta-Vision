@@ -550,9 +550,9 @@ main, section, header, footer {
 
 
 .dv-main {
-    width: min(1200px, calc(100vw - 32px));
+    width: min(1320px, calc(100vw - clamp(32px, 6vw, 96px)));
     margin: clamp(32px, 6vw, 48px) auto clamp(80px, 12vw, 120px);
-    padding: 0 clamp(12px, 3vw, 16px);
+    padding: 0;
 }
 
 .dv-footer {
@@ -626,12 +626,12 @@ main, section, header, footer {
 @media (min-width: 769px) {
     .dv-hero__image {
         object-fit: cover;
-        object-position: center top;
+        object-position: center 32%;
         filter: brightness(0.7);
     }
     
     .dv-hero {
-        min-height: clamp(500px, 70vh, 800px);
+        min-height: clamp(420px, 62vh, 620px);
     }
 }
 
@@ -3878,6 +3878,22 @@ main, section, header, footer {
     .dv-hero__content {
         margin-left: clamp(24px, 4vw, 60px);
         margin-right: auto;
+        max-width: min(720px, 58%);
+    }
+}
+
+@media (min-width: 1200px) and (max-height: 800px) {
+    .dv-hero {
+        min-height: 420px;
+    }
+
+    .dv-hero__content {
+        gap: 14px;
+        justify-content: center;
+    }
+
+    .dv-hero__title {
+        font-size: clamp(2.4rem, 4vw, 3.5rem);
     }
 }
 
